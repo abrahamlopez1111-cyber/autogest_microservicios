@@ -1,21 +1,24 @@
 services:
-
   postgres:
     image: postgres:15
     container_name: autogest_db
-    environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: 8520
-      POSTGRES_DB: microservicio_citas
     ports:
       - "5432:5432"
-    volumes:
-    - ./database/init.sql:/docker-entrypoint-initdb.d/init.sql
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: autogest
 
   citas_service:
-    build: ./backend/microservicio_citas
-    container_name: citas_service
+    build: ./backend/microservicio_citas   
     ports:
       - "8000:8000"
+    depends_on:
+      - postgres
+
+  clientes_service:
+    build: ./backend/microservicio_clientes   
+    ports:
+      - "8001:8000"
     depends_on:
       - postgres

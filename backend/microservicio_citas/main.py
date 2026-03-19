@@ -21,7 +21,7 @@ def inicio():
             <title>AutoGest - Microservicio de Citas</title>
         </head>
         <body style="font-family: Arial; text-align:center; margin-top:50px;">
-            <h1>🚗 AutoGest</h1>
+            <h1> AutoGest</h1>
             <h2>Microservicio de Gestión de Citas</h2>
             <p>El backend está funcionando correctamente.</p>
 
