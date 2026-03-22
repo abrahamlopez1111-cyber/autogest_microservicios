@@ -1,24 +1,53 @@
+version: "3.9"
+
 services:
-  postgres:
+
+  # ======================
+  # BASE DE DATOS CITAS
+  # ======================
+  db_citas:
     image: postgres:15
-    container_name: autogest_db
-    ports:
-      - "5432:5432"
+    container_name: db_citas
     environment:
+      POSTGRES_DB: citas_db
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
-      POSTGRES_DB: autogest
+    ports:
+      - "5433:5432"
+    volumes:
+      - ./database/citas/init.sql:/docker-entrypoint-initdb.d/init.sql
 
+  # ======================
+  # BASE DE DATOS INVENTARIO
+  # ======================
+  db_inventario:
+    image: postgres:15
+    container_name: db_inventario
+    environment:
+      POSTGRES_DB: inventario_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5434:5432"
+    volumes:
+      - ./database/inventario/init.sql:/docker-entrypoint-initdb.d/init.sql
+
+  # ======================
+  # MICROSERVICIO CITAS
+  # ======================
   citas_service:
-    build: ./backend/microservicio_citas   
+    build: ./backend/microservicio_citas
     ports:
       - "8000:8000"
     depends_on:
-      - postgres
+      - db_citas
 
-  clientes_service:
-    build: ./backend/microservicio_clientes   
+  # ======================
+  # MICROSERVICIO INVENTARIO
+  # ======================
+  inventario_service:
+    build: ./backend/microservicio_inventario
     ports:
-      - "8001:8000"
+      - "8001:8001"
     depends_on:
-      - postgres
+      - db_inventario
