@@ -1,12 +1,7 @@
-import Clientes from "./pages/Clientes";
+import Inventario from "./pages/inventario";
 
 function App() {
-  return (
-    <div>
-      <h1>AutoGest </h1>
-      <Clientes />
-    </div>
-  );
+  return <Inventario />;
 }
 
 export default App;
