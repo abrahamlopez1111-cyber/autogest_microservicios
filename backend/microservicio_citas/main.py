@@ -2,6 +2,7 @@ from fastapi.responses import HTMLResponse
 from fastapi import HTTPException
 from fastapi import FastAPI, Depends
 from sqlalchemy.orm import Session
+from fastapi.middleware.cors import CORSMiddleware
 
 import models
 import schemas
@@ -13,31 +14,17 @@ models.Base.metadata.create_all(bind=engine)
 app = FastAPI(title="Microservicio de Citas")
 
 """ """
-@app.get("/", response_class=HTMLResponse)
-def inicio():
-    return """
-    <html>
-        <head>
-            <title>AutoGest - Microservicio de Citas</title>
-        </head>
-        <body style="font-family: Arial; text-align:center; margin-top:50px;">
-            <h1> AutoGest</h1>
-            <h2>Microservicio de Gestión de Citas</h2>
-            <p>El backend está funcionando correctamente.</p>
 
-            <h3>Endpoints disponibles</h3>
-            <ul style="list-style:none;">
-                <li>📌 Ver documentación: <a href="/docs">/docs</a></li>
-                <li>📌 Ver citas: <a href="/citas">/citas</a></li>
-            </ul>
+    
+app = FastAPI(title="Microservicio de Citas")
 
-            <p style="margin-top:40px;">Proyecto de Arquitectura de Software</p>
-        </body>
-    </html>
-    """
-    
-    
-    
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # puedes restringir después
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)    
 
 
 def get_db():

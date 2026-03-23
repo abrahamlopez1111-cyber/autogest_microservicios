@@ -1,7 +1,7 @@
-import Inventario from "./pages/inventario";
+import Citas from "./pages/citas";
 
 function App() {
-  return <Inventario />;
+  return <Citas />;
 }
 
 export default App;
