@@ -1,17 +1,7 @@
-<<<<<<< HEAD
 from fastapi import FastAPI, Depends, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-from sqlalchemy.orm import Session
-=======
 from fastapi.responses import HTMLResponse
-from fastapi import HTTPException
-from fastapi import FastAPI, Depends
 from sqlalchemy.orm import Session
-<<<<<<< HEAD
-import fastapi.middleware.cors
-{% load =======_tags %}
->>>>>>> 693fb39 (Microservicios con historial de vehiculos y clientes con 8 endpoints)
->>>>>>> b2760ee0cc5f8c4f6749c9310a7bee0f0983d1a9
 
 import models
 import schemas
@@ -19,16 +9,10 @@ import crud
 
 from database import SessionLocal, engine, wait_for_db
 
-
 app = FastAPI(title="Microservicio de Citas")
 
-<<<<<<< HEAD
-=======
-""" """
-<<<<<<< HEAD
->>>>>>> b2760ee0cc5f8c4f6749c9310a7bee0f0983d1a9
 
-# 🔥 EVENTO DE INICIO (CLAVE)
+# 🔥 EVENTO DE INICIO
 @app.on_event("startup")
 def startup():
     wait_for_db()
@@ -38,48 +22,12 @@ def startup():
 
 # 🔥 CORS
 app.add_middleware(
-<<<<<<< HEAD
     CORSMiddleware,
-    allow_origins=["*"],  # luego puedes restringir
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
-=======
-    fastapi.middleware.cors.CORSMiddleware,
-    allow_origins=["*"],  # puedes restringir después
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)    
-=======
-@app.get("/", response_class=HTMLResponse)
-def inicio():
-    return """
-    <html>
-        <head>
-            <title>AutoGest - Microservicio de Citas</title>
-        </head>
-        <body style="font-family: Arial; text-align:center; margin-top:50px;">
-            <h1> AutoGest</h1>
-            <h2>Microservicio de Gestión de Citas</h2>
-            <p>El backend está funcionando correctamente.</p>
-
-            <h3>Endpoints disponibles</h3>
-            <ul style="list-style:none;">
-                <li>📌 Ver documentación: <a href="/docs">/docs</a></li>
-                <li>📌 Ver citas: <a href="/citas">/citas</a></li>
-            </ul>
-
-            <p style="margin-top:40px;">Proyecto de Arquitectura de Software</p>
-        </body>
-    </html>
-    """
-    
-    
-    
->>>>>>> 693fb39 (Microservicios con historial de vehiculos y clientes con 8 endpoints)
->>>>>>> b2760ee0cc5f8c4f6749c9310a7bee0f0983d1a9
 
 
 # 🔥 DEPENDENCIA DB
@@ -91,12 +39,30 @@ def get_db():
         db.close()
 
 
-# 🔥 RUTAS
-@app.get("/")
+# 🔥 HOME BONITO (opcional pero útil)
+@app.get("/", response_class=HTMLResponse)
 def inicio():
-    return {"mensaje": "Microservicio de citas funcionando"}
+    return """
+    <html>
+        <head>
+            <title>AutoGest - Microservicio de Citas</title>
+        </head>
+        <body style="font-family: Arial; text-align:center; margin-top:50px;">
+            <h1>🚗 AutoGest</h1>
+            <h2>Microservicio de Gestión de Citas</h2>
+            <p>El backend está funcionando correctamente.</p>
+
+            <h3>Endpoints disponibles</h3>
+            <ul style="list-style:none;">
+                <li>📌 <a href="/docs">/docs</a></li>
+                <li>📌 <a href="/citas">/citas</a></li>
+            </ul>
+        </body>
+    </html>
+    """
 
 
+# 🔥 RUTAS API
 @app.post("/citas")
 def crear_cita(cita: schemas.CitaCreate, db: Session = Depends(get_db)):
     try:

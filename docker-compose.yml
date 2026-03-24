@@ -1,3 +1,5 @@
+version: "3.9"
+
 services:
 
   # ======================
@@ -31,41 +33,19 @@ services:
       - ./database/inventario/init.sql:/docker-entrypoint-initdb.d/init.sql
 
   # ======================
-<<<<<<< HEAD
   # BASE DE DATOS USUARIOS
   # ======================
   microservicio_usuarios:
     image: postgres:15
     container_name: microservicio_usuarios
     environment:
-<<<<<<< HEAD
       POSTGRES_DB: microservicio_usuarios
-=======
-      POSTGRES_DB: usuarios_db
-=======
-  # BASE DE DATOS HISTORIAL
-  # ======================
-  db_historial:
-    image: postgres:15
-    container_name: db_historial
-    environment:
-      POSTGRES_DB: historial_db
->>>>>>> 693fb39 (Microservicios con historial de vehiculos y clientes con 8 endpoints)
->>>>>>> b2760ee0cc5f8c4f6749c9310a7bee0f0983d1a9
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
     ports:
       - "5435:5432"
-<<<<<<< HEAD
     volumes:
-    - ./database/usuarios/init.sql:/docker-entrypoint-initdb.d/init.sql
-=======
-<<<<<<< HEAD
-=======
-    volumes:
-      - ./database/historial/init.sql:/docker-entrypoint-initdb.d/init.sql
->>>>>>> 693fb39 (Microservicios con historial de vehiculos y clientes con 8 endpoints)
->>>>>>> b2760ee0cc5f8c4f6749c9310a7bee0f0983d1a9
+      - ./database/usuarios/init.sql:/docker-entrypoint-initdb.d/init.sql
 
   # ======================
   # MICROSERVICIO CITAS
@@ -88,7 +68,6 @@ services:
       - microservicio_inventario
 
   # ======================
-<<<<<<< HEAD
   # MICROSERVICIO USUARIOS
   # ======================
   usuarios_service:
@@ -96,18 +75,4 @@ services:
     ports:
       - "8002:8002"
     depends_on:
-<<<<<<< HEAD
       - microservicio_usuarios
-=======
-      - db_usuarios
-=======
-  # MICROSERVICIO HISTORIAL
-  # ======================
-  historial_service:
-    build: ./backend/microservicio_historial
-    ports:
-      - "8002:8002"
-    depends_on:
-      - db_historial
->>>>>>> 693fb39 (Microservicios con historial de vehiculos y clientes con 8 endpoints)
->>>>>>> b2760ee0cc5f8c4f6749c9310a7bee0f0983d1a9
