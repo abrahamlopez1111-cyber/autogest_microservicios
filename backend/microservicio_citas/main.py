@@ -1,32 +1,36 @@
-from fastapi.responses import HTMLResponse
-from fastapi import HTTPException
-from fastapi import FastAPI, Depends
-from sqlalchemy.orm import Session
+from fastapi import FastAPI, Depends, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+from sqlalchemy.orm import Session
 
 import models
 import schemas
 import crud
-from database import SessionLocal, engine
 
-models.Base.metadata.create_all(bind=engine)
+from database import SessionLocal, engine, wait_for_db
+
 
 app = FastAPI(title="Microservicio de Citas")
 
-""" """
 
-    
-app = FastAPI(title="Microservicio de Citas")
+# 🔥 EVENTO DE INICIO (CLAVE)
+@app.on_event("startup")
+def startup():
+    wait_for_db()
+    models.Base.metadata.create_all(bind=engine)
+    print("🚀 DB citas lista")
 
+
+# 🔥 CORS
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # puedes restringir después
+    allow_origins=["*"],  # luego puedes restringir
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
-)    
+)
 
 
+# 🔥 DEPENDENCIA DB
 def get_db():
     db = SessionLocal()
     try:
@@ -35,6 +39,7 @@ def get_db():
         db.close()
 
 
+# 🔥 RUTAS
 @app.get("/")
 def inicio():
     return {"mensaje": "Microservicio de citas funcionando"}
@@ -46,6 +51,7 @@ def crear_cita(cita: schemas.CitaCreate, db: Session = Depends(get_db)):
         return crud.crear_cita(db, cita)
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
+
 
 @app.get("/citas")
 def listar_citas(db: Session = Depends(get_db)):

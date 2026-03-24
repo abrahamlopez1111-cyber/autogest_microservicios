@@ -1,4 +1,5 @@
 export const API_URLS = {
-  citas: "http://localhost:8000",
-  inventario: "http://localhost:8001",
+  CITAS: "http://localhost:8000",
+  INVENTARIO: "http://localhost:8001",
+  USUARIOS: "http://localhost:8002",
 };

@@ -1,7 +1,7 @@
-import Citas from "./pages/citas";
+import Usuarios from "./pages/usuarios";
 
 function App() {
-  return <Citas />;
+  return <Usuarios />;
 }
 
 export default App;
