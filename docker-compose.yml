@@ -31,6 +31,7 @@ services:
       - ./database/inventario/init.sql:/docker-entrypoint-initdb.d/init.sql
 
   # ======================
+<<<<<<< HEAD
   # BASE DE DATOS USUARIOS
   # ======================
   db_usuarios:
@@ -38,10 +39,24 @@ services:
     container_name: db_usuarios
     environment:
       POSTGRES_DB: usuarios_db
+=======
+  # BASE DE DATOS HISTORIAL
+  # ======================
+  db_historial:
+    image: postgres:15
+    container_name: db_historial
+    environment:
+      POSTGRES_DB: historial_db
+>>>>>>> 693fb39 (Microservicios con historial de vehiculos y clientes con 8 endpoints)
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
     ports:
       - "5435:5432"
+<<<<<<< HEAD
+=======
+    volumes:
+      - ./database/historial/init.sql:/docker-entrypoint-initdb.d/init.sql
+>>>>>>> 693fb39 (Microservicios con historial de vehiculos y clientes con 8 endpoints)
 
   # ======================
   # MICROSERVICIO CITAS
@@ -64,6 +79,7 @@ services:
       - db_inventario
 
   # ======================
+<<<<<<< HEAD
   # MICROSERVICIO USUARIOS
   # ======================
   usuarios_service:
@@ -72,3 +88,13 @@ services:
       - "8002:8002"
     depends_on:
       - db_usuarios
+=======
+  # MICROSERVICIO HISTORIAL
+  # ======================
+  historial_service:
+    build: ./backend/microservicio_historial
+    ports:
+      - "8002:8002"
+    depends_on:
+      - db_historial
+>>>>>>> 693fb39 (Microservicios con historial de vehiculos y clientes con 8 endpoints)

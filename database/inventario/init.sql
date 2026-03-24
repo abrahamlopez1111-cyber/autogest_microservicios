@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 --
 -- PostgreSQL database dump
 --
@@ -355,3 +356,78 @@ ALTER TABLE ONLY public.transferencias
 
 
 
+=======
+-- =========================
+-- ESTRUCTURA BASE DE DATOS
+-- MICROSERVICIO HISTORIAL
+-- =========================
+
+-- =========================
+-- TABLA VEHICULOS
+-- =========================
+CREATE TABLE vehiculos (
+    id SERIAL PRIMARY KEY,
+    placa VARCHAR(10) NOT NULL UNIQUE,
+    propietario VARCHAR(100) NOT NULL,
+    marca VARCHAR(50),
+    modelo VARCHAR(50),
+    anio INTEGER,
+    color VARCHAR(50)
+);
+
+-- =========================
+-- TABLA TIPOS DE SERVICIO
+-- =========================
+CREATE TABLE tipos_servicio (
+    id SERIAL PRIMARY KEY,
+    nombre VARCHAR(100) NOT NULL
+);
+
+-- =========================
+-- TABLA HISTORIAL
+-- =========================
+CREATE TABLE historial (
+    id SERIAL PRIMARY KEY,
+    vehiculo_id INTEGER NOT NULL,
+    tipo_servicio_id INTEGER NOT NULL,
+    descripcion TEXT,
+    fecha TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT fk_vehiculo
+        FOREIGN KEY (vehiculo_id)
+        REFERENCES vehiculos(id),
+
+    CONSTRAINT fk_tipo_servicio
+        FOREIGN KEY (tipo_servicio_id)
+        REFERENCES tipos_servicio(id)
+);
+
+-- =========================
+-- DATOS DE PRUEBA
+-- =========================
+
+-- VEHICULOS
+INSERT INTO vehiculos (placa, propietario, marca, modelo, anio, color)
+VALUES
+('ABC123', 'Juan Perez', 'Toyota', 'Corolla', 2020, 'Rojo'),
+('XYZ789', 'Maria Gomez', 'Chevrolet', 'Spark', 2018, 'Blanco'),
+('LMN456', 'Carlos Ruiz', 'Mazda', 'CX-5', 2022, 'Negro');
+
+-- TIPOS DE SERVICIO
+INSERT INTO tipos_servicio (nombre)
+VALUES
+('Mantenimiento'),
+('Reparación'),
+('Inspección');
+
+-- HISTORIAL
+INSERT INTO historial (
+    vehiculo_id,
+    tipo_servicio_id,
+    descripcion
+)
+VALUES
+(1, 1, 'Cambio de aceite'),
+(2, 2, 'Reparación de frenos'),
+(3, 3, 'Revisión general');
+>>>>>>> 693fb39 (Microservicios con historial de vehiculos y clientes con 8 endpoints)

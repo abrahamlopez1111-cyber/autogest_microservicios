@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, Boolean, ForeignKey
+from sqlalchemy import Column, Integer, String, Boolean, ForeignKey # type: ignore
 from .database import Base
 
 class CatalogoRepuesto(Base):
