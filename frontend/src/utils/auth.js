@@ -1,11 +1,16 @@
 export const getUsuario = () => {
-  const user = localStorage.getItem("usuario");
-  return user ? JSON.parse(user) : null;
+  try {
+    const user = localStorage.getItem("usuario");
+    return user ? JSON.parse(user) : null;
+  } catch (error) {
+    console.error("Error al obtener usuario:", error);
+    return null;
+  }
 };
 
 export const getRol = () => {
   const user = getUsuario();
-  return user?.rol;
+  return user?.rol || null;
 };
 
 export const logout = () => {

@@ -9,7 +9,7 @@ class UsuarioCreate(UsuarioBase):
     password: str
 
 class Usuario(UsuarioBase):
-    id: int
+    id_usuarios: int
 
     class Config:
         orm_mode = True

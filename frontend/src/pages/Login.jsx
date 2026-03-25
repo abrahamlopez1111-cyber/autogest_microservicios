@@ -23,13 +23,21 @@ function Login() {
       const data = await res.json();
 
       if (data.usuario) {
+        // 🔥 Guardar usuario en sesión
         localStorage.setItem("usuario", JSON.stringify(data.usuario));
-        window.location.href = "/citas";
+
+        // 🔥 Redirección según rol
+        if (data.usuario.rol === "admin") {
+          window.location.href = "/admin";
+        } else {
+          window.location.href = "/citas";
+        }
       } else {
         setError("Credenciales incorrectas");
       }
+
     } catch (err) {
-      setError("Error de conexión");
+      setError("Error de conexión con el servidor");
     }
   };
 
@@ -42,7 +50,9 @@ function Login() {
           type="email"
           placeholder="Correo electrónico"
           value={form.email}
-          onChange={(e) => setForm({ ...form, email: e.target.value })}
+          onChange={(e) =>
+            setForm({ ...form, email: e.target.value })
+          }
           style={styles.input}
         />
 
@@ -50,7 +60,9 @@ function Login() {
           type="password"
           placeholder="Contraseña"
           value={form.password}
-          onChange={(e) => setForm({ ...form, password: e.target.value })}
+          onChange={(e) =>
+            setForm({ ...form, password: e.target.value })
+          }
           style={styles.input}
         />
 
@@ -88,7 +100,6 @@ const styles = {
     width: "320px",
     boxShadow: "0 10px 30px rgba(0,0,0,0.2)",
     textAlign: "center",
-    animation: "fadeIn 0.6s ease-in-out",
   },
 
   title: {
@@ -104,7 +115,6 @@ const styles = {
     border: "1px solid #ccc",
     outline: "none",
     fontSize: "14px",
-    transition: "0.3s",
   },
 
   button: {
@@ -117,7 +127,6 @@ const styles = {
     borderRadius: "8px",
     fontSize: "16px",
     cursor: "pointer",
-    transition: "0.3s",
   },
 
   error: {
