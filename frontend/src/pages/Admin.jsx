@@ -5,8 +5,17 @@ import {
   eliminarUsuario,
 } from "../services/usuariosApi";
 
+import {
+  crearSucursal,
+  getSucursales,
+} from "../services/citasApi";
+
 function Admin() {
   const [vista, setVista] = useState("menu");
+
+  // =========================
+  // 👤 USUARIOS
+  // =========================
   const [usuarios, setUsuarios] = useState([]);
 
   const [nuevo, setNuevo] = useState({
@@ -16,31 +25,50 @@ function Admin() {
     rol: "cliente",
   });
 
-  // 🔥 CARGAR USUARIOS
+  // =========================
+  // 🏢 SUCURSALES
+  // =========================
+  const [sucursales, setSucursales] = useState([]);
+
+  const [nuevaSucursal, setNuevaSucursal] = useState({
+    nombre: "",
+    pais: "",
+    capacidad_elevadores: "",
+  });
+
+  // =========================
+  // 🔄 CARGAR DATOS
+  // =========================
+
   const cargarUsuarios = async () => {
     try {
       const data = await getUsuarios();
-
-      // 🔥 PROTECCIÓN
-      if (Array.isArray(data)) {
-        setUsuarios(data);
-      } else {
-        setUsuarios([]);
-        console.error("La API no devolvió un array:", data);
-      }
+      setUsuarios(Array.isArray(data) ? data : []);
     } catch (error) {
-      console.error("Error cargando usuarios:", error);
+      console.error(error);
       setUsuarios([]);
     }
   };
 
-  useEffect(() => {
-    if (vista === "usuarios") {
-      cargarUsuarios();
+  const cargarSucursales = async () => {
+    try {
+      const data = await getSucursales();
+      setSucursales(Array.isArray(data) ? data : []);
+    } catch (error) {
+      console.error(error);
+      setSucursales([]);
     }
+  };
+
+  useEffect(() => {
+    if (vista === "usuarios") cargarUsuarios();
+    if (vista === "sucursales") cargarSucursales();
   }, [vista]);
 
-  // 🔥 CREAR
+  // =========================
+  // 👤 USUARIOS
+  // =========================
+
   const handleCrear = async () => {
     try {
       await crearUsuario(nuevo);
@@ -53,20 +81,46 @@ function Admin() {
       });
 
       cargarUsuarios();
-    } catch (error) {
+    } catch {
       alert("Error al crear usuario");
     }
   };
 
-  // 🔥 ELIMINAR
-  const handleEliminar = async (id_usuarios) => {
+  const handleEliminar = async (id) => {
     try {
-      await eliminarUsuario(id_usuarios);
+      await eliminarUsuario(id);
       cargarUsuarios();
-    } catch (error) {
+    } catch {
       alert("Error al eliminar usuario");
     }
   };
+
+  // =========================
+  // 🏢 SUCURSALES
+  // =========================
+
+  const handleCrearSucursal = async () => {
+    try {
+      await crearSucursal({
+        ...nuevaSucursal,
+        capacidad_elevadores: Number(nuevaSucursal.capacidad_elevadores),
+      });
+
+      setNuevaSucursal({
+        nombre: "",
+        pais: "",
+        capacidad_elevadores: "",
+      });
+
+      cargarSucursales();
+    } catch {
+      alert("Error al crear sucursal");
+    }
+  };
+
+  // =========================
+  // 🎨 UI
+  // =========================
 
   return (
     <div style={styles.container}>
@@ -89,12 +143,13 @@ function Admin() {
         </div>
       )}
 
-      {/* 👤 USUARIOS */}
+      {/* =========================
+          👤 USUARIOS
+      ========================= */}
       {vista === "usuarios" && (
         <div style={styles.panel}>
           <h2>👤 Gestión de Usuarios</h2>
 
-          {/* 🔥 FORMULARIO */}
           <div style={styles.form}>
             <input
               placeholder="Nombre"
@@ -136,7 +191,6 @@ function Admin() {
             </button>
           </div>
 
-          {/* 🔥 TABLA */}
           <table style={styles.table}>
             <thead>
               <tr>
@@ -149,7 +203,7 @@ function Admin() {
             </thead>
 
             <tbody>
-              {Array.isArray(usuarios) && usuarios.length > 0 ? (
+              {usuarios.length > 0 ? (
                 usuarios.map((u) => (
                   <tr key={u.id_usuarios}>
                     <td>{u.id_usuarios}</td>
@@ -158,7 +212,6 @@ function Admin() {
                     <td>{u.rol}</td>
                     <td>
                       <button style={styles.edit}>✏️</button>
-
                       <button
                         style={styles.delete}
                         onClick={() => handleEliminar(u.id_usuarios)}
@@ -181,16 +234,89 @@ function Admin() {
         </div>
       )}
 
-      {/* 🏢 SUCURSALES */}
+      {/* =========================
+          🏢 SUCURSALES
+      ========================= */}
       {vista === "sucursales" && (
         <div style={styles.panel}>
           <h2>🏢 Gestión de Sucursales</h2>
-          <p>🚧 Próximamente...</p>
+
+          <div style={styles.form}>
+            <input
+              placeholder="Nombre"
+              value={nuevaSucursal.nombre}
+              onChange={(e) =>
+                setNuevaSucursal({
+                  ...nuevaSucursal,
+                  nombre: e.target.value,
+                })
+              }
+            />
+
+            <input
+              placeholder="País"
+              value={nuevaSucursal.pais}
+              onChange={(e) =>
+                setNuevaSucursal({
+                  ...nuevaSucursal,
+                  pais: e.target.value,
+                })
+              }
+            />
+
+            <input
+              placeholder="Capacidad"
+              type="number"
+              value={nuevaSucursal.capacidad_elevadores}
+              onChange={(e) =>
+                setNuevaSucursal({
+                  ...nuevaSucursal,
+                  capacidad_elevadores: e.target.value,
+                })
+              }
+            />
+
+            <button onClick={handleCrearSucursal} style={styles.create}>
+              ➕ Crear
+            </button>
+          </div>
+
+          <table style={styles.table}>
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Nombre</th>
+                <th>País</th>
+                <th>Capacidad</th>
+              </tr>
+            </thead>
+
+            <tbody>
+              {sucursales.length > 0 ? (
+                sucursales.map((s) => (
+                  <tr key={s.id}>
+                    <td>{s.id}</td>
+                    <td>{s.nombre}</td>
+                    <td>{s.pais}</td>
+                    <td>{s.capacidad_elevadores}</td>
+                  </tr>
+                ))
+              ) : (
+                <tr>
+                  <td colSpan="4">No hay sucursales</td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+
+          <br />
           <button onClick={() => setVista("menu")}>⬅ Volver</button>
         </div>
       )}
 
-      {/* 🔧 MECÁNICOS */}
+      {/* =========================
+          🔧 MECÁNICOS
+      ========================= */}
       {vista === "mecanicos" && (
         <div style={styles.panel}>
           <h2>🔧 Gestión de Mecánicos</h2>
@@ -203,10 +329,7 @@ function Admin() {
 }
 
 const styles = {
-  container: {
-    padding: "30px",
-    textAlign: "center",
-  },
+  container: { padding: "30px", textAlign: "center" },
 
   menu: {
     display: "flex",
@@ -217,25 +340,21 @@ const styles = {
 
   card: {
     padding: "20px",
-    fontSize: "16px",
-    cursor: "pointer",
     borderRadius: "10px",
     border: "none",
     background: "#1e3a8a",
     color: "white",
-    width: "200px",
+    cursor: "pointer",
   },
 
-  panel: {
-    marginTop: "20px",
-  },
+  panel: { marginTop: "20px" },
 
   form: {
     display: "flex",
     gap: "10px",
     justifyContent: "center",
-    marginBottom: "20px",
     flexWrap: "wrap",
+    marginBottom: "20px",
   },
 
   create: {
@@ -254,22 +373,18 @@ const styles = {
   },
 
   edit: {
-    marginRight: "5px",
     background: "#3b82f6",
     color: "white",
     border: "none",
-    padding: "5px 10px",
-    borderRadius: "5px",
-    cursor: "pointer",
+    padding: "5px",
+    marginRight: "5px",
   },
 
   delete: {
     background: "#ef4444",
     color: "white",
     border: "none",
-    padding: "5px 10px",
-    borderRadius: "5px",
-    cursor: "pointer",
+    padding: "5px",
   },
 };
 

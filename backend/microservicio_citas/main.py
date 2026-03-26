@@ -99,3 +99,34 @@ def cancelar_cita(id: int, db: Session = Depends(get_db)):
 @app.get("/agenda/hoy")
 def agenda_hoy(db: Session = Depends(get_db)):
     return crud.obtener_agenda_hoy(db)
+
+
+
+
+
+
+
+
+
+
+
+
+
+# 🏢 SUCURSALES
+@app.post("/sucursales")
+def crear_sucursal(data: schemas.SucursalCreate, db: Session = Depends(get_db)):
+    return crud.crear_sucursal(db, data)
+
+@app.get("/sucursales")
+def listar_sucursales(db: Session = Depends(get_db)):
+    return crud.obtener_sucursales(db)
+
+
+# 🔧 MECÁNICOS
+@app.post("/mecanicos")
+def crear_mecanico(data: schemas.MecanicoCreate, db: Session = Depends(get_db)):
+    return crud.crear_mecanico(db, data)
+
+@app.get("/mecanicos")
+def listar_mecanicos(db: Session = Depends(get_db)):
+    return crud.obtener_mecanicos(db)

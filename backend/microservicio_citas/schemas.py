@@ -20,3 +20,39 @@ class Cita(CitaBase):
 
     class Config:
         from_attributes = True
+        
+        
+        
+        
+        
+
+
+# 🏢 SUCURSAL
+class SucursalCreate(BaseModel):
+    nombre: str
+    pais: str
+    capacidad_elevadores: int
+
+class Sucursal(BaseModel):
+    id: int
+    nombre: str
+    pais: str
+    capacidad_elevadores: int
+
+    class Config:
+        orm_mode = True
+
+
+# 🔧 MECÁNICO
+class MecanicoCreate(BaseModel):
+    sucursal_id: int
+    nombre: str
+
+class Mecanico(BaseModel):
+    id: int
+    sucursal_id: int
+    nombre: str
+    activo: bool
+
+    class Config:
+        orm_mode = True

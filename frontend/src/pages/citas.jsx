@@ -2,92 +2,150 @@ import { useEffect, useState } from "react";
 import {
   getCitas,
   crearCita,
-  eliminarCita,
+  getSucursales,
+  getMecanicos,
 } from "../services/citasApi";
 
 function Citas() {
   const [citas, setCitas] = useState([]);
+  const [sucursales, setSucursales] = useState([]);
+  const [mecanicos, setMecanicos] = useState([]);
+
   const [nueva, setNueva] = useState({
-    cliente_id: "",
-    vehiculo_id: "",
+    sucursal_id: "",
     mecanico_id: "",
+    vehiculo_id: "",
     fecha: "",
     hora: "",
-    descripcion: "",
   });
 
-  const obtenerCitas = async () => {
-    try {
-      const data = await getCitas();
-      setCitas(data);
-    } catch (error) {
-      console.error("Error al obtener citas:", error);
-    }
-  };
+  const [error, setError] = useState("");
 
+  // 🔥 CARGAR DATOS
   useEffect(() => {
-    obtenerCitas();
+    cargarTodo();
   }, []);
 
-  const handleCrear = async () => {
+  const cargarTodo = async () => {
     try {
-      await crearCita(nueva);
+      const citasData = await getCitas();
+      const sucData = await getSucursales();
+      const mecData = await getMecanicos();
 
-      // limpiar formulario
-      setNueva({
-        cliente_id: "",
-        vehiculo_id: "",
-        mecanico_id: "",
-        fecha: "",
-        hora: "",
-        descripcion: "",
-      });
-
-      obtenerCitas();
-    } catch (error) {
-      console.error("Error al crear cita:", error);
+      setCitas(citasData || []);
+      setSucursales(sucData || []);
+      setMecanicos(mecData || []);
+    } catch (err) {
+      console.error(err);
+      setError("Error cargando datos");
     }
   };
 
-  const handleEliminar = async (id) => {
+  // 🔥 FILTRAR MECÁNICOS POR SUCURSAL
+  const mecanicosFiltrados = mecanicos.filter(
+    (m) => m.sucursal_id == nueva.sucursal_id
+  );
+
+  // 🔥 CREAR CITA (CORREGIDO)
+  const handleCrear = async () => {
+    setError("");
+
+    // VALIDACIÓN
+    if (
+      !nueva.sucursal_id ||
+      !nueva.mecanico_id ||
+      !nueva.vehiculo_id ||
+      !nueva.fecha ||
+      !nueva.hora
+    ) {
+      setError("Todos los campos son obligatorios");
+      return;
+    }
+
     try {
-      await eliminarCita(id);
-      obtenerCitas();
-    } catch (error) {
-      console.error("Error al eliminar cita:", error);
+      // 🔥 CONVERTIR A DATETIME
+      const fechaHoraInicio = `${nueva.fecha}T${nueva.hora}:00`;
+
+      const fechaFin = new Date(fechaHoraInicio);
+      fechaFin.setHours(fechaFin.getHours() + 1);
+
+      const data = {
+        sucursal_id: parseInt(nueva.sucursal_id),
+        mecanico_id: parseInt(nueva.mecanico_id),
+        vehiculo_id: parseInt(nueva.vehiculo_id),
+        fecha_hora_inicio: fechaHoraInicio,
+        fecha_hora_fin: fechaFin.toISOString(),
+      };
+
+      await crearCita(data);
+
+      // 🔄 LIMPIAR FORMULARIO
+      setNueva({
+        sucursal_id: "",
+        mecanico_id: "",
+        vehiculo_id: "",
+        fecha: "",
+        hora: "",
+      });
+
+      cargarTodo();
+    } catch (err) {
+      console.error(err);
+      setError("Error al crear la cita");
     }
   };
 
   return (
     <div style={{ padding: "20px" }}>
-      <h1>📅 Gestión de Citas</h1>
+      <h1>📅 Crear Cita</h1>
 
-      {/* FORMULARIO */}
+      {error && (
+        <p style={{ color: "red", fontWeight: "bold" }}>{error}</p>
+      )}
+
       <div style={{ display: "flex", gap: "10px", flexWrap: "wrap" }}>
-        <input
-          value={nueva.cliente_id}
-          placeholder="Cliente"
+        
+        {/* 🏢 SUCURSAL */}
+        <select
+          value={nueva.sucursal_id}
           onChange={(e) =>
-            setNueva({ ...nueva, cliente_id: e.target.value })
+            setNueva({ ...nueva, sucursal_id: e.target.value })
           }
-        />
+        >
+          <option value="">Seleccionar sucursal</option>
+          {sucursales.map((s) => (
+            <option key={s.id} value={s.id}>
+              {s.nombre}
+            </option>
+          ))}
+        </select>
 
+        {/* 🔧 MECÁNICO */}
+        <select
+          value={nueva.mecanico_id}
+          onChange={(e) =>
+            setNueva({ ...nueva, mecanico_id: e.target.value })
+          }
+        >
+          <option value="">Seleccionar mecánico</option>
+          {mecanicosFiltrados.map((m) => (
+            <option key={m.id} value={m.id}>
+              {m.nombre}
+            </option>
+          ))}
+        </select>
+
+        {/* 🚗 VEHÍCULO */}
         <input
+          type="number"
+          placeholder="Vehículo ID"
           value={nueva.vehiculo_id}
-          placeholder="Vehículo"
           onChange={(e) =>
             setNueva({ ...nueva, vehiculo_id: e.target.value })
           }
         />
 
-        <input
-          value={nueva.mecanico_id}
-          placeholder="Mecánico"
-          onChange={(e) =>
-            setNueva({ ...nueva, mecanico_id: e.target.value })
-          }
-        />
-
+        {/* 📅 FECHA */}
         <input
           type="date"
           value={nueva.fecha}
@@ -96,6 +154,7 @@ function Citas() {
           }
         />
 
+        {/* ⏰ HORA */}
         <input
           type="time"
           value={nueva.hora}
@@ -104,53 +163,35 @@ function Citas() {
           }
         />
 
-        <input
-          value={nueva.descripcion}
-          placeholder="Descripción"
-          onChange={(e) =>
-            setNueva({ ...nueva, descripcion: e.target.value })
-          }
-        />
-
-        <button onClick={handleCrear}>Crear</button>
+        <button onClick={handleCrear}>
+          Crear
+        </button>
       </div>
 
-      {/* TABLA */}
-      <h2 style={{ marginTop: "20px" }}>Lista de Citas</h2>
+      {/* 📋 LISTA */}
+      <h2 style={{ marginTop: "30px" }}>Lista de Citas</h2>
 
-      <table border="1" cellPadding="10">
+      <table border="1" cellPadding="5">
         <thead>
           <tr>
             <th>ID</th>
-            <th>Cliente</th>
-            <th>Vehículo</th>
+            <th>Sucursal</th>
             <th>Mecánico</th>
-            <th>Fecha</th>
-            <th>Hora</th>
-            <th>Acciones</th>
+            <th>Inicio</th>
+            <th>Fin</th>
           </tr>
         </thead>
 
         <tbody>
-          {citas.length === 0 ? (
-            <tr>
-              <td colSpan="7">No hay citas</td>
+          {citas.map((c) => (
+            <tr key={c.id}>
+              <td>{c.id}</td>
+              <td>{c.sucursal_id}</td>
+              <td>{c.mecanico_id}</td>
+              <td>{c.fecha_hora_inicio}</td>
+              <td>{c.fecha_hora_fin}</td>
             </tr>
-          ) : (
-            citas.map((c) => (
-              <tr key={c.id}>
-                <td>{c.id}</td>
-                <td>{c.cliente_id}</td>
-                <td>{c.vehiculo_id}</td>
-                <td>{c.mecanico_id}</td>
-                <td>{c.fecha}</td>
-                <td>{c.hora}</td>
-                <td>
-                  <button onClick={() => handleEliminar(c.id)}>🗑️</button>
-                </td>
-              </tr>
-            ))
-          )}
+          ))}
         </tbody>
       </table>
     </div>

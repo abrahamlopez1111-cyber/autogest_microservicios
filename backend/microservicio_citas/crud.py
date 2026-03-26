@@ -71,3 +71,26 @@ def cancelar_cita(db: Session, cita_id: int):
         db.refresh(db_cita)
 
     return db_cita
+
+
+def obtener_sucursales(db: Session):
+    return db.query(models.Sucursal).all()
+
+def crear_sucursal(db, sucursal):
+    nueva = models.Sucursal(**sucursal.dict())
+    db.add(nueva)
+    db.commit()
+    db.refresh(nueva)
+    return nueva
+
+
+def obtener_mecanicos(db: Session):
+    return db.query(models.Mecanico).all()
+
+
+def crear_mecanico(db: Session, mecanico):
+    nuevo = models.Mecanico(**mecanico.dict())
+    db.add(nuevo)
+    db.commit()
+    db.refresh(nuevo)
+    return nuevo
