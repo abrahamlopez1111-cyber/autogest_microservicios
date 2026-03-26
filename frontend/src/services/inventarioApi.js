@@ -14,14 +14,14 @@ export const crearRepuesto = async (data) => {
   return res.json();
 };
 
-// 🔴 ELIMINAR
+// ELIMINAR
 export const eliminarRepuesto = async (id) => {
   await fetch(`${API_URLS.inventario}/repuestos/${id}`, {
     method: "DELETE",
   });
 };
 
-// 🟡 ACTUALIZAR
+// ACTUALIZAR
 export const actualizarRepuesto = async (id, data) => {
   const res = await fetch(`${API_URLS.inventario}/repuestos/${id}`, {
     method: "PUT",

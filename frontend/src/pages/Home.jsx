@@ -2,7 +2,7 @@ function Home() {
   return (
     <div style={{ fontFamily: "Arial" }}>
       
-      {/* 🔥 NAVBAR */}
+      {/*  NAVBAR */}
       <div style={{
         display: "flex",
         justifyContent: "space-between",
@@ -18,7 +18,7 @@ function Home() {
         </div>
       </div>
 
-      {/* 🔥 HERO */}
+      {/*  HERO */}
       <div style={{
         textAlign: "center",
         padding: "80px",
@@ -41,11 +41,11 @@ function Home() {
             cursor: "pointer"
           }}
         >
-          📅 Crear Cita
+           Crear Cita
         </button>
       </div>
 
-      {/* 🔥 SECCIÓN INFO */}
+      {/*  SECCIÓN INFO */}
       <div style={{ padding: "40px", textAlign: "center" }}>
         <h2>¿Qué es AUTOGEST?</h2>
         <p>Sistema integral para gestión de talleres</p>
@@ -57,15 +57,15 @@ function Home() {
           marginTop: "20px"
         }}>
           <div style={{ padding: "20px", border: "1px solid #ccc" }}>
-            🏢 Sucursales
+             Sucursales
           </div>
 
           <div style={{ padding: "20px", border: "1px solid #ccc" }}>
-            🔧 Mecánicos
+             Mecánicos
           </div>
 
           <div style={{ padding: "20px", border: "1px solid #ccc" }}>
-            📅 Citas
+             Citas
           </div>
         </div>
       </div>

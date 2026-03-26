@@ -83,8 +83,8 @@ function Inventario() {
           <li key={r.id}>
             {r.codigo_inventario} - {r.descripcion}
 
-            <button onClick={() => handleEditar(r)}>✏️</button>
-            <button onClick={() => handleEliminar(r.id)}>🗑️</button>
+            <button onClick={() => handleEditar(r)}></button>
+            <button onClick={() => handleEliminar(r.id)}></button>
           </li>
         ))}
       </ul>

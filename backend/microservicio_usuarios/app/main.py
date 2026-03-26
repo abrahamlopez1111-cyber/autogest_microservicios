@@ -21,7 +21,7 @@ def crear_admin(db):
         db.commit()
         
         
-# 🔥 EVENTO DE INICIO (CLAVE)
+# EVENTO DE INICIO (CLAVE)
 @app.on_event("startup")
 def startup():
     wait_for_db()
@@ -31,10 +31,10 @@ def startup():
     crear_admin(db)
     db.close()
 
-    print("🚀 Admin listo")
+    print(" Admin listo")
 
 
-# 🔥 CORS
+#  CORS
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -43,5 +43,5 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# 🔥 ROUTES
+#  ROUTES
 app.include_router(usuarios.router)

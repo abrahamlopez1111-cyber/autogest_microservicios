@@ -14,7 +14,7 @@ function Admin() {
   const [vista, setVista] = useState("menu");
 
   // =========================
-  // 👤 USUARIOS
+  //  USUARIOS
   // =========================
   const [usuarios, setUsuarios] = useState([]);
 
@@ -26,7 +26,7 @@ function Admin() {
   });
 
   // =========================
-  // 🏢 SUCURSALES
+  //  SUCURSALES
   // =========================
   const [sucursales, setSucursales] = useState([]);
 
@@ -37,7 +37,7 @@ function Admin() {
   });
 
   // =========================
-  // 🔄 CARGAR DATOS
+  //  CARGAR DATOS
   // =========================
 
   const cargarUsuarios = async () => {
@@ -66,7 +66,7 @@ function Admin() {
   }, [vista]);
 
   // =========================
-  // 👤 USUARIOS
+  //  USUARIOS
   // =========================
 
   const handleCrear = async () => {
@@ -96,7 +96,7 @@ function Admin() {
   };
 
   // =========================
-  // 🏢 SUCURSALES
+  //  SUCURSALES
   // =========================
 
   const handleCrearSucursal = async () => {
@@ -119,36 +119,36 @@ function Admin() {
   };
 
   // =========================
-  // 🎨 UI
+  //  UI
   // =========================
 
   return (
     <div style={styles.container}>
-      <h1>👑 Panel Administrador</h1>
+      <h1> Panel Administrador</h1>
 
-      {/* 🔥 MENÚ */}
+      {/*  MENÚ */}
       {vista === "menu" && (
         <div style={styles.menu}>
           <button onClick={() => setVista("usuarios")} style={styles.card}>
-            👤 Usuarios
+             Usuarios
           </button>
 
           <button onClick={() => setVista("sucursales")} style={styles.card}>
-            🏢 Sucursales
+             Sucursales
           </button>
 
           <button onClick={() => setVista("mecanicos")} style={styles.card}>
-            🔧 Mecánicos
+             Mecánicos
           </button>
         </div>
       )}
 
       {/* =========================
-          👤 USUARIOS
+           USUARIOS
       ========================= */}
       {vista === "usuarios" && (
         <div style={styles.panel}>
-          <h2>👤 Gestión de Usuarios</h2>
+          <h2> Gestión de Usuarios</h2>
 
           <div style={styles.form}>
             <input
@@ -187,7 +187,7 @@ function Admin() {
             </select>
 
             <button onClick={handleCrear} style={styles.create}>
-              ➕ Crear
+               Crear
             </button>
           </div>
 
@@ -211,12 +211,12 @@ function Admin() {
                     <td>{u.email}</td>
                     <td>{u.rol}</td>
                     <td>
-                      <button style={styles.edit}>✏️</button>
+                      <button style={styles.edit}></button>
                       <button
                         style={styles.delete}
                         onClick={() => handleEliminar(u.id_usuarios)}
                       >
-                        🗑
+                        
                       </button>
                     </td>
                   </tr>
@@ -235,11 +235,11 @@ function Admin() {
       )}
 
       {/* =========================
-          🏢 SUCURSALES
+           SUCURSALES
       ========================= */}
       {vista === "sucursales" && (
         <div style={styles.panel}>
-          <h2>🏢 Gestión de Sucursales</h2>
+          <h2> Gestión de Sucursales</h2>
 
           <div style={styles.form}>
             <input
@@ -277,7 +277,7 @@ function Admin() {
             />
 
             <button onClick={handleCrearSucursal} style={styles.create}>
-              ➕ Crear
+               Crear
             </button>
           </div>
 
@@ -315,12 +315,12 @@ function Admin() {
       )}
 
       {/* =========================
-          🔧 MECÁNICOS
+           MECÁNICOS
       ========================= */}
       {vista === "mecanicos" && (
         <div style={styles.panel}>
-          <h2>🔧 Gestión de Mecánicos</h2>
-          <p>🚧 Próximamente...</p>
+          <h2> Gestión de Mecánicos</h2>
+          <p> Próximamente...</p>
           <button onClick={() => setVista("menu")}>⬅ Volver</button>
         </div>
       )}

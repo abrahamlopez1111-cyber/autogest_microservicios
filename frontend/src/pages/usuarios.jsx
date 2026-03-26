@@ -10,7 +10,7 @@ function Usuarios() {
     rol: "",
   });
 
-  // 🔥 cargar usuarios
+  //  cargar usuarios
   const cargarUsuarios = async () => {
     try {
       const data = await getUsuarios();
@@ -24,7 +24,7 @@ function Usuarios() {
     cargarUsuarios();
   }, []);
 
-  // 🔥 crear usuario
+  //  crear usuario
   const handleCrear = async () => {
     try {
       await crearUsuario(nuevo);
@@ -37,7 +37,7 @@ function Usuarios() {
         rol: "",
       });
 
-      // 🔥 recargar lista
+      // recargar lista
       await cargarUsuarios();
     } catch (error) {
       console.error("Error al crear usuario:", error);
@@ -46,7 +46,7 @@ function Usuarios() {
 
   return (
     <div style={{ padding: "20px" }}>
-      <h1>👤 Gestión de Usuarios</h1>
+      <h1> Gestión de Usuarios</h1>
 
       {/* FORMULARIO */}
       <div style={{ display: "flex", gap: "10px", flexWrap: "wrap" }}>

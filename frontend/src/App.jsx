@@ -1,17 +1,17 @@
 import { BrowserRouter as Router, Routes, Route, Link } from "react-router-dom";
 
-// 📄 Páginas
+//  Páginas
 import Admin from "./pages/Admin";
 import Home from "./pages/Home";
 import Login from "./pages/Login";
 import Usuarios from "./pages/usuarios";
 import Citas from "./pages/citas";
 
-// 🔒 Protección
+//  Protección
 import ProtectedRoute from "./components/ProtectedRoute";
 import RoleRoute from "./components/RoleRoute";
 
-// 🔑 Auth
+//  uth
 import { getRol, getUsuario } from "./utils/auth";
 
 function App() {
@@ -27,7 +27,7 @@ function App() {
     <Router>
       <div>
 
-        {/* 🔥 NAVBAR */}
+        {/*  NAVBAR */}
         <nav
           style={{
             display: "flex",
@@ -49,7 +49,7 @@ function App() {
 
             {!usuario && (
               <Link to="/login" style={{ color: "white", marginRight: "15px" }}>
-                Login
+                
               </Link>
             )}
 
@@ -66,10 +66,10 @@ function App() {
                 {rol === "admin" && (
                   <>
                     <Link to="/usuarios" style={{ color: "white", marginRight: "15px" }}>
-                      Usuarios
+                      
                     </Link>
                     <Link to="/admin" style={{ color: "white", marginRight: "15px" }}>
-                      Panel Admin
+                      
                     </Link>
                   </>
                 )}
@@ -82,7 +82,7 @@ function App() {
             {usuario && (
               <>
                 <span style={{ marginRight: "10px" }}>
-                  👋 {usuario.nombre}
+                   {usuario.nombre}
                 </span>
 
                 <button
@@ -103,14 +103,14 @@ function App() {
           </div>
         </nav>
 
-        {/* 📌 CONTENIDO */}
+        {/*  CONTENIDO */}
         <div style={{ padding: "20px" }}>
           <Routes>
-            {/* 🔓 Públicas */}
+            {/*  Públicas */}
             <Route path="/" element={<Home />} />
             <Route path="/login" element={<Login />} />
 
-            {/* 🔒 Protegidas */}
+            {/*  Protegidas */}
             <Route
               path="/citas"
               element={
@@ -120,7 +120,7 @@ function App() {
               }
             />
 
-            {/* 🔐 Solo Admin */}
+            {/*  Solo Admin */}
             <Route
               path="/usuarios"
               element={

@@ -23,10 +23,10 @@ function Login() {
       const data = await res.json();
 
       if (data.usuario) {
-        // 🔥 Guardar usuario en sesión
+        //  Guardar usuario en sesión
         localStorage.setItem("usuario", JSON.stringify(data.usuario));
 
-        // 🔥 Redirección según rol
+        //  Redirección según rol
         if (data.usuario.rol === "admin") {
           window.location.href = "/admin";
         } else {
@@ -44,7 +44,7 @@ function Login() {
   return (
     <div style={styles.container}>
       <div style={styles.card}>
-        <h2 style={styles.title}>🔐 Iniciar Sesión</h2>
+        <h2 style={styles.title}> Iniciar Sesión</h2>
 
         <input
           type="email"

@@ -21,7 +21,7 @@ function Citas() {
 
   const [error, setError] = useState("");
 
-  // 🔥 CARGAR DATOS
+  //  CARGAR DATOS
   useEffect(() => {
     cargarTodo();
   }, []);
@@ -41,12 +41,12 @@ function Citas() {
     }
   };
 
-  // 🔥 FILTRAR MECÁNICOS POR SUCURSAL
+  //  FILTRAR MECÁNICOS POR SUCURSAL
   const mecanicosFiltrados = mecanicos.filter(
     (m) => m.sucursal_id == nueva.sucursal_id
   );
 
-  // 🔥 CREAR CITA (CORREGIDO)
+  //  CREAR CITA (CORREGIDO)
   const handleCrear = async () => {
     setError("");
 
@@ -63,7 +63,7 @@ function Citas() {
     }
 
     try {
-      // 🔥 CONVERTIR A DATETIME
+      //  CONVERTIR A DATETIME
       const fechaHoraInicio = `${nueva.fecha}T${nueva.hora}:00`;
 
       const fechaFin = new Date(fechaHoraInicio);
@@ -79,7 +79,7 @@ function Citas() {
 
       await crearCita(data);
 
-      // 🔄 LIMPIAR FORMULARIO
+      //  LIMPIAR FORMULARIO
       setNueva({
         sucursal_id: "",
         mecanico_id: "",
@@ -97,7 +97,7 @@ function Citas() {
 
   return (
     <div style={{ padding: "20px" }}>
-      <h1>📅 Crear Cita</h1>
+      <h1> Crear Cita</h1>
 
       {error && (
         <p style={{ color: "red", fontWeight: "bold" }}>{error}</p>
@@ -105,7 +105,7 @@ function Citas() {
 
       <div style={{ display: "flex", gap: "10px", flexWrap: "wrap" }}>
         
-        {/* 🏢 SUCURSAL */}
+        {/*  SUCURSAL */}
         <select
           value={nueva.sucursal_id}
           onChange={(e) =>
@@ -120,7 +120,7 @@ function Citas() {
           ))}
         </select>
 
-        {/* 🔧 MECÁNICO */}
+        {/*  MECÁNICO */}
         <select
           value={nueva.mecanico_id}
           onChange={(e) =>
@@ -145,7 +145,7 @@ function Citas() {
           }
         />
 
-        {/* 📅 FECHA */}
+        {/*  FECHA */}
         <input
           type="date"
           value={nueva.fecha}
@@ -154,7 +154,7 @@ function Citas() {
           }
         />
 
-        {/* ⏰ HORA */}
+        {/*  HORA */}
         <input
           type="time"
           value={nueva.hora}
@@ -168,7 +168,7 @@ function Citas() {
         </button>
       </div>
 
-      {/* 📋 LISTA */}
+      {/*  LISTA */}
       <h2 style={{ marginTop: "30px" }}>Lista de Citas</h2>
 
       <table border="1" cellPadding="5">

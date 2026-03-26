@@ -1,9 +1,9 @@
 import { API_URLS } from "../config/apiUrls";
 
-const API_URL = API_URLS.citas; // 🔥 ESTA LÍNEA FALTABA
+const API_URL = API_URLS.citas; // ESTA LÍNEA FALTABA
 
 // =========================
-// 📅 CITAS
+// CITAS
 // =========================
 export const getCitas = async () => {
   const res = await fetch(`${API_URL}/citas`);
@@ -29,7 +29,7 @@ export const crearCita = async (data) => {
 };
 
 // =========================
-// 🏢 SUCURSALES
+// SUCURSALES
 // =========================
 export const crearSucursal = async (data) => {
   const res = await fetch(`${API_URL}/sucursales`, {
@@ -55,7 +55,7 @@ export const getSucursales = async () => {
 };
 
 // =========================
-// 🔧 MECÁNICOS
+// MECÁNICOS
 // =========================
 export const crearMecanico = async (data) => {
   const res = await fetch(`${API_URL}/mecanicos`, {

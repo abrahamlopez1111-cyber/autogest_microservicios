@@ -47,6 +47,9 @@ services:
     volumes:
       - ./database/usuarios/init.sql:/docker-entrypoint-initdb.d/init.sql
 
+
+    
+
   # ======================
   # MICROSERVICIO CITAS
   # ======================
@@ -76,3 +79,6 @@ services:
       - "8002:8002"
     depends_on:
       - microservicio_usuarios
+
+
+ 

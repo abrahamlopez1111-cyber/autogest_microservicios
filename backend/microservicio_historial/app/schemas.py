@@ -47,7 +47,7 @@ class Cliente(ClienteBase):
 
 
 # =========================================================
-# 📋 HISTORIAL
+#  HISTORIAL
 # =========================================================
 
 class HistorialBase(BaseModel):
