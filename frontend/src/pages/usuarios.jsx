@@ -24,7 +24,7 @@ function Usuarios() {
     cargarUsuarios();
   }, []);
 
-  //  crear usuario
+  //crear usuario
   const handleCrear = async () => {
     try {
       await crearUsuario(nuevo);
