@@ -2,49 +2,43 @@ from sqlalchemy import Column, Integer, String, Boolean, ForeignKey, DateTime
 from sqlalchemy.orm import relationship
 from database import Base
 
-class Sucursal(Base):
-    tablename = "sucursales"
 
+class Sucursal(Base):
+    __tablename__ = "sucursales"
 
     id = Column(Integer, primary_key=True, index=True)
     nombre = Column(String, nullable=False)
     pais = Column(String, nullable=False)
     capacidad_elevadores = Column(Integer, nullable=False)
 
-    # 🔗 Relaciones
     mecanicos = relationship("Mecanico", back_populates="sucursal")
     citas = relationship("Cita", back_populates="sucursal")
 
 
 class Mecanico(Base):
-    tablename = "mecanicos"
-
+    __tablename__ = "mecanicos"
 
     id = Column(Integer, primary_key=True, index=True)
     usuario_id = Column(Integer, nullable=False, unique=True)
     sucursal_id = Column(Integer, ForeignKey("sucursales.id"), nullable=False)
     activo = Column(Boolean, default=True)
 
-# 🔗 Relaciones
     sucursal = relationship("Sucursal", back_populates="mecanicos")
     citas = relationship("Cita", back_populates="mecanico")
 
 
 class ContratoFlota(Base):
-    tablename = "contrato_flota"
-
+    __tablename__ = "contrato_flota"
 
     id = Column(Integer, primary_key=True, index=True)
     cliente_id = Column(Integer, nullable=False)
     politica_autorizacion = Column(String)
 
-# 🔗 Relaciones
     citas = relationship("Cita", back_populates="contrato_flota")
 
 
 class Cita(Base):
-    tablename = "citas"
-
+    __tablename__ = "citas"
 
     id = Column(Integer, primary_key=True, index=True)
 
@@ -59,8 +53,6 @@ class Cita(Base):
 
     estado = Column(String, default="programada")
 
-    # 🔗 Relaciones
     sucursal = relationship("Sucursal", back_populates="citas")
     mecanico = relationship("Mecanico", back_populates="citas")
     contrato_flota = relationship("ContratoFlota", back_populates="citas")
-

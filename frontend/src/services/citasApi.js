@@ -58,24 +58,39 @@ export const getSucursales = async () => {
 // MECÁNICOS
 // =========================
 export const crearMecanico = async (data) => {
-  const res = await fetch(`${API_URL}/mecanicos`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(data),
-  });
+  try {
+    const res = await fetch(`${API_URL}/mecanicos`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(data),
+    });
 
-  if (!res.ok) {
-    const error = await res.json();
-    throw new Error(error.detail || "Error creando mecánico");
+    const result = await res.json();
+
+    if (!res.ok) {
+      throw new Error(result.detail || "Error creando mecánico");
+    }
+
+    return result;
+  } catch (error) {
+    console.error("crearMecanico:", error);
+    throw error;
   }
-
-  return res.json();
 };
 
 export const getMecanicos = async () => {
-  const res = await fetch(`${API_URL}/mecanicos`);
-  if (!res.ok) throw new Error("Error obteniendo mecánicos");
-  return res.json();
+  try {
+    const res = await fetch(`${API_URL}/mecanicos`);
+
+    if (!res.ok) {
+      throw new Error("Error obteniendo mecánicos");
+    }
+
+    return await res.json();
+  } catch (error) {
+    console.error("getMecanicos:", error);
+    return [];
+  }
 };

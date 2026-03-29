@@ -1,11 +1,17 @@
 from pydantic import BaseModel
 from datetime import datetime
+from typing import Optional
+
+
+# =========================
+# 📅 CITA
+# =========================
 
 class CitaBase(BaseModel):
     sucursal_id: int
     mecanico_id: int
     vehiculo_id: int
-    contrato_flota_id: int | None = None
+    contrato_flota_id: Optional[int] = None
     fecha_hora_inicio: datetime
     fecha_hora_fin: datetime
     estado: str = "programada"
@@ -15,44 +21,50 @@ class CitaCreate(CitaBase):
     pass
 
 
-class Cita(CitaBase):
+class CitaOut(CitaBase):
     id: int
 
     class Config:
         from_attributes = True
-        
-        
-        
-        
-        
 
 
+# =========================
 # 🏢 SUCURSAL
-class SucursalCreate(BaseModel):
+# =========================
+
+class SucursalBase(BaseModel):
     nombre: str
     pais: str
     capacidad_elevadores: int
 
-class Sucursal(BaseModel):
+
+class SucursalCreate(SucursalBase):
+    pass
+
+
+class SucursalOut(SucursalBase):
     id: int
-    nombre: str
-    pais: str
-    capacidad_elevadores: int
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 
+# =========================
 # 🔧 MECÁNICO
-class MecanicoCreate(BaseModel):
-    sucursal_id: int
-    nombre: str
+# =========================
 
-class Mecanico(BaseModel):
-    id: int
+class MecanicoBase(BaseModel):
+    usuario_id: int
     sucursal_id: int
-    nombre: str
+
+
+class MecanicoCreate(MecanicoBase):
+    pass
+
+
+class MecanicoOut(MecanicoBase):
+    id: int
     activo: bool
 
     class Config:
-        orm_mode = True
+        from_attributes = True
