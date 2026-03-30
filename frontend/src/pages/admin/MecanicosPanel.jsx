@@ -1,10 +1,10 @@
 import { useState, useEffect } from "react";
-import { getUsuarios } from "../services/usuariosApi";
+import { getUsuarios } from "../../services/usuariosApi";
 import {
   getMecanicos,
   crearMecanico,
   getSucursales,
-} from "../services/citasApi";
+} from "../../services/citasApi";
 
 function MecanicosPanel({ volver }) {
   const [mecanicos, setMecanicos] = useState([]);

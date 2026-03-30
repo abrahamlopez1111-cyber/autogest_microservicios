@@ -3,7 +3,7 @@ import {
   crearUsuario,
   getUsuarios,
   eliminarUsuario,
-} from "../services/usuariosApi";
+} from "../../services/usuariosApi";
 
 function UsuariosPanel({ volver }) {
   const [usuarios, setUsuarios] = useState([]);

@@ -40,6 +40,7 @@ CREATE TABLE citas (
     sucursal_id INTEGER NOT NULL,
     mecanico_id INTEGER NOT NULL,
     vehiculo_id INTEGER NOT NULL,
+    usuario_id INTEGER,
     contrato_flota_id INTEGER,
     fecha_hora_inicio TIMESTAMPTZ NOT NULL,
     fecha_hora_fin TIMESTAMPTZ NOT NULL,

@@ -1,7 +1,7 @@
 import { useState } from "react";
-import UsuariosPanel from "../components/UsuariosPanel";
-import SucursalesPanel from "../components/SucursalesPanel";
-import MecanicosPanel from "../components/MecanicosPanel";
+import UsuariosPanel from "./UsuariosPanel";
+import SucursalesPanel from "./SucursalesPanel";
+import MecanicosPanel from "./MecanicosPanel";
 
 function Admin() {
   const [vista, setVista] = useState("menu");

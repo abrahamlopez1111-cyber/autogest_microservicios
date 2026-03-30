@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import {
   crearSucursal,
   getSucursales,
-} from "../services/citasApi";
+} from "../../services/citasApi";
 
 function SucursalesPanel({ volver }) {
   const [sucursales, setSucursales] = useState([]);

@@ -1,12 +1,23 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 function Login() {
+  const navigate = useNavigate();
+
   const [form, setForm] = useState({
     email: "",
     password: "",
   });
 
   const [error, setError] = useState("");
+
+  // 🔥 MAPA DE ROLES → RUTAS (ESCALABLE)
+  const roleRoutes = {
+    admin: "/admin",
+    cliente: "/cliente",
+    mecanico: "/mecanico",
+    recepcionista: "/recepcion",
+  };
 
   const handleLogin = async () => {
     setError("");
@@ -23,15 +34,17 @@ function Login() {
       const data = await res.json();
 
       if (data.usuario) {
-        //  Guardar usuario en sesión
+        // 🔐 Guardar usuario completo
         localStorage.setItem("usuario", JSON.stringify(data.usuario));
 
-        //  Redirección según rol
-        if (data.usuario.rol === "admin") {
-          window.location.href = "/admin";
-        } else {
-          window.location.href = "/citas";
-        }
+        // 🔐 Guardar rol separado (para rutas protegidas)
+        localStorage.setItem("rol", data.usuario.rol);
+
+        // 🔥 REDIRECCIÓN DINÁMICA
+        const ruta = roleRoutes[data.usuario.rol] || "/";
+
+        navigate(ruta);
+
       } else {
         setError("Credenciales incorrectas");
       }
@@ -44,7 +57,7 @@ function Login() {
   return (
     <div style={styles.container}>
       <div style={styles.card}>
-        <h2 style={styles.title}> Iniciar Sesión</h2>
+        <h2 style={styles.title}>Iniciar Sesión</h2>
 
         <input
           type="email"

@@ -3,6 +3,9 @@ from sqlalchemy.orm import relationship
 from database import Base
 
 
+# =========================
+# 🏢 SUCURSAL
+# =========================
 class Sucursal(Base):
     __tablename__ = "sucursales"
 
@@ -11,10 +14,13 @@ class Sucursal(Base):
     pais = Column(String, nullable=False)
     capacidad_elevadores = Column(Integer, nullable=False)
 
-    mecanicos = relationship("Mecanico", back_populates="sucursal")
-    citas = relationship("Cita", back_populates="sucursal")
+    mecanicos = relationship("Mecanico", back_populates="sucursal", cascade="all, delete")
+    citas = relationship("Cita", back_populates="sucursal", cascade="all, delete")
 
 
+# =========================
+# 🔧 MECÁNICO
+# =========================
 class Mecanico(Base):
     __tablename__ = "mecanicos"
 
@@ -24,9 +30,12 @@ class Mecanico(Base):
     activo = Column(Boolean, default=True)
 
     sucursal = relationship("Sucursal", back_populates="mecanicos")
-    citas = relationship("Cita", back_populates="mecanico")
+    citas = relationship("Cita", back_populates="mecanico", cascade="all, delete")
 
 
+# =========================
+# 📄 CONTRATO FLOTA
+# =========================
 class ContratoFlota(Base):
     __tablename__ = "contrato_flota"
 
@@ -34,9 +43,12 @@ class ContratoFlota(Base):
     cliente_id = Column(Integer, nullable=False)
     politica_autorizacion = Column(String)
 
-    citas = relationship("Cita", back_populates="contrato_flota")
+    citas = relationship("Cita", back_populates="contrato_flota", cascade="all, delete")
 
 
+# =========================
+# 📅 CITA
+# =========================
 class Cita(Base):
     __tablename__ = "citas"
 
@@ -46,7 +58,7 @@ class Cita(Base):
     mecanico_id = Column(Integer, ForeignKey("mecanicos.id"), nullable=False)
     vehiculo_id = Column(Integer, nullable=False)
 
-    contrato_flota_id = Column(Integer, ForeignKey("contrato_flota.id"))
+    contrato_flota_id = Column(Integer, ForeignKey("contrato_flota.id"), nullable=True)
 
     fecha_hora_inicio = Column(DateTime, nullable=False)
     fecha_hora_fin = Column(DateTime, nullable=False)

@@ -60,3 +60,18 @@ def actualizar_usuario(id: int, datos: schemas.UsuarioCreate, db: Session = Depe
     db.refresh(usuario)
 
     return usuario
+
+@router.get("/{id}", response_model=schemas.UsuarioOut)
+def obtener_usuario(id: int, db: Session = Depends(get_db)):
+    usuario = crud.obtener_usuario_por_id(db, id)
+
+    if not usuario:
+        raise HTTPException(status_code=404, detail="Usuario no encontrado")
+
+    # 🔥 MAPEO MANUAL (CLAVE)
+    return {
+        "id": usuario.id_usuarios,
+        "nombre": usuario.nombre,
+        "email": usuario.email,
+        "rol": usuario.rol
+    }
