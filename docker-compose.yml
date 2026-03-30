@@ -47,8 +47,20 @@ services:
     volumes:
       - ./database/usuarios/init.sql:/docker-entrypoint-initdb.d/init.sql
 
-
-    
+  # ======================
+  # 🆕 BASE DE DATOS HISTORIAL
+  # ======================
+  microservicio_historial:
+    image: postgres:15
+    container_name: microservicio_historial
+    environment:
+      POSTGRES_DB: microservicio_historial
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5436:5432"
+    volumes:
+      - ./database/historial/init.sql:/docker-entrypoint-initdb.d/init.sql
 
   # ======================
   # MICROSERVICIO CITAS
@@ -80,5 +92,12 @@ services:
     depends_on:
       - microservicio_usuarios
 
-
- 
+  # ======================
+  # 🆕 MICROSERVICIO HISTORIAL
+  # ======================
+  historial_service:
+    build: ./backend/microservicio_historial
+    ports:
+      - "8003:8003"
+    depends_on:
+      - microservicio_historial
