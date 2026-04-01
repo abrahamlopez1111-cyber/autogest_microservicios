@@ -55,7 +55,8 @@ CREATE TABLE public.vehiculos (
     usuario_id integer NOT NULL,
     placa character varying(20) NOT NULL,
     marca character varying(50) NOT NULL,
-    "año_fabricacion" integer
+    anio_fabricacion integer,
+    modelo character varying(50)
 );
 
 
@@ -98,7 +99,7 @@ COPY public.servicios_historicos (id, vehiculo_id, sucursal_id, fecha_servicio, 
 
 
 
-COPY public.vehiculos (id, usuario_id, placa, marca, "año_fabricacion") FROM stdin;
+COPY public.vehiculos (id, usuario_id, placa, marca, anio_fabricacion) FROM stdin;
 \.
 
 

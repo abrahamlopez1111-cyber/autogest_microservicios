@@ -21,3 +21,15 @@ def wait_for_db():
             time.sleep(3)
 
     raise Exception("❌ No se pudo conectar a la base de datos")
+
+
+
+
+SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+
+def get_db():
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()

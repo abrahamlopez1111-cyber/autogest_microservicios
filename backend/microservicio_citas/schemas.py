@@ -11,6 +11,7 @@ class CitaBase(BaseModel):
     sucursal_id: int
     mecanico_id: int
     vehiculo_id: int
+    usuario_id: int
     contrato_flota_id: Optional[int] = None
     fecha_hora_inicio: datetime
     fecha_hora_fin: datetime

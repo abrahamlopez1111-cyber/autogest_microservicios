@@ -1,14 +1,21 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Depends, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+from sqlalchemy.orm import Session
 
-from .database import engine, wait_for_db, SessionLocal
+from .database import engine, wait_for_db, SessionLocal, get_db
 from . import models
 from .routes import usuarios
 
 app = FastAPI(title="Microservicio de Usuarios")
 
-def crear_admin(db):
-    admin = db.query(models.Usuario).filter(models.Usuario.email == "admin@gmail.com").first()
+
+# ======================
+# CREAR ADMIN
+# ======================
+def crear_admin(db: Session):
+    admin = db.query(models.Usuario).filter(
+        models.Usuario.email == "admin@gmail.com"
+    ).first()
 
     if not admin:
         nuevo = models.Usuario(
@@ -19,9 +26,11 @@ def crear_admin(db):
         )
         db.add(nuevo)
         db.commit()
-        
-        
-# EVENTO DE INICIO (CLAVE)
+
+
+# ======================
+# EVENTO DE INICIO
+# ======================
 @app.on_event("startup")
 def startup():
     wait_for_db()
@@ -31,10 +40,12 @@ def startup():
     crear_admin(db)
     db.close()
 
-    print(" Admin listo")
+    print("Admin listo 🚀")
 
 
-#  CORS
+# ======================
+# CORS
+# ======================
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -43,5 +54,23 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-#  ROUTES
+
+# ======================
+# ROUTES
+# ======================
 app.include_router(usuarios.router)
+
+
+# ======================
+# ENDPOINT EXTRA
+# ======================
+@app.get("/usuarios/{usuario_id}")
+def obtener_usuario(usuario_id: int, db: Session = Depends(get_db)):
+    usuario = db.query(models.Usuario).filter(
+        models.Usuario.id_usuarios == usuario_id
+    ).first()
+
+    if not usuario:
+        raise HTTPException(status_code=404, detail="Usuario no encontrado")
+
+    return usuario

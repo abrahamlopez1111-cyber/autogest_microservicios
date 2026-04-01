@@ -1,17 +1,17 @@
-from pydantic import BaseModel # type: ignore
-from datetime import datetime
+from pydantic import BaseModel
 from typing import Optional
+from datetime import date
 
-
-# =========================================================
+# =========================
 # 🚗 VEHÍCULO
-# =========================================================
+# =========================
 
 class VehiculoBase(BaseModel):
-    matricula: str
+    usuario_id: int
+    placa: str
     marca: str
-    modelo: str
-    anio: int
+    modelo: Optional[str] = None
+    anio_fabricacion: Optional[int] = None
 
 
 class VehiculoCreate(VehiculoBase):
@@ -25,42 +25,23 @@ class Vehiculo(VehiculoBase):
         from_attributes = True
 
 
-# =========================================================
-# 👤 CLIENTE
-# =========================================================
+# =========================
+# 📋 SERVICIO HISTÓRICO
+# =========================
 
-class ClienteBase(BaseModel):
-    nombre: str
-    documento: str
-    telefono: Optional[str] = None
-
-
-class ClienteCreate(ClienteBase):
-    pass
-
-
-class Cliente(ClienteBase):
-    id: int
-
-    class Config:
-        from_attributes = True
-
-
-# =========================================================
-#  HISTORIAL
-# =========================================================
-
-class HistorialBase(BaseModel):
+class ServicioHistoricoBase(BaseModel):
     vehiculo_id: int
-    descripcion: str
-    fecha: Optional[datetime] = None
+    sucursal_id: int
+    fecha_servicio: date
+    kilometraje: Optional[int] = None
+    observaciones: Optional[str] = None
 
 
-class HistorialCreate(HistorialBase):
+class ServicioHistoricoCreate(ServicioHistoricoBase):
     pass
 
 
-class Historial(HistorialBase):
+class ServicioHistorico(ServicioHistoricoBase):
     id: int
 
     class Config:

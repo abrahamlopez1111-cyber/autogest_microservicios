@@ -7,7 +7,13 @@ DATABASE_URL = "postgresql://postgres:postgres@microservicio_citas:5432/microser
 engine = create_engine(DATABASE_URL)
 SessionLocal = sessionmaker(bind=engine)
 Base = declarative_base()
-
+def get_db():
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()
+        
 def wait_for_db():
     for i in range(10):
         try:

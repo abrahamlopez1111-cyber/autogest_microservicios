@@ -17,49 +17,100 @@ function MecanicosPanel({ volver }) {
     sucursal_id: "",
   });
 
+  // =========================
+  // 🔥 CARGAR DATOS
+  // =========================
   const cargarDatos = async () => {
-    const usuariosData = await getUsuarios();
-    const mecanicosDB = await getMecanicos();
-    const suc = await getSucursales();
+    try {
+      const usuariosData = await getUsuarios();
+      const mecanicosDB = await getMecanicos();
+      const suc = await getSucursales();
 
-    const usuariosMecanicos = usuariosData.filter(
-      (u) => u.rol === "mecanico"
-    );
+      // 🔥 SOLO USUARIOS MECÁNICOS
+      const usuariosMecanicos = usuariosData.filter(
+        (u) => u.rol === "mecanico"
+      );
 
-    const idsAsignados = mecanicosDB.map((m) => m.usuario_id);
+      // 🔥 IDs YA ASIGNADOS
+      const idsAsignados = mecanicosDB.map((m) => m.usuario_id);
 
-    const disponibles = usuariosMecanicos.filter(
-      (u) => !idsAsignados.includes(u.id_usuarios)
-    );
+      // 🔥 DISPONIBLES (NO ASIGNADOS)
+      const disponibles = usuariosMecanicos.filter(
+        (u) => !idsAsignados.includes(u.id_usuarios)
+      );
 
-    setUsuarios(usuariosData);
-    setMecanicos(mecanicosDB);
-    setSucursales(suc);
-    setDisponibles(disponibles);
+      setUsuarios(usuariosData);
+      setMecanicos(mecanicosDB);
+      setSucursales(suc);
+      setDisponibles(disponibles);
+
+    } catch (error) {
+      console.error("Error cargando datos:", error);
+    }
   };
 
   useEffect(() => {
     cargarDatos();
   }, []);
 
+  // =========================
+  // ➕ CREAR MECÁNICO
+  // =========================
   const handleCrear = async () => {
     if (!nuevo.usuario_id || !nuevo.sucursal_id) {
       alert("Selecciona datos");
       return;
     }
 
-    await crearMecanico({
-      usuario_id: Number(nuevo.usuario_id),
-      sucursal_id: Number(nuevo.sucursal_id),
-    });
+    try {
+      await crearMecanico({
+        usuario_id: Number(nuevo.usuario_id),
+        sucursal_id: Number(nuevo.sucursal_id),
+      });
 
-    setNuevo({ usuario_id: "", sucursal_id: "" });
-    cargarDatos();
+      setNuevo({ usuario_id: "", sucursal_id: "" });
+      cargarDatos();
+
+    } catch (error) {
+      alert("Error creando mecánico");
+    }
   };
 
+  // =========================
+  // ❌ ELIMINAR MECÁNICO
+  // =========================
+  const eliminarMecanico = async (id) => {
+    if (!confirm("¿Eliminar asignación?")) return;
+
+    try {
+      const res = await fetch(`http://localhost:8000/mecanicos/${id}`, {
+        method: "DELETE",
+      });
+
+      if (!res.ok) {
+        alert("Error eliminando");
+        return;
+      }
+
+      cargarDatos();
+
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  // =========================
+  // 🧠 HELPERS
+  // =========================
   const getNombreUsuario = (id) => {
     const user = usuarios.find((u) => u.id_usuarios === id);
-    return user ? user.nombre : "Desconocido";
+
+    // 🔥 SEGURIDAD EXTRA (por si algo raro pasa)
+    if (!user || user.rol !== "mecanico") {
+      return "⚠️ No válido";
+    }
+
+    return user.nombre;
   };
 
   const getNombreSucursal = (id) => {
@@ -67,6 +118,9 @@ function MecanicosPanel({ volver }) {
     return suc ? suc.nombre : "Desconocida";
   };
 
+  // =========================
+  // 🎨 UI
+  // =========================
   return (
     <div style={styles.container}>
       <h2 style={styles.title}>🔧 Gestión de Mecánicos</h2>
@@ -84,6 +138,7 @@ function MecanicosPanel({ volver }) {
             }
           >
             <option value="">Seleccione mecánico</option>
+
             {disponibles.map((u) => (
               <option key={u.id_usuarios} value={u.id_usuarios}>
                 {u.nombre}
@@ -99,6 +154,7 @@ function MecanicosPanel({ volver }) {
             }
           >
             <option value="">Seleccione sucursal</option>
+
             {sucursales.map((s) => (
               <option key={s.id} value={s.id}>
                 {s.nombre}
@@ -128,7 +184,17 @@ function MecanicosPanel({ volver }) {
                 </p>
               </div>
 
-              <span style={styles.badge}>Asignado</span>
+              {/* 🔥 BOTONES */}
+              <div style={styles.actions}>
+                <span style={styles.badge}>Asignado</span>
+
+                <button
+                  style={styles.btnEliminar}
+                  onClick={() => eliminarMecanico(m.id)}
+                >
+                  ❌
+                </button>
+              </div>
             </div>
           ))
         )}
@@ -141,6 +207,7 @@ function MecanicosPanel({ volver }) {
   );
 }
 
+// 🎨 estilos
 const styles = {
   container: {
     padding: "30px",
@@ -206,6 +273,21 @@ const styles = {
     padding: "4px 8px",
     borderRadius: "6px",
     fontSize: "12px",
+  },
+
+  actions: {
+    display: "flex",
+    gap: "10px",
+    alignItems: "center",
+  },
+
+  btnEliminar: {
+    background: "#ef4444",
+    border: "none",
+    padding: "6px 10px",
+    borderRadius: "6px",
+    color: "white",
+    cursor: "pointer",
   },
 
   btnVolver: {

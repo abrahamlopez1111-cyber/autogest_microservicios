@@ -1,96 +1,110 @@
 import { API_URLS } from "../config/apiUrls";
 
-const API_URL = API_URLS.citas; // ESTA LÍNEA FALTABA
+const API_URL = API_URLS.citas;
 
 // =========================
-// CITAS
+// 🔧 FUNCIÓN BASE (REUTILIZABLE)
 // =========================
-export const getCitas = async () => {
-  const res = await fetch(`${API_URL}/citas`);
-  if (!res.ok) throw new Error("Error obteniendo citas");
-  return res.json();
-};
-
-export const crearCita = async (data) => {
-  const res = await fetch(`${API_URL}/citas`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(data),
-  });
-
-  if (!res.ok) {
-    const error = await res.json();
-    throw new Error(error.detail || "Error creando cita");
-  }
-
-  return res.json();
-};
-
-// =========================
-// SUCURSALES
-// =========================
-export const crearSucursal = async (data) => {
-  const res = await fetch(`${API_URL}/sucursales`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(data),
-  });
-
-  if (!res.ok) {
-    const error = await res.json();
-    throw new Error(error.detail || "Error creando sucursal");
-  }
-
-  return res.json();
-};
-
-export const getSucursales = async () => {
-  const res = await fetch(`${API_URL}/sucursales`);
-  if (!res.ok) throw new Error("Error obteniendo sucursales");
-  return res.json();
-};
-
-// =========================
-// MECÁNICOS
-// =========================
-export const crearMecanico = async (data) => {
+const fetchAPI = async (url, options = {}) => {
   try {
-    const res = await fetch(`${API_URL}/mecanicos`, {
-      method: "POST",
+    const res = await fetch(url, {
       headers: {
         "Content-Type": "application/json",
+        ...(options.headers || {}),
       },
-      body: JSON.stringify(data),
+      ...options,
     });
 
-    const result = await res.json();
+    // 🔥 Manejo seguro de respuesta
+    const data = await res.json().catch(() => null);
 
     if (!res.ok) {
-      throw new Error(result.detail || "Error creando mecánico");
+      throw new Error(data?.detail || "Error en la petición");
     }
 
-    return result;
+    return data;
   } catch (error) {
-    console.error("crearMecanico:", error);
+    console.error("API ERROR:", error.message);
     throw error;
   }
 };
 
-export const getMecanicos = async () => {
-  try {
-    const res = await fetch(`${API_URL}/mecanicos`);
+// =========================
+// 📅 CITAS
+// =========================
+export const getCitas = () => {
+  return fetchAPI(`${API_URL}/citas`);
+};
 
-    if (!res.ok) {
-      throw new Error("Error obteniendo mecánicos");
-    }
+export const getCitaById = (id) => {
+  return fetchAPI(`${API_URL}/citas/${id}`);
+};
 
-    return await res.json();
-  } catch (error) {
-    console.error("getMecanicos:", error);
-    return [];
-  }
+export const crearCita = (data) => {
+  return fetchAPI(`${API_URL}/citas`, {
+    method: "POST",
+    body: JSON.stringify(data),
+  });
+};
+
+export const actualizarCita = (id, data) => {
+  return fetchAPI(`${API_URL}/citas/${id}`, {
+    method: "PUT",
+    body: JSON.stringify(data),
+  });
+};
+
+export const cancelarCita = (id) => {
+  return fetchAPI(`${API_URL}/citas/${id}`, {
+    method: "DELETE",
+  });
+};
+
+// 🔥 NUEVO (IMPORTANTE PARA TU AGENDA)
+export const getDisponibilidad = (mecanico_id, fecha) => {
+  return fetchAPI(
+    `${API_URL}/citas/disponibilidad/${mecanico_id}/${fecha}`
+  );
+};
+
+// =========================
+// 🏢 SUCURSALES
+// =========================
+export const getSucursales = () => {
+  return fetchAPI(`${API_URL}/sucursales`);
+};
+
+export const crearSucursal = (data) => {
+  return fetchAPI(`${API_URL}/sucursales`, {
+    method: "POST",
+    body: JSON.stringify(data),
+  });
+};
+
+// =========================
+// 🔧 MECÁNICOS
+// =========================
+export const getMecanicos = () => {
+  return fetchAPI(`${API_URL}/mecanicos`);
+};
+
+export const crearMecanico = (data) => {
+  return fetchAPI(`${API_URL}/mecanicos`, {
+    method: "POST",
+    body: JSON.stringify(data),
+  });
+};
+
+// =========================
+// 🔥 EXTRA (ÚTILES)
+// =========================
+
+// citas por mecánico
+export const getCitasPorMecanico = (id) => {
+  return fetchAPI(`${API_URL}/citas/mecanico/${id}`);
+};
+
+// agenda de hoy
+export const getAgendaHoy = () => {
+  return fetchAPI(`${API_URL}/agenda/hoy`);
 };

@@ -53,7 +53,7 @@ class Cita(Base):
     __tablename__ = "citas"
 
     id = Column(Integer, primary_key=True, index=True)
-
+    usuario_id = Column(Integer, nullable=False)
     sucursal_id = Column(Integer, ForeignKey("sucursales.id"), nullable=False)
     mecanico_id = Column(Integer, ForeignKey("mecanicos.id"), nullable=False)
     vehiculo_id = Column(Integer, nullable=False)
