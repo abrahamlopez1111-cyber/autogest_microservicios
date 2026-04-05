@@ -2,9 +2,7 @@ import { useEffect, useState } from "react";
 import { getUsuarios } from "../../services/usuariosApi";
 import Calendar from "react-calendar";
 import "react-calendar/dist/Calendar.css";
-
-
-import "../../styles/calendar.css";        // TU CSS (después)
+import "../../styles/calendar.css";
 
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
@@ -22,7 +20,6 @@ const FESTIVOS = [
 function CrearCita() {
   const usuario = JSON.parse(localStorage.getItem("usuario") || "null");
   const token = localStorage.getItem("token");
-
   const usuarioId = usuario?.id || usuario?.id_usuarios;
 
   const [loading, setLoading] = useState(true);
@@ -51,6 +48,19 @@ function CrearCita() {
     anio_fabricacion: "",
   });
 
+  // 🔐 fetch con token
+  const fetchAuth = (url, options = {}) => {
+    return fetch(url, {
+      ...options,
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+        ...(options.headers || {}),
+      },
+    });
+  };
+
+  // 🚀 carga inicial
   useEffect(() => {
     let mounted = true;
 
@@ -64,23 +74,10 @@ function CrearCita() {
 
     init();
 
-    return () => {
-      mounted = false;
-    };
+    return () => (mounted = false);
   }, [usuarioId]);
 
-
-  const fetchAuth = (url, options = {}) => {
-    return fetch(url, {
-      ...options,
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-        ...(options.headers || {}),
-      },
-    });
-  };
-
+  // 📥 datos generales
   const cargarDatos = async () => {
     const [sucRes, mecRes, usuariosRes] = await Promise.all([
       fetchAuth("http://localhost:8000/sucursales"),
@@ -93,6 +90,7 @@ function CrearCita() {
     setUsuarios(usuariosRes);
   };
 
+  // 🚗 vehículos
   const cargarVehiculos = async () => {
     const res = await fetchAuth(
       `http://localhost:8003/vehiculos/usuario/${usuarioId}`
@@ -100,12 +98,29 @@ function CrearCita() {
     if (res.ok) setVehiculos(await res.json());
   };
 
+  // 📅 días no laborales + días pasados
   const esDiaNoLaboral = (date) => {
-    const dia = date.getDay();
-    const fechaStr = date.toISOString().split("T")[0];
-    return dia === 0 || dia === 6 || FESTIVOS.includes(fechaStr);
+    const hoy = new Date();
+
+    // 🔥 quitar hora para comparar solo fechas
+    hoy.setHours(0, 0, 0, 0);
+
+    const fecha = new Date(date);
+    fecha.setHours(0, 0, 0, 0);
+
+    const dia = fecha.getDay();
+    const fechaStr = fecha.toISOString().split("T")[0];
+
+    // 🔥 condición completa
+    return (
+      fecha < hoy ||              // ❌ días pasados
+      dia === 0 ||                // ❌ domingo
+      dia === 6 ||                // ❌ sábado
+      FESTIVOS.includes(fechaStr) // ❌ festivos
+    );
   };
 
+  // ⏱️ horas ocupadas
   useEffect(() => {
     if (!form.mecanico_id || !fecha) return;
 
@@ -115,28 +130,87 @@ function CrearCita() {
       `http://localhost:8000/citas/disponibilidad/${form.mecanico_id}/${fechaStr}`
     )
       .then((res) => res.json())
-      .then((data) => setHorasOcupadas(data.ocupadas || []));
+      .then((data) => {
+        console.log("DISPONIBILIDAD:", data);
+
+        if (!data || !Array.isArray(data.ocupadas)) {
+          setHorasOcupadas([]);
+        } else {
+          setHorasOcupadas(data.ocupadas);
+        }
+      });
+
+
   }, [form.mecanico_id, fecha]);
 
+  // 🔥 bloquear horas pasadas del día actual
+const esHoraPasada = (hora) => {
+  if (!fecha) return false;
+
+  const ahora = new Date();
+  const fechaSeleccionada = new Date(fecha);
+
+  // 🔥 comparar solo fechas (sin horas)
+  ahora.setHours(0, 0, 0, 0);
+  fechaSeleccionada.setHours(0, 0, 0, 0);
+
+  const esHoy = ahora.getTime() === fechaSeleccionada.getTime();
+
+  if (!esHoy) return false;
+
+  const horaActual = new Date().getHours();
+
+  return hora <= horaActual; // 🔥 clave
+};
+
+
+  // 🕐 seleccionar hora
   const seleccionarHora = (h) => {
-    if (!fecha) {
-      toast.warning("Selecciona una fecha primero");
-      return;
+    try {
+      if (!fecha) {
+        toast.warning("Selecciona una fecha primero");
+        return;
+      }
+
+      const fechaObj = new Date(fecha);
+
+      // 🔒 Validar fecha
+      if (isNaN(fechaObj.getTime())) {
+        console.error("Fecha inválida:", fecha);
+        toast.error("Fecha inválida");
+        return;
+      }
+
+      // 🔥 construir fecha manual (SIN toISOString directo)
+      const year = fechaObj.getFullYear();
+      const month = String(fechaObj.getMonth() + 1).padStart(2, "0");
+      const day = String(fechaObj.getDate()).padStart(2, "0");
+
+      const fechaStr = `${year}-${month}-${day}`;
+
+      const fechaHora = new Date(`${fechaStr}T${h}:00:00`);
+
+      if (isNaN(fechaHora.getTime())) {
+        console.error("FechaHora inválida:", fechaHora);
+        toast.error("Error generando la hora");
+        return;
+      }
+
+      setHoraSeleccionada(h);
+
+      setForm((prev) => ({
+        ...prev,
+        fecha_hora_inicio: fechaHora.toISOString(),
+      }));
+
+      toast.info(`⏰ Hora seleccionada: ${h}:00`);
+    } catch (error) {
+      console.error("ERROR seleccionarHora:", error);
+      toast.error("Error inesperado");
     }
-
-    const fechaStr = fecha.toISOString().split("T")[0];
-    const fechaHora = new Date(`${fechaStr}T${h}:00:00`);
-
-    setHoraSeleccionada(h);
-
-    setForm((prev) => ({
-      ...prev,
-      fecha_hora_inicio: fechaHora.toISOString(),
-    }));
-
-    toast.info(`Seleccionaste ${h}:00`);
   };
 
+  // 🚗 crear vehículo
   const crearVehiculo = async () => {
     if (!nuevoVehiculo.placa || !nuevoVehiculo.marca) {
       toast.error("Completa los campos obligatorios");
@@ -160,6 +234,7 @@ function CrearCita() {
     }
   };
 
+  // 📌 crear cita
   const handleSubmit = async () => {
     if (!form.sucursal_id || !form.mecanico_id || !form.vehiculo_id) {
       toast.warning("Completa todos los campos");
@@ -191,6 +266,7 @@ function CrearCita() {
     }
   };
 
+  // ⏳ loading
   if (loading) {
     return <h2 style={{ textAlign: "center" }}>⏳ Cargando...</h2>;
   }
@@ -201,38 +277,52 @@ function CrearCita() {
 
       <h2>📅 Crear Cita</h2>
 
-      <select style={styles.input}
+      {/* 🏢 Sucursal */}
+      <select
+        style={styles.input}
         onChange={(e) =>
           setForm({
             ...form,
             sucursal_id: Number(e.target.value),
             mecanico_id: "",
           })
-        }>
+        }
+      >
         <option value="">Sucursal</option>
         {sucursales.map((s) => (
-          <option key={s.id} value={s.id}>{s.nombre}</option>
+          <option key={s.id} value={s.id}>
+            {s.nombre}
+          </option>
         ))}
       </select>
 
-      <select style={styles.input}
+      {/* 🔧 Mecánico */}
+      <select
+        style={styles.input}
         onChange={(e) =>
           setForm({ ...form, mecanico_id: Number(e.target.value) })
-        }>
+        }
+      >
         <option value="">Mecánico</option>
         {mecanicos
           .filter((m) => m.sucursal_id === form.sucursal_id)
           .map((m) => (
             <option key={m.id} value={m.id}>
-              {usuarios.find(u=>u.id_usuarios===m.usuario_id)?.nombre}
+              {
+                usuarios.find((u) => u.id_usuarios === m.usuario_id)
+                  ?.nombre
+              }
             </option>
           ))}
       </select>
 
-      <select style={styles.input}
+      {/* 🚗 Vehículo */}
+      <select
+        style={styles.input}
         onChange={(e) =>
           setForm({ ...form, vehiculo_id: Number(e.target.value) })
-        }>
+        }
+      >
         <option value="">Vehículo</option>
         {vehiculos.map((v) => (
           <option key={v.id} value={v.id}>
@@ -241,7 +331,7 @@ function CrearCita() {
         ))}
       </select>
 
-      <button style={styles.addBtn} onClick={()=>setShowModal(true)}>
+      <button style={styles.addBtn} onClick={() => setShowModal(true)}>
         ➕ Agregar Vehículo
       </button>
 
@@ -252,23 +342,40 @@ function CrearCita() {
         locale="es-ES"
       />
 
+
+
+
+
+      {/* ⏰ Horas */}
       <div style={styles.grid}>
         {HORAS.map((h) => {
-          const ocupado = horasOcupadas.includes(h);
+          const ocupado =
+            Array.isArray(horasOcupadas) && horasOcupadas.includes(h);
+
+          const pasada = esHoraPasada(h);
           const seleccionado = horaSeleccionada === h;
 
           return (
             <button
               key={h}
-              disabled={ocupado}
+              disabled={ocupado || pasada}
               onClick={() => seleccionarHora(h)}
               style={{
                 ...styles.hora,
+
                 background: ocupado
-                  ? "#ef4444"
+                  ? "#ef4444"   // 🔴 ocupada
+                  : pasada
+                  ? "#374151"   // ⚫ pasada
                   : seleccionado
-                  ? "#2563eb"
-                  : "#10b981",
+                  ? "#2563eb"   // 🔵 seleccionada
+                  : "#10b981",  // 🟢 disponible
+
+                cursor: ocupado || pasada ? "not-allowed" : "pointer",
+                opacity: ocupado || pasada ? 0.6 : 1,
+
+                transform: seleccionado ? "scale(1.05)" : "scale(1)",
+                transition: "all 0.2s ease",
               }}
             >
               {h}:00
@@ -277,30 +384,73 @@ function CrearCita() {
         })}
       </div>
 
+      {/* 🚨 MENSAJE SI NO HAY HORAS DISPONIBLES */}
+      {Array.isArray(horasOcupadas) &&
+        HORAS.every((h) => horasOcupadas.includes(h) || esHoraPasada(h)) && (
+          <p style={{ marginTop: "10px", color: "#f87171" }}>
+            ⚠️ No hay horas disponibles para este día
+          </p>
+        )}
+
       <button style={styles.button} onClick={handleSubmit}>
         Crear Cita
       </button>
 
-      {/* 🔥 MODAL NUEVO */}
+      {/* 🚗 Modal */}
       {showModal && (
         <div style={styles.overlay}>
           <div style={styles.modal}>
             <h3>🚗 Nuevo Vehículo</h3>
 
-            <input style={styles.modalInput} placeholder="Placa"
-              onChange={(e)=>setNuevoVehiculo({...nuevoVehiculo,placa:e.target.value})} />
-            <input style={styles.modalInput} placeholder="Marca"
-              onChange={(e)=>setNuevoVehiculo({...nuevoVehiculo,marca:e.target.value})} />
-            <input style={styles.modalInput} placeholder="Modelo"
-              onChange={(e)=>setNuevoVehiculo({...nuevoVehiculo,modelo:e.target.value})} />
-            <input style={styles.modalInput} placeholder="Año"
-              onChange={(e)=>setNuevoVehiculo({...nuevoVehiculo,anio_fabricacion:e.target.value})} />
+            <input
+              style={styles.modalInput}
+              placeholder="Placa"
+              onChange={(e) =>
+                setNuevoVehiculo({
+                  ...nuevoVehiculo,
+                  placa: e.target.value,
+                })
+              }
+            />
+            <input
+              style={styles.modalInput}
+              placeholder="Marca"
+              onChange={(e) =>
+                setNuevoVehiculo({
+                  ...nuevoVehiculo,
+                  marca: e.target.value,
+                })
+              }
+            />
+            <input
+              style={styles.modalInput}
+              placeholder="Modelo"
+              onChange={(e) =>
+                setNuevoVehiculo({
+                  ...nuevoVehiculo,
+                  modelo: e.target.value,
+                })
+              }
+            />
+            <input
+              style={styles.modalInput}
+              placeholder="Año"
+              onChange={(e) =>
+                setNuevoVehiculo({
+                  ...nuevoVehiculo,
+                  anio_fabricacion: e.target.value,
+                })
+              }
+            />
 
             <div style={styles.modalButtons}>
               <button style={styles.saveBtn} onClick={crearVehiculo}>
                 Guardar
               </button>
-              <button style={styles.cancelBtn} onClick={()=>setShowModal(false)}>
+              <button
+                style={styles.cancelBtn}
+                onClick={() => setShowModal(false)}
+              >
                 Cancelar
               </button>
             </div>
@@ -311,6 +461,7 @@ function CrearCita() {
   );
 }
 
+// 🎨 estilos
 const styles = {
   container: {
     padding: 30,

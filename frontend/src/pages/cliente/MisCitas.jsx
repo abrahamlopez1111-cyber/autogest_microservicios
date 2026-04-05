@@ -6,15 +6,13 @@ function MisCitas() {
 
   const usuario = JSON.parse(localStorage.getItem("usuario") || "null");
 
-  useEffect(() => {
-    if (!usuario) return;
+  // 🔥 NORMALIZAR ID (MUY IMPORTANTE)
+  const usuarioId = usuario?.id || usuario?.id_usuarios;
 
-    let ejecutado = false;
+  useEffect(() => {
+    if (!usuarioId) return;
 
     const cargarDatos = async () => {
-      if (ejecutado) return;
-      ejecutado = true;
-
       try {
         setLoading(true);
 
@@ -30,12 +28,17 @@ function MisCitas() {
         const usuarios = await resUsuarios.json();
         const mecanicos = await resMec.json();
 
-        // 🔥 FILTRAR CITAS DEL USUARIO
+        console.log("🧠 Usuario ID:", usuarioId);
+        console.log("📦 Citas backend:", citasData);
+
+        // 🔥 FILTRO CORREGIDO
         const citasUsuario = citasData.filter(
-          (c) => c.usuario_id === usuario.id_usuarios
+          (c) => Number(c.usuario_id) === Number(usuarioId)
         );
 
-        // 🔥 RELACIÓN CORRECTA
+        console.log("✅ Citas filtradas:", citasUsuario);
+
+        // 🔥 ENRIQUECER DATOS
         const citasEnriquecidas = citasUsuario.map((c) => {
           const sucursal = sucursales.find(
             (s) => s.id === c.sucursal_id
@@ -52,27 +55,23 @@ function MisCitas() {
           return {
             ...c,
             sucursal_nombre: sucursal?.nombre || "N/A",
-            mecanico_nombre: usuarioMecanico
-              ? usuarioMecanico.nombre
-              : "Desconocido",
+            mecanico_nombre: usuarioMecanico?.nombre || "Desconocido",
           };
         });
 
         setCitas(citasEnriquecidas);
 
       } catch (error) {
-        console.error("Error:", error);
+        console.error("❌ Error:", error);
       } finally {
         setLoading(false);
       }
     };
 
     cargarDatos();
-  }, []);
+  }, [usuarioId]);
 
-  // =========================
-  // ❌ ELIMINAR CITA
-  // =========================
+  // ❌ ELIMINAR
   const eliminarCita = async (id) => {
     const confirmar = confirm("¿Seguro que quieres cancelar esta cita?");
     if (!confirmar) return;
@@ -87,7 +86,6 @@ function MisCitas() {
         return;
       }
 
-      // 🔥 ACTUALIZA UI
       setCitas((prev) => prev.filter((c) => c.id !== id));
 
     } catch (error) {
@@ -95,9 +93,7 @@ function MisCitas() {
     }
   };
 
-  // =========================
   // 📅 FORMATO
-  // =========================
   const formatearFecha = (fecha) => {
     return new Date(fecha).toLocaleString("es-CO", {
       timeZone: "America/Bogota",

@@ -23,7 +23,7 @@ function Register() {
     }
 
     try {
-      const res = await fetch("http://localhost:8001/usuarios", {
+      const res = await fetch("http://localhost:8002/usuarios", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
