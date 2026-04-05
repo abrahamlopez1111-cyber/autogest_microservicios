@@ -10,8 +10,9 @@ function Login() {
   });
 
   const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
 
-  // 🔥 MAPA DE ROLES → RUTAS (ESCALABLE)
+  // 🔥 MAPA DE ROLES → RUTAS
   const roleRoutes = {
     admin: "/admin",
     cliente: "/cliente",
@@ -21,6 +22,13 @@ function Login() {
 
   const handleLogin = async () => {
     setError("");
+
+    if (!form.email || !form.password) {
+      setError("Todos los campos son obligatorios");
+      return;
+    }
+
+    setLoading(true);
 
     try {
       const res = await fetch("http://localhost:8002/login", {
@@ -33,24 +41,43 @@ function Login() {
 
       const data = await res.json();
 
-      if (data.usuario) {
-        // 🔐 Guardar usuario completo
-        localStorage.setItem("usuario", JSON.stringify(data.usuario));
+      console.log("LOGIN RESPONSE:", data); // 🔍 DEBUG
 
-        // 🔐 Guardar rol separado (para rutas protegidas)
-        localStorage.setItem("rol", data.usuario.rol);
-
-        // 🔥 REDIRECCIÓN DINÁMICA
-        const ruta = roleRoutes[data.usuario.rol] || "/";
-
-        navigate(ruta);
-
-      } else {
+      if (!data.usuario) {
         setError("Credenciales incorrectas");
+        setLoading(false);
+        return;
       }
 
+      // 🔥 SOPORTE PARA id o id_usuarios
+      const userId = data.usuario.id || data.usuario.id_usuarios;
+
+      if (!userId) {
+        console.error("Usuario sin ID:", data.usuario);
+        setError("Error: el usuario no tiene ID válido");
+        setLoading(false);
+        return;
+      }
+
+      // 🔥 Normalizar rol
+      const rol = (data.usuario.rol || "").toLowerCase();
+
+      // 🔐 Guardar en localStorage
+      localStorage.setItem("usuario", JSON.stringify(data.usuario));
+      localStorage.setItem("rol", rol);
+      localStorage.setItem("user_id", userId.toString());
+
+      console.log("USER ID GUARDADO:", userId);
+
+      // 🔥 Redirección segura
+      const ruta = roleRoutes[rol] || "/";
+      navigate(ruta);
+
     } catch (err) {
+      console.error("ERROR LOGIN:", err);
       setError("Error de conexión con el servidor");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -81,13 +108,20 @@ function Login() {
 
         {error && <p style={styles.error}>{error}</p>}
 
-        <button onClick={handleLogin} style={styles.button}>
-          Entrar
+        <button
+          onClick={handleLogin}
+          style={styles.button}
+          disabled={loading}
+        >
+          {loading ? "Ingresando..." : "Entrar"}
         </button>
 
         <p style={styles.footer}>
           ¿No tienes cuenta?{" "}
-          <span style={{ color: "#f97316", cursor: "pointer" }}>
+          <span
+            onClick={() => navigate("/register")}
+            style={{ color: "#f97316", cursor: "pointer" }}
+          >
             Crear usuario
           </span>
         </p>

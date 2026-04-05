@@ -6,6 +6,9 @@ import Home from "./pages/Home";
 import Login from "./pages/Login";
 import Usuarios from "./pages/usuarios";
 import Citas from "./pages/citas";
+import ClienteDashboard from "./pages/cliente/ClienteDashboard";
+import DashboardMecanico from "./pages/mecanico/DashboardMecanico";
+import Register from "./pages/Register";
 
 // 🔐 Protección
 import ProtectedRoute from "./components/ProtectedRoute";
@@ -13,7 +16,6 @@ import ProtectedRoute from "./components/ProtectedRoute";
 // 🔑 Auth
 import { getUsuario } from "./utils/auth";
 
-import ClienteDashboard from "./pages/cliente/ClienteDashboard";
 function AppContent() {
   const usuario = getUsuario();
   const navigate = useNavigate();
@@ -21,6 +23,7 @@ function AppContent() {
   const handleLogout = () => {
     localStorage.removeItem("usuario");
     localStorage.removeItem("rol");
+    localStorage.removeItem("user_id");
     navigate("/login");
   };
 
@@ -47,9 +50,16 @@ function AppContent() {
           </Link>
 
           {!usuario && (
-            <Link to="/login" style={{ color: "white", marginRight: "15px" }}>
-              Login
-            </Link>
+            <>
+              <Link to="/login" style={{ color: "white", marginRight: "15px" }}>
+                Login
+              </Link>
+
+              {/* 🔥 NUEVO */}
+              <Link to="/register" style={{ color: "white", marginRight: "15px" }}>
+                Registro
+              </Link>
+            </>
           )}
 
           {usuario && (
@@ -123,6 +133,7 @@ function AppContent() {
           {/* 🌍 PÚBLICAS */}
           <Route path="/" element={<Home />} />
           <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<Register />} /> {/* 🔥 NUEVO */}
 
           {/* 📅 CLIENTE */}
           <Route
@@ -134,17 +145,17 @@ function AppContent() {
             }
           />
 
-          {/* 🔧 MECÁNICO (placeholder) */}
+          {/* 🔧 MECÁNICO */}
           <Route
             path="/mecanico"
             element={
               <ProtectedRoute rolesPermitidos={["mecanico"]}>
-                <h2>Panel Mecánico</h2>
+                <DashboardMecanico />
               </ProtectedRoute>
             }
           />
 
-          {/* 🧑‍💼 RECEPCIÓN (placeholder) */}
+          {/* 🧑‍💼 RECEPCIÓN */}
           <Route
             path="/recepcion"
             element={
@@ -173,6 +184,7 @@ function AppContent() {
             }
           />
 
+          {/* 👤 CLIENTE DASHBOARD */}
           <Route
             path="/cliente"
             element={
@@ -183,9 +195,6 @@ function AppContent() {
           />
 
         </Routes>
-
-
-
       </div>
 
     </div>

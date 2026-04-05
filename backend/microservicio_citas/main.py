@@ -7,7 +7,7 @@ import models
 import schemas
 import crud
 
-from database import SessionLocal, engine, wait_for_db, get_db
+from database import SessionLocal, engine, wait_for_db
 
 
 # =========================
@@ -92,16 +92,19 @@ def obtener_cita(id: int, db: Session = Depends(get_db)):
     return cita
 
 
-@app.get("/citas/mecanico/{id}")
-def citas_por_mecanico(id: int, db: Session = Depends(get_db)):
-    return crud.obtener_citas_por_mecanico(db, id)
+# 🔥 ESTE ES EL QUE DEBES USAR EN EL FRONTEND
+@app.get("/citas/mecanico/{mecanico_id}")
+def citas_por_mecanico(mecanico_id: int, db: Session = Depends(get_db)):
+    citas = crud.obtener_citas_por_mecanico(db, mecanico_id)
 
+    if not citas:
+        return []  # 🔥 evita errores en frontend
 
+    return citas
 
 
 @app.delete("/citas/{cita_id}")
 def eliminar_cita(cita_id: int, db: Session = Depends(get_db)):
-
     cita = crud.eliminar_cita(db, cita_id)
 
     if not cita:
@@ -109,8 +112,26 @@ def eliminar_cita(cita_id: int, db: Session = Depends(get_db)):
 
     return {"mensaje": "Cita eliminada"}
 
+
 # =========================
-# 🔥 DISPONIBILIDAD (CLAVE)
+# 🔥 ACTUALIZAR ESTADO
+# =========================
+@app.put("/citas/{cita_id}/estado")
+def actualizar_estado(cita_id: int, estado: str, db: Session = Depends(get_db)):
+    cita = db.query(models.Cita).filter(models.Cita.id == cita_id).first()
+
+    if not cita:
+        raise HTTPException(status_code=404, detail="Cita no encontrada")
+
+    cita.estado = estado
+    db.commit()
+    db.refresh(cita)
+
+    return {"mensaje": "Estado actualizado", "estado": cita.estado}
+
+
+# =========================
+# 🔥 DISPONIBILIDAD
 # =========================
 @app.get("/citas/disponibilidad/{mecanico_id}/{fecha}")
 def disponibilidad(mecanico_id: int, fecha: str, db: Session = Depends(get_db)):
@@ -145,10 +166,9 @@ def listar_mecanicos(db: Session = Depends(get_db)):
 
 @app.delete("/mecanicos/{id}")
 def eliminar_mecanico(id: int, db: Session = Depends(get_db)):
-
     mecanico = crud.eliminar_mecanico(db, id)
 
     if not mecanico:
-        raise HTTPException(status_code=404, detail="No encontrado")
+        raise HTTPException(status_code=404, detail="Mecánico no encontrado")
 
     return {"mensaje": "Mecánico eliminado"}

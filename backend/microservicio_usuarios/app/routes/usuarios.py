@@ -2,8 +2,11 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from .. import schemas, crud, database, models
 
-router = APIRouter()
+router = APIRouter(prefix="", tags=["Usuarios"])
 
+# =========================
+# 🔌 DB
+# =========================
 def get_db():
     db = database.SessionLocal()
     try:
@@ -11,40 +14,70 @@ def get_db():
     finally:
         db.close()
 
-# 🔹 Crear usuario
-@router.post("/usuarios")
-def crear(usuario: schemas.UsuarioCreate, db: Session = Depends(get_db)):
+
+# =========================
+# 🔹 CREAR USUARIO
+# =========================
+@router.post("/usuarios", response_model=schemas.UsuarioOut)
+def crear_usuario(usuario: schemas.UsuarioCreate, db: Session = Depends(get_db)):
+    # 🔥 FORZAR CLIENTE SI VIENE VACÍO
+    if not usuario.rol:
+        usuario.rol = "cliente"
+
     return crud.crear_usuario(db, usuario)
 
-# 🔹 Listar usuarios
-@router.get("/usuarios")
-def listar(db: Session = Depends(get_db)):
+
+# =========================
+# 🔹 LISTAR USUARIOS
+# =========================
+@router.get("/usuarios", response_model=list[schemas.UsuarioOut])
+def listar_usuarios(db: Session = Depends(get_db)):
     return crud.obtener_usuarios(db)
 
-# 🔹 Login
+
+# =========================
+# 🔹 LOGIN
+# =========================
 @router.post("/login")
 def login(data: schemas.Login, db: Session = Depends(get_db)):
     user = crud.login(db, data.email, data.password)
+
     if not user:
         raise HTTPException(status_code=401, detail="Credenciales incorrectas")
-    return {"mensaje": "Login exitoso", "usuario": user}
+
+    return {
+        "mensaje": "Login exitoso",
+        "usuario": {
+            "id": user.id_usuarios,
+            "nombre": user.nombre,
+            "email": user.email,
+            "rol": user.rol.lower()  # 🔥 normalizado
+        }
+    }
 
 
-@router.delete("/usuarios/{id}")
-def eliminar_usuario(id: int, db: Session = Depends(get_db)):
-    usuario = db.query(models.Usuario).filter(models.Usuario.id_usuarios == id).first()
+# =========================
+# 🔹 OBTENER USUARIO POR ID
+# =========================
+@router.get("/usuarios/{id}", response_model=schemas.UsuarioOut)
+def obtener_usuario(id: int, db: Session = Depends(get_db)):
+    usuario = crud.obtener_usuario_por_id(db, id)
 
     if not usuario:
         raise HTTPException(status_code=404, detail="Usuario no encontrado")
 
-    db.delete(usuario)
-    db.commit()
+    return {
+        "id": usuario.id_usuarios,
+        "nombre": usuario.nombre,
+        "email": usuario.email,
+        "rol": usuario.rol
+    }
 
-    return {"mensaje": "Usuario eliminado"}
 
-
-
-@router.put("/usuarios/{id}")
+# =========================
+# 🔹 ACTUALIZAR USUARIO
+# =========================
+@router.put("/usuarios/{id}", response_model=schemas.UsuarioOut)
 def actualizar_usuario(id: int, datos: schemas.UsuarioCreate, db: Session = Depends(get_db)):
     usuario = db.query(models.Usuario).filter(models.Usuario.id_usuarios == id).first()
 
@@ -61,17 +94,36 @@ def actualizar_usuario(id: int, datos: schemas.UsuarioCreate, db: Session = Depe
 
     return usuario
 
-@router.get("/{id}", response_model=schemas.UsuarioOut)
-def obtener_usuario(id: int, db: Session = Depends(get_db)):
-    usuario = crud.obtener_usuario_por_id(db, id)
+
+# =========================
+# 🔹 ELIMINAR USUARIO
+# =========================
+@router.delete("/usuarios/{id}")
+def eliminar_usuario(id: int, db: Session = Depends(get_db)):
+    usuario = db.query(models.Usuario).filter(models.Usuario.id_usuarios == id).first()
 
     if not usuario:
         raise HTTPException(status_code=404, detail="Usuario no encontrado")
 
-    # 🔥 MAPEO MANUAL (CLAVE)
+    db.delete(usuario)
+    db.commit()
+
+    return {"mensaje": "Usuario eliminado"}
+
+
+# =========================
+# 🔥 EXTRA (IMPORTANTE PARA MICROSERVICIOS)
+# =========================
+
+# Validar si un usuario es mecánico
+@router.get("/usuarios/{id}/es-mecanico")
+def es_mecanico(id: int, db: Session = Depends(get_db)):
+    usuario = db.query(models.Usuario).filter(models.Usuario.id_usuarios == id).first()
+
+    if not usuario:
+        raise HTTPException(status_code=404, detail="Usuario no encontrado")
+
     return {
         "id": usuario.id_usuarios,
-        "nombre": usuario.nombre,
-        "email": usuario.email,
-        "rol": usuario.rol
+        "es_mecanico": usuario.rol.lower() == "mecanico"
     }
