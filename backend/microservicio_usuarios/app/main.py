@@ -5,8 +5,30 @@ from sqlalchemy.orm import Session
 from .database import engine, wait_for_db, SessionLocal, get_db
 from . import models
 from .routes import usuarios
+from .routes import perfil
 
+
+# ✅ PRIMERO CREAS APP
 app = FastAPI(title="Microservicio de Usuarios")
+
+
+# ======================
+# CORS
+# ======================
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+
+# ======================
+# ROUTES
+# ======================
+app.include_router(usuarios.router)
+app.include_router(perfil.router)  # 🔥 ahora sí funciona
 
 
 # ======================
@@ -41,24 +63,6 @@ def startup():
     db.close()
 
     print("Admin listo 🚀")
-
-
-# ======================
-# CORS
-# ======================
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
-
-
-# ======================
-# ROUTES
-# ======================
-app.include_router(usuarios.router)
 
 
 # ======================

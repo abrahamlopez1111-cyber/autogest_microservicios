@@ -1,22 +1,32 @@
 import { useState } from "react";
 import MisCitas from "./MisCitas";
 import CrearCita from "./CrearCita";
-
-
+import PerfilUsuario from "../../components/perfil/PerfilUsuario";
+import PerfilGuard from "../../components/perfil/PerfilGuard"; // 🔥 NUEVO
 
 function ClienteDashboard() {
+  return (
+    <PerfilGuard>
+      <ClienteContenido />
+    </PerfilGuard>
+  );
+}
+
+// 🔥 COMPONENTE INTERNO (MEJOR PRÁCTICA)
+function ClienteContenido() {
   const [vista, setVista] = useState(null);
 
   return (
     <div style={styles.container}>
       <div style={styles.panel}>
 
-        {/* 🔥 SOLO SE VE EL DASHBOARD SI NO HAY VISTA */}
+        {/* 🟢 MENÚ */}
         {!vista && (
           <>
             <h1 style={styles.title}>🚗 Panel Cliente</h1>
 
             <div style={styles.cards}>
+
               <div
                 style={styles.card}
                 onClick={() => setVista("citas")}
@@ -32,11 +42,21 @@ function ClienteDashboard() {
                 <h3>➕ Crear Cita</h3>
                 <p>Agenda un nuevo servicio</p>
               </div>
+
+              {/* 👤 PERFIL */}
+              <div
+                style={styles.card}
+                onClick={() => setVista("perfil")}
+              >
+                <h3>👤 Mi Perfil</h3>
+                <p>Gestionar información personal</p>
+              </div>
+
             </div>
           </>
         )}
 
-        {/* 🔥 CONTENIDO LIMPIO */}
+        {/* 🔵 CONTENIDO */}
         {vista && (
           <>
             <button
@@ -49,6 +69,9 @@ function ClienteDashboard() {
             <div style={styles.content}>
               {vista === "citas" && <MisCitas />}
               {vista === "crear" && <CrearCita />}
+              {vista === "perfil" && (
+                <PerfilUsuario volver={() => setVista(null)} />
+              )}
             </div>
           </>
         )}

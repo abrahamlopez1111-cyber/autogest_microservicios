@@ -1,39 +1,54 @@
 from pydantic import BaseModel
-
+from typing import Optional
+from datetime import date
 
 # =========================
-# 👤 USUARIO BASE
+# 👤 USUARIO
 # =========================
-
 class UsuarioBase(BaseModel):
     nombre: str
     email: str
     rol: str
 
 
-# =========================
-# 📝 CREAR USUARIO
-# =========================
-
 class UsuarioCreate(UsuarioBase):
     password: str
 
 
-# =========================
-# 📤 RESPUESTA USUARIO (IMPORTANTE)
-# =========================
-
 class UsuarioOut(UsuarioBase):
-    id_usuarios: int  # 👈 MUY IMPORTANTE (igual que tu DB)
+    id_usuarios: int
 
     class Config:
-        from_attributes = True  # ✅ Pydantic v2
+        from_attributes = True
 
 
 # =========================
 # 🔐 LOGIN
 # =========================
-
 class Login(BaseModel):
     email: str
     password: str
+
+
+# =========================
+# 📄 PERFIL USUARIO
+# =========================
+class PerfilCreate(BaseModel):
+    telefono: Optional[str] = None
+    direccion: Optional[str] = None
+    ciudad: Optional[str] = None
+    documento: Optional[str] = None
+    fecha_nacimiento: Optional[date] = None
+
+
+class PerfilOut(BaseModel):
+    id_personal: int
+    usuario_id: int
+    telefono: Optional[str]
+    direccion: Optional[str]
+    ciudad: Optional[str]
+    documento: Optional[str]
+    fecha_nacimiento: Optional[date]
+
+    class Config:
+        from_attributes = True

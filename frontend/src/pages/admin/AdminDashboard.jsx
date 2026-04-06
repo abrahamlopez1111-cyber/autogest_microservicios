@@ -3,16 +3,29 @@ import UsuariosPanel from "./UsuariosPanel";
 import SucursalesPanel from "./SucursalesPanel";
 import MecanicosPanel from "./MecanicosPanel";
 
-function Admin() {
+import PerfilUsuario from "../../components/perfil/PerfilUsuario";
+import PerfilGuard from "../../components/perfil/PerfilGuard"; // 🔥 NUEVO
+
+function AdminDashboard() {
+  return (
+    <PerfilGuard>
+      <AdminContenido />
+    </PerfilGuard>
+  );
+}
+
+// 🔥 SEPARAMOS LA LÓGICA (MEJOR PRÁCTICA)
+function AdminContenido() {
   const [vista, setVista] = useState("menu");
 
   return (
     <div style={styles.container}>
       <h1 style={styles.title}>⚙️ Panel Administrador</h1>
 
-      {/* MENU */}
+      {/* 🟢 MENU */}
       {vista === "menu" && (
         <div style={styles.grid}>
+
           <div
             style={styles.card}
             onClick={() => setVista("usuarios")}
@@ -36,21 +49,38 @@ function Admin() {
             <h2>🔧 Mecánicos</h2>
             <p>Asignación de personal técnico</p>
           </div>
+
+          {/* 👤 PERFIL */}
+          <div
+            style={styles.card}
+            onClick={() => setVista("perfil")}
+          >
+            <h2>👤 Mi Perfil</h2>
+            <p>Gestionar información personal</p>
+          </div>
+
         </div>
       )}
 
-      {/* VISTAS */}
-      {vista === "usuarios" && (
-        <UsuariosPanel volver={() => setVista("menu")} />
+      {/* 🔵 VISTAS */}
+      {vista !== "menu" && (
+        <>
+          <button
+            style={styles.backBtn}
+            onClick={() => setVista("menu")}
+          >
+            ⬅ Volver
+          </button>
+
+          <div style={styles.content}>
+            {vista === "usuarios" && <UsuariosPanel volver={() => setVista("menu")} />}
+            {vista === "sucursales" && <SucursalesPanel volver={() => setVista("menu")} />}
+            {vista === "mecanicos" && <MecanicosPanel volver={() => setVista("menu")} />}
+            {vista === "perfil" && <PerfilUsuario volver={() => setVista("menu")} />}
+          </div>
+        </>
       )}
 
-      {vista === "sucursales" && (
-        <SucursalesPanel volver={() => setVista("menu")} />
-      )}
-
-      {vista === "mecanicos" && (
-        <MecanicosPanel volver={() => setVista("menu")} />
-      )}
     </div>
   );
 }
@@ -83,11 +113,20 @@ const styles = {
     transition: "all 0.3s ease",
     boxShadow: "0 4px 12px rgba(0,0,0,0.4)",
   },
+
+  content: {
+    marginTop: "20px",
+  },
+
+  backBtn: {
+    marginBottom: "20px",
+    padding: "10px",
+    background: "#2563eb",
+    border: "none",
+    borderRadius: "8px",
+    color: "white",
+    cursor: "pointer",
+  },
 };
 
-// 🔥 Hover manual (React inline hack)
-styles.card[":hover"] = {
-  transform: "scale(1.05)",
-};
-
-export default Admin;
+export default AdminDashboard;

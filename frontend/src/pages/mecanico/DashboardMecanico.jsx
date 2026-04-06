@@ -1,9 +1,20 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 
 import VerCitasMecanico from "./VerCitasMecanico";
 import VehiculosMecanico from "./VehiculosMecanico";
+import PerfilUsuario from "../../components/perfil/PerfilUsuario";
+import PerfilGuard from "../../components/perfil/PerfilGuard"; // 🔥 NUEVO
 
 function DashboardMecanico() {
+  return (
+    <PerfilGuard>
+      <MecanicoContenido />
+    </PerfilGuard>
+  );
+}
+
+// 🔥 COMPONENTE INTERNO (MEJOR PRÁCTICA)
+function MecanicoContenido() {
   const [vista, setVista] = useState(null);
 
   return (
@@ -33,6 +44,15 @@ function DashboardMecanico() {
                 <p>Vehículos asignados</p>
               </div>
 
+              {/* 👤 PERFIL */}
+              <div
+                style={styles.card}
+                onClick={() => setVista("perfil")}
+              >
+                <h3>👤 Mi Perfil</h3>
+                <p>Gestionar información personal</p>
+              </div>
+
             </div>
           </>
         )}
@@ -50,6 +70,9 @@ function DashboardMecanico() {
             <div style={styles.content}>
               {vista === "citas" && <VerCitasMecanico />}
               {vista === "vehiculos" && <VehiculosMecanico />}
+              {vista === "perfil" && (
+                <PerfilUsuario volver={() => setVista(null)} />
+              )}
             </div>
           </>
         )}
@@ -94,6 +117,7 @@ const styles = {
     width: "250px",
     textAlign: "center",
     cursor: "pointer",
+    transition: "0.3s",
   },
 
   content: {
