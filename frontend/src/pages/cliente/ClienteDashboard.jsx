@@ -2,44 +2,56 @@ import { useState } from "react";
 import MisCitas from "./MisCitas";
 import CrearCita from "./CrearCita";
 
+
+
 function ClienteDashboard() {
-  const [vista, setVista] = useState("citas");
+  const [vista, setVista] = useState(null);
 
   return (
     <div style={styles.container}>
       <div style={styles.panel}>
 
-        {/* 🔥 TÍTULO */}
-        <h1 style={styles.title}>
-          🚗 Panel Cliente
-        </h1>
+        {/* 🔥 SOLO SE VE EL DASHBOARD SI NO HAY VISTA */}
+        {!vista && (
+          <>
+            <h1 style={styles.title}>🚗 Panel Cliente</h1>
 
-        {/* 🔘 TARJETAS */}
-        <div style={styles.cards}>
+            <div style={styles.cards}>
+              <div
+                style={styles.card}
+                onClick={() => setVista("citas")}
+              >
+                <h3>📋 Mis Citas</h3>
+                <p>Consulta tus citas programadas</p>
+              </div>
 
-          <div
-            style={styles.card}
-            onClick={() => setVista("citas")}
-          >
-            <h3>📋 Mis Citas</h3>
-            <p>Consulta tus citas programadas</p>
-          </div>
+              <div
+                style={styles.card}
+                onClick={() => setVista("crear")}
+              >
+                <h3>➕ Crear Cita</h3>
+                <p>Agenda un nuevo servicio</p>
+              </div>
+            </div>
+          </>
+        )}
 
-          <div
-            style={styles.card}
-            onClick={() => setVista("crear")}
-          >
-            <h3>➕ Crear Cita</h3>
-            <p>Agenda un nuevo servicio</p>
-          </div>
+        {/* 🔥 CONTENIDO LIMPIO */}
+        {vista && (
+          <>
+            <button
+              style={styles.backBtn}
+              onClick={() => setVista(null)}
+            >
+              ⬅ Volver
+            </button>
 
-        </div>
-
-        {/* 🔄 CONTENIDO */}
-        <div style={styles.content}>
-          {vista === "citas" && <MisCitas />}
-          {vista === "crear" && <CrearCita />}
-        </div>
+            <div style={styles.content}>
+              {vista === "citas" && <MisCitas />}
+              {vista === "crear" && <CrearCita />}
+            </div>
+          </>
+        )}
 
       </div>
     </div>
@@ -86,6 +98,16 @@ const styles = {
 
   content: {
     marginTop: "30px",
+  },
+
+  backBtn: {
+    marginTop: "20px",
+    padding: "10px",
+    background: "#2563eb",
+    border: "none",
+    borderRadius: "8px",
+    color: "white",
+    cursor: "pointer",
   },
 };
 

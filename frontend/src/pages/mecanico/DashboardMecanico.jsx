@@ -1,99 +1,114 @@
 import { useEffect, useState } from "react";
 
+import VerCitasMecanico from "./VerCitasMecanico";
+import VehiculosMecanico from "./VehiculosMecanico";
+
 function DashboardMecanico() {
-  const [citas, setCitas] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
-
-  const mecanicoId = localStorage.getItem("user_id");
-
-  useEffect(() => {
-    if (!mecanicoId) {
-      setError("No se encontró el ID del mecánico");
-      setLoading(false);
-      return;
-    }
-
-    fetch(`http://localhost:8000/citas/mecanico/${mecanicoId}`)
-      .then(res => {
-        if (!res.ok) throw new Error("Error al obtener citas");
-        return res.json();
-      })
-      .then(data => {
-        setCitas(data);
-        setLoading(false);
-      })
-      .catch(err => {
-        console.error(err);
-        setError("Error cargando citas");
-        setLoading(false);
-      });
-
-  }, [mecanicoId]);
-
-  const cambiarEstado = (id, nuevoEstado) => {
-    fetch(`http://localhost:8002/citas/${id}/estado?estado=${nuevoEstado}`, {
-      method: "PUT"
-    })
-      .then(() => {
-        setCitas(prev =>
-          prev.map(c =>
-            c.id === id ? { ...c, estado: nuevoEstado } : c
-          )
-        );
-      })
-      .catch(err => {
-        console.error("Error actualizando estado:", err);
-      });
-  };
-
-  if (loading) return <p>Cargando citas...</p>;
-  if (error) return <p style={{ color: "red" }}>{error}</p>;
+  const [vista, setVista] = useState(null);
 
   return (
-    <div>
-      <h2>🧑‍🔧 Mis Citas</h2>
+    <div style={styles.container}>
+      <div style={styles.panel}>
 
-      {citas.length === 0 && <p>No tienes citas asignadas</p>}
+        {/* 🟢 MENÚ */}
+        {!vista && (
+          <>
+            <h1 style={styles.title}>🔧 Panel Mecánico</h1>
 
-      {citas.map(cita => {
-        const fecha = new Date(cita.fecha_hora_inicio);
+            <div style={styles.cards}>
 
-        return (
-          <div
-            key={cita.id}
-            style={{
-              border: "1px solid #ccc",
-              margin: "10px",
-              padding: "15px",
-              borderRadius: "10px",
-              background: "#f9fafb"
-            }}
-          >
-            <p><strong>📅 Fecha:</strong> {fecha.toLocaleDateString()}</p>
-            <p><strong>⏰ Hora:</strong> {fecha.toLocaleTimeString()}</p>
-            <p><strong>🚗 Vehículo ID:</strong> {cita.vehiculo_id}</p>
-            <p><strong>📌 Estado:</strong> {cita.estado}</p>
-
-            <div style={{ marginTop: "10px" }}>
-              <button
-                onClick={() => cambiarEstado(cita.id, "en_proceso")}
-                style={{ marginRight: "10px" }}
+              <div
+                style={styles.card}
+                onClick={() => setVista("citas")}
               >
-                Iniciar
-              </button>
+                <h3>📋 Ver Citas</h3>
+                <p>Citas asignadas al mecánico</p>
+              </div>
 
-              <button
-                onClick={() => cambiarEstado(cita.id, "completada")}
+              <div
+                style={styles.card}
+                onClick={() => setVista("vehiculos")}
               >
-                Completar
-              </button>
+                <h3>🚗 Vehículos</h3>
+                <p>Vehículos asignados</p>
+              </div>
+
             </div>
-          </div>
-        );
-      })}
+          </>
+        )}
+
+        {/* 🔵 CONTENIDO */}
+        {vista && (
+          <>
+            <button
+              style={styles.backBtn}
+              onClick={() => setVista(null)}
+            >
+              ⬅ Volver
+            </button>
+
+            <div style={styles.content}>
+              {vista === "citas" && <VerCitasMecanico />}
+              {vista === "vehiculos" && <VehiculosMecanico />}
+            </div>
+          </>
+        )}
+
+      </div>
     </div>
   );
 }
+
+const styles = {
+  container: {
+    padding: "40px",
+    display: "flex",
+    justifyContent: "center",
+  },
+
+  panel: {
+    width: "100%",
+    maxWidth: "1000px",
+    background: "#020617",
+    borderRadius: "15px",
+    padding: "30px",
+    color: "white",
+  },
+
+  title: {
+    textAlign: "center",
+    marginBottom: "30px",
+  },
+
+  cards: {
+    display: "flex",
+    gap: "20px",
+    justifyContent: "center",
+    flexWrap: "wrap",
+  },
+
+  card: {
+    background: "#1e293b",
+    padding: "20px",
+    borderRadius: "12px",
+    width: "250px",
+    textAlign: "center",
+    cursor: "pointer",
+  },
+
+  content: {
+    marginTop: "30px",
+  },
+
+  backBtn: {
+    marginBottom: "20px",
+    padding: "10px",
+    background: "#2563eb",
+    border: "none",
+    borderRadius: "8px",
+    color: "white",
+    cursor: "pointer",
+  },
+};
 
 export default DashboardMecanico;
