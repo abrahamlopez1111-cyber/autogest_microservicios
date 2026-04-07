@@ -9,6 +9,8 @@ import crud
 
 from database import SessionLocal, engine, wait_for_db
 
+from datetime import datetime, timedelta
+import pytz
 
 # =========================
 # 🚀 APP
@@ -92,15 +94,10 @@ def obtener_cita(id: int, db: Session = Depends(get_db)):
     return cita
 
 
-# 🔥 ESTE ES EL QUE DEBES USAR EN EL FRONTEND
 @app.get("/citas/mecanico/{mecanico_id}")
 def citas_por_mecanico(mecanico_id: int, db: Session = Depends(get_db)):
     citas = crud.obtener_citas_por_mecanico(db, mecanico_id)
-
-    if not citas:
-        return []  # 🔥 evita errores en frontend
-
-    return citas
+    return citas or []
 
 
 @app.delete("/citas/{cita_id}")
@@ -128,6 +125,22 @@ def actualizar_estado(cita_id: int, estado: str, db: Session = Depends(get_db)):
     db.refresh(cita)
 
     return {"mensaje": "Estado actualizado", "estado": cita.estado}
+
+
+# =========================
+# 🔥 OBSERVACIONES (CORREGIDO)
+# =========================
+@app.put("/citas/{id}/observacion")
+def guardar_observacion(id: int, observacion: str, db: Session = Depends(get_db)):
+    cita = db.query(models.Cita).filter(models.Cita.id == id).first()
+
+    if not cita:
+        raise HTTPException(status_code=404, detail="Cita no encontrada")
+
+    cita.observaciones = observacion
+    db.commit()
+
+    return {"ok": True}
 
 
 # =========================
@@ -172,3 +185,23 @@ def eliminar_mecanico(id: int, db: Session = Depends(get_db)):
         raise HTTPException(status_code=404, detail="Mecánico no encontrado")
 
     return {"mensaje": "Mecánico eliminado"}
+
+
+
+
+@app.get("/citas/mecanico/{mecanico_id}/hoy")
+def citas_hoy_mecanico(mecanico_id: int, db: Session = Depends(get_db)):
+    
+    # 🇨🇴 zona Colombia
+    tz = pytz.timezone("America/Bogota")
+
+    hoy_inicio = datetime.now(tz).replace(hour=0, minute=0, second=0, microsecond=0)
+    hoy_fin = hoy_inicio + timedelta(days=1)
+
+    citas = db.query(models.Cita).filter(
+        models.Cita.mecanico_id == mecanico_id,
+        models.Cita.fecha_hora_inicio >= hoy_inicio,
+        models.Cita.fecha_hora_inicio < hoy_fin
+    ).all()
+
+    return citas

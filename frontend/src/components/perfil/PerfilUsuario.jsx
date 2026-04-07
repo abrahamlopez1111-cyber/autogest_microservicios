@@ -78,9 +78,9 @@ function PerfilUsuario({ volver }) {
 
   return (
     <div style={styles.container}>
-    {/*  <button onClick={volver} style={styles.back}>  /}
-    {/*   ⬅ Volver /}
-    {/*   </button>*/}
+      <button onClick={volver} style={styles.back}>  
+      ⬅ Volver 
+      </button>
 
       <h2>👤 Mi Perfil</h2>
 

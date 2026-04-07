@@ -1,7 +1,7 @@
 
 CREATE TABLE public.perfil_usuario (
     id_personal integer NOT NULL,
-    usuario_id integer,
+    usuario_id integer NOT NULL,
     telefono character varying(20),
     direccion character varying(100),
     ciudad character varying(50),
