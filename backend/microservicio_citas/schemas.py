@@ -4,9 +4,8 @@ from typing import Optional
 
 
 # =========================
-# 📅 CITA
+# 📅 CITA BASE
 # =========================
-
 class CitaBase(BaseModel):
     sucursal_id: int
     mecanico_id: int
@@ -17,11 +16,20 @@ class CitaBase(BaseModel):
     fecha_hora_fin: datetime
     estado: str = "programada"
 
+    # 🔥 NUEVO CAMPO
+    observacion_cliente: Optional[str] = None
 
+
+# =========================
+# 📝 CREAR CITA
+# =========================
 class CitaCreate(CitaBase):
     pass
 
 
+# =========================
+# 📤 RESPUESTA CITA
+# =========================
 class CitaOut(CitaBase):
     id: int
 
@@ -32,7 +40,6 @@ class CitaOut(CitaBase):
 # =========================
 # 🏢 SUCURSAL
 # =========================
-
 class SucursalBase(BaseModel):
     nombre: str
     pais: str
@@ -53,7 +60,6 @@ class SucursalOut(SucursalBase):
 # =========================
 # 🔧 MECÁNICO
 # =========================
-
 class MecanicoBase(BaseModel):
     usuario_id: int
     sucursal_id: int

@@ -4,6 +4,7 @@ from .. import schemas, crud, database, models
 
 router = APIRouter(prefix="", tags=["Usuarios"])
 
+
 # =========================
 # 🔌 DB
 # =========================
@@ -20,7 +21,8 @@ def get_db():
 # =========================
 @router.post("/usuarios", response_model=schemas.UsuarioOut)
 def crear_usuario(usuario: schemas.UsuarioCreate, db: Session = Depends(get_db)):
-    # 🔥 FORZAR CLIENTE SI VIENE VACÍO
+
+    # 🔥 valor por defecto
     if not usuario.rol:
         usuario.rol = "cliente"
 
@@ -48,10 +50,11 @@ def login(data: schemas.Login, db: Session = Depends(get_db)):
     return {
         "mensaje": "Login exitoso",
         "usuario": {
-            "id": user.id_usuarios,
+            "id": user.id_usuarios,  # 🔥 CONSISTENTE
+            "id_usuarios": user.id_usuarios,  # 🔥 clave para frontend
             "nombre": user.nombre,
             "email": user.email,
-            "rol": user.rol.lower()  # 🔥 normalizado
+            "rol": user.rol.lower()
         }
     }
 
@@ -59,18 +62,20 @@ def login(data: schemas.Login, db: Session = Depends(get_db)):
 # =========================
 # 🔹 OBTENER USUARIO POR ID
 # =========================
-@router.get("/usuarios/{id}", response_model=schemas.UsuarioOut)
+@router.get("/usuarios/{id}")
 def obtener_usuario(id: int, db: Session = Depends(get_db)):
     usuario = crud.obtener_usuario_por_id(db, id)
 
     if not usuario:
         raise HTTPException(status_code=404, detail="Usuario no encontrado")
 
+    # 🔥 IMPORTANTE: devolver formato consistente
     return {
         "id": usuario.id_usuarios,
+        "id_usuarios": usuario.id_usuarios,
         "nombre": usuario.nombre,
         "email": usuario.email,
-        "rol": usuario.rol
+        "rol": usuario.rol.lower()
     }
 
 
@@ -79,7 +84,9 @@ def obtener_usuario(id: int, db: Session = Depends(get_db)):
 # =========================
 @router.put("/usuarios/{id}", response_model=schemas.UsuarioOut)
 def actualizar_usuario(id: int, datos: schemas.UsuarioCreate, db: Session = Depends(get_db)):
-    usuario = db.query(models.Usuario).filter(models.Usuario.id_usuarios == id).first()
+    usuario = db.query(models.Usuario).filter(
+        models.Usuario.id_usuarios == id
+    ).first()
 
     if not usuario:
         raise HTTPException(status_code=404, detail="Usuario no encontrado")
@@ -100,7 +107,9 @@ def actualizar_usuario(id: int, datos: schemas.UsuarioCreate, db: Session = Depe
 # =========================
 @router.delete("/usuarios/{id}")
 def eliminar_usuario(id: int, db: Session = Depends(get_db)):
-    usuario = db.query(models.Usuario).filter(models.Usuario.id_usuarios == id).first()
+    usuario = db.query(models.Usuario).filter(
+        models.Usuario.id_usuarios == id
+    ).first()
 
     if not usuario:
         raise HTTPException(status_code=404, detail="Usuario no encontrado")
@@ -112,13 +121,13 @@ def eliminar_usuario(id: int, db: Session = Depends(get_db)):
 
 
 # =========================
-# 🔥 EXTRA (IMPORTANTE PARA MICROSERVICIOS)
+# 🔥 VALIDACIÓN PARA MICROSERVICIOS
 # =========================
-
-# Validar si un usuario es mecánico
 @router.get("/usuarios/{id}/es-mecanico")
 def es_mecanico(id: int, db: Session = Depends(get_db)):
-    usuario = db.query(models.Usuario).filter(models.Usuario.id_usuarios == id).first()
+    usuario = db.query(models.Usuario).filter(
+        models.Usuario.id_usuarios == id
+    ).first()
 
     if not usuario:
         raise HTTPException(status_code=404, detail="Usuario no encontrado")

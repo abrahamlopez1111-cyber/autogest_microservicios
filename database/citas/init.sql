@@ -1,5 +1,5 @@
 -- =====================================
--- INIT.SQL - AUTOGEST CITAS (MEJORADO)
+-- INIT.SQL - AUTOGEST CITAS (PRO FINAL)
 -- =====================================
 
 -- =========================
@@ -38,13 +38,13 @@ CREATE TABLE mecanicos (
     sucursal_id INTEGER NOT NULL,
     activo BOOLEAN DEFAULT TRUE,
 
-    FOREIGN KEY (sucursal_id) 
-    REFERENCES sucursales(id) 
+    FOREIGN KEY (sucursal_id)
+    REFERENCES sucursales(id)
     ON DELETE CASCADE
 );
 
 -- =========================
--- TABLA: CITAS
+-- TABLA: CITAS (🔥 MEJORADA)
 -- =========================
 CREATE TABLE citas (
     id SERIAL PRIMARY KEY,
@@ -61,46 +61,47 @@ CREATE TABLE citas (
 
     estado VARCHAR(50) DEFAULT 'programada',
 
+    -- 🔥 NUEVO
+    observacion_cliente TEXT,
+
     -- 🔥 VALIDACIONES
     CHECK (fecha_hora_fin > fecha_hora_inicio),
     CHECK (estado IN ('programada', 'cancelada', 'finalizada')),
 
-    FOREIGN KEY (sucursal_id) 
-    REFERENCES sucursales(id) 
+    FOREIGN KEY (sucursal_id)
+    REFERENCES sucursales(id)
     ON DELETE CASCADE,
 
-    FOREIGN KEY (mecanico_id) 
-    REFERENCES mecanicos(id) 
+    FOREIGN KEY (mecanico_id)
+    REFERENCES mecanicos(id)
     ON DELETE CASCADE,
 
-    FOREIGN KEY (contrato_flota_id) 
-    REFERENCES contrato_flota(id) 
+    FOREIGN KEY (contrato_flota_id)
+    REFERENCES contrato_flota(id)
     ON DELETE SET NULL
 );
 
 -- =========================
--- ⚡ ÍNDICES (IMPORTANTE)
+-- ⚡ ÍNDICES (PERFORMANCE)
 -- =========================
-
-CREATE INDEX idx_citas_mecanico_fecha 
+CREATE INDEX idx_citas_mecanico_fecha
 ON citas(mecanico_id, fecha_hora_inicio);
 
-CREATE INDEX idx_citas_usuario 
+CREATE INDEX idx_citas_usuario
 ON citas(usuario_id);
 
-CREATE INDEX idx_mecanicos_sucursal 
+CREATE INDEX idx_mecanicos_sucursal
 ON mecanicos(sucursal_id);
 
 -- =========================
--- 🚫 EVITAR DUPLICADOS EXACTOS
+-- 🚫 EVITAR DUPLICADOS
 -- =========================
 CREATE UNIQUE INDEX unique_cita_exacta
 ON citas (mecanico_id, fecha_hora_inicio);
 
 -- =========================
--- DATOS DE PRUEBA
+-- 🧪 DATOS DE PRUEBA
 -- =========================
-
 INSERT INTO sucursales (nombre, pais, capacidad_elevadores)
 VALUES
 ('Sucursal Centro', 'Colombia', 5),
@@ -111,7 +112,3 @@ VALUES
 (101, 'Autorización automática'),
 (102, 'Requiere aprobación');
 
-INSERT INTO mecanicos (usuario_id, sucursal_id)
-VALUES
-(1, 1),
-(2, 1);

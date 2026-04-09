@@ -3,8 +3,9 @@ from sqlalchemy.orm import Session
 import models
 import schemas
 from datetime import datetime, date
-from zoneinfo import ZoneInfo  # 🔥 para manejar zona horaria
+from zoneinfo import ZoneInfo
 import requests
+
 
 # =========================
 # 📅 AGENDA
@@ -15,6 +16,7 @@ def obtener_agenda_hoy(db: Session):
     return db.query(models.Cita).filter(
         models.Cita.fecha_hora_inicio >= hoy
     ).all()
+
 
 # =========================
 # 🚀 CREAR CITA
@@ -36,6 +38,7 @@ def crear_cita(db: Session, cita: schemas.CitaCreate):
     if cita_existente:
         raise ValueError("El mecánico ya tiene una cita en ese horario")
 
+    # 🔥 IMPORTANTE: AGREGAMOS observacion_cliente
     db_cita = models.Cita(
         sucursal_id=cita.sucursal_id,
         mecanico_id=cita.mecanico_id,
@@ -44,7 +47,8 @@ def crear_cita(db: Session, cita: schemas.CitaCreate):
         contrato_flota_id=cita.contrato_flota_id,
         fecha_hora_inicio=cita.fecha_hora_inicio,
         fecha_hora_fin=cita.fecha_hora_fin,
-        estado=cita.estado
+        estado=cita.estado,
+        observacion_cliente=cita.observacion_cliente  # ✅ NUEVO
     )
 
     db.add(db_cita)
@@ -53,26 +57,37 @@ def crear_cita(db: Session, cita: schemas.CitaCreate):
 
     return db_cita
 
+
 # =========================
 # 📋 CONSULTAS
 # =========================
 def obtener_citas(db: Session):
     return db.query(models.Cita).all()
 
+
 def obtener_cita_por_id(db: Session, cita_id: int):
     return db.query(models.Cita).filter(models.Cita.id == cita_id).first()
 
+
 def obtener_citas_por_mecanico(db: Session, mecanico_id: int):
-    return db.query(models.Cita).filter(models.Cita.mecanico_id == mecanico_id).all()
+    return db.query(models.Cita).filter(
+        models.Cita.mecanico_id == mecanico_id
+    ).all()
+
 
 def obtener_citas_por_fecha(db: Session, fecha):
-    return db.query(models.Cita).filter(models.Cita.fecha_hora_inicio >= fecha).all()
+    return db.query(models.Cita).filter(
+        models.Cita.fecha_hora_inicio >= fecha
+    ).all()
+
 
 # =========================
 # ✏️ ACTUALIZAR / CANCELAR
 # =========================
 def actualizar_cita(db: Session, cita_id: int, cita: schemas.CitaCreate):
-    db_cita = db.query(models.Cita).filter(models.Cita.id == cita_id).first()
+    db_cita = db.query(models.Cita).filter(
+        models.Cita.id == cita_id
+    ).first()
 
     if db_cita:
         for key, value in cita.dict().items():
@@ -83,8 +98,11 @@ def actualizar_cita(db: Session, cita_id: int, cita: schemas.CitaCreate):
 
     return db_cita
 
+
 def eliminar_cita(db: Session, cita_id: int):
-    cita = db.query(models.Cita).filter(models.Cita.id == cita_id).first()
+    cita = db.query(models.Cita).filter(
+        models.Cita.id == cita_id
+    ).first()
 
     if not cita:
         return None
@@ -94,11 +112,13 @@ def eliminar_cita(db: Session, cita_id: int):
 
     return cita
 
+
 # =========================
 # 🏢 SUCURSALES
 # =========================
 def obtener_sucursales(db: Session):
     return db.query(models.Sucursal).all()
+
 
 def crear_sucursal(db: Session, sucursal):
     nueva = models.Sucursal(**sucursal.dict())
@@ -107,6 +127,7 @@ def crear_sucursal(db: Session, sucursal):
     db.refresh(nueva)
     return nueva
 
+
 # =========================
 # 🔧 MECÁNICOS
 # =========================
@@ -114,14 +135,20 @@ def obtener_mecanicos(db: Session):
     return db.query(models.Mecanico).all()
 
 
-
 def crear_mecanico(db: Session, mecanico):
-    
-    # 🔥 VALIDAR CONTRA MICROSERVICIO USUARIOS
+
     try:
-        res = requests.get(f"http://usuarios_service:8002/usuarios/{mecanico.usuario_id}")
+        res = requests.get(
+            f"http://usuarios_service:8002/usuarios/{mecanico.usuario_id}"
+        )
+
+        if res.status_code != 200:
+            raise ValueError("Usuario no encontrado")
+
         usuario = res.json()
-    except:
+
+    except Exception as e:
+        print("❌ ERROR USUARIO:", e)
         raise ValueError("Error consultando usuario")
 
     if usuario.get("rol") != "mecanico":
@@ -131,11 +158,14 @@ def crear_mecanico(db: Session, mecanico):
     db.add(nuevo)
     db.commit()
     db.refresh(nuevo)
+
     return nuevo
 
 
 def eliminar_mecanico(db: Session, mecanico_id: int):
-    mecanico = db.query(models.Mecanico).filter(models.Mecanico.id == mecanico_id).first()
+    mecanico = db.query(models.Mecanico).filter(
+        models.Mecanico.id == mecanico_id
+    ).first()
 
     if not mecanico:
         return None
@@ -151,6 +181,7 @@ def eliminar_mecanico(db: Session, mecanico_id: int):
 # =========================
 HORAS_TRABAJO = [8, 9, 10, 11, 14, 15, 16, 17]
 
+
 def obtener_horas_ocupadas(db: Session, mecanico_id: int, fecha: str):
     fecha_inicio = datetime.strptime(fecha, "%Y-%m-%d")
     fecha_fin = fecha_inicio.replace(hour=23, minute=59, second=59)
@@ -164,15 +195,19 @@ def obtener_horas_ocupadas(db: Session, mecanico_id: int, fecha: str):
     horas = []
 
     for c in citas:
-        # 🔥 CONVERSIÓN CORRECTA UTC → COLOMBIA
-        hora_local = c.fecha_hora_inicio.astimezone(ZoneInfo("America/Bogota"))
+        hora_local = c.fecha_hora_inicio.astimezone(
+            ZoneInfo("America/Bogota")
+        )
         horas.append(hora_local.hour)
 
     return horas
 
+
 def obtener_disponibilidad(db: Session, mecanico_id: int, fecha: str):
 
-    horas_ocupadas = obtener_horas_ocupadas(db, mecanico_id, fecha)
+    horas_ocupadas = obtener_horas_ocupadas(
+        db, mecanico_id, fecha
+    )
 
     horas_disponibles = [
         h for h in HORAS_TRABAJO if h not in horas_ocupadas
@@ -182,3 +217,7 @@ def obtener_disponibilidad(db: Session, mecanico_id: int, fecha: str):
         "ocupadas": horas_ocupadas,
         "disponibles": horas_disponibles
     }
+    
+    
+def obtener_usuario_por_id(db, usuario_id: int):
+    return db.query(models.Usuario).filter(models.Usuario.id == usuario_id).first()

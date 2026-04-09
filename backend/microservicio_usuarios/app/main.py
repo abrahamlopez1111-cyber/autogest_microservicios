@@ -3,17 +3,16 @@ from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
 
 from .database import engine, wait_for_db, SessionLocal, get_db
-from . import models
+from . import models, crud
 from .routes import usuarios
 from .routes import perfil
 
 
-# ✅ PRIMERO CREAS APP
 app = FastAPI(title="Microservicio de Usuarios")
 
 
 # ======================
-# CORS
+# 🌐 CORS
 # ======================
 app.add_middleware(
     CORSMiddleware,
@@ -25,14 +24,14 @@ app.add_middleware(
 
 
 # ======================
-# ROUTES
+# 📡 ROUTES
 # ======================
 app.include_router(usuarios.router)
-app.include_router(perfil.router)  # 🔥 ahora sí funciona
+app.include_router(perfil.router)
 
 
 # ======================
-# CREAR ADMIN
+# 👑 CREAR ADMIN
 # ======================
 def crear_admin(db: Session):
     admin = db.query(models.Usuario).filter(
@@ -51,7 +50,7 @@ def crear_admin(db: Session):
 
 
 # ======================
-# EVENTO DE INICIO
+# 🚀 STARTUP
 # ======================
 @app.on_event("startup")
 def startup():
@@ -66,13 +65,11 @@ def startup():
 
 
 # ======================
-# ENDPOINT EXTRA
+# 🔥 ENDPOINT CORREGIDO
 # ======================
 @app.get("/usuarios/{usuario_id}")
 def obtener_usuario(usuario_id: int, db: Session = Depends(get_db)):
-    usuario = db.query(models.Usuario).filter(
-        models.Usuario.id_usuarios == usuario_id
-    ).first()
+    usuario = crud.obtener_usuario_por_id(db, usuario_id)
 
     if not usuario:
         raise HTTPException(status_code=404, detail="Usuario no encontrado")
