@@ -60,10 +60,8 @@ function PerfilUsuario({ volver }) {
 
       if (res.ok) {
         const data = await res.json();
-
         setPerfil(data);
         setModoEdicion(false);
-
         alert("Perfil guardado ✅");
       } else {
         alert("Error guardando perfil ❌");
@@ -74,15 +72,32 @@ function PerfilUsuario({ volver }) {
     }
   };
 
-  if (loading) return <p>Cargando perfil...</p>;
+  // =========================
+  // 🔐 LOGOUT
+  // =========================
+  const cerrarSesion = () => {
+    localStorage.removeItem("usuario");
+    localStorage.removeItem("token");
+    window.location.href = "/";
+  };
+
+  if (loading) return <p style={{ color: "white" }}>Cargando perfil...</p>;
 
   return (
     <div style={styles.container}>
-      <button onClick={volver} style={styles.back}>  
-      ⬅ Volver 
-      </button>
 
-      <h2>👤 Mi Perfil</h2>
+      {/* 🔝 BOTONES SUPERIORES */}
+      <div style={styles.topBar}>
+        <button style={styles.backBtn} onClick={volver}>
+          ⬅ Volver
+        </button>
+
+        <button style={styles.logoutBtn} onClick={cerrarSesion}>
+          🚪 Salir
+        </button>
+      </div>
+
+      <h2 style={styles.title}>👤 Mi Perfil</h2>
 
       {/* ========================= */}
       {/* 🔍 MODO VISUAL */}
@@ -99,7 +114,7 @@ function PerfilUsuario({ volver }) {
             style={styles.edit}
             onClick={() => setModoEdicion(true)}
           >
-            ✏️ Editar
+            ✏️ Editar Perfil
           </button>
         </div>
       )}
@@ -108,7 +123,7 @@ function PerfilUsuario({ volver }) {
       {/* ✏️ MODO EDICIÓN */}
       {/* ========================= */}
       {(modoEdicion || !perfil) && (
-        <>
+        <div style={styles.card}>
           <input
             placeholder="Teléfono"
             value={form.telefono || ""}
@@ -158,14 +173,17 @@ function PerfilUsuario({ volver }) {
           />
 
           <button onClick={guardarPerfil} style={styles.save}>
-            💾 Guardar
+            💾 Guardar Cambios
           </button>
-        </>
+        </div>
       )}
     </div>
   );
 }
 
+// =========================
+// 🎨 ESTILOS MEJORADOS
+// =========================
 const styles = {
   container: {
     maxWidth: "500px",
@@ -173,11 +191,41 @@ const styles = {
     color: "white",
   },
 
+  title: {
+    textAlign: "center",
+    marginBottom: "20px",
+  },
+
+  topBar: {
+    display: "flex",
+    justifyContent: "space-between",
+    marginBottom: "15px",
+  },
+
+  backBtn: {
+    padding: "10px",
+    background: "#2563eb",
+    border: "none",
+    borderRadius: "8px",
+    color: "white",
+    cursor: "pointer",
+  },
+
+  logoutBtn: {
+    padding: "10px",
+    background: "#ef4444",
+    border: "none",
+    borderRadius: "8px",
+    color: "white",
+    cursor: "pointer",
+  },
+
   card: {
     background: "#1e293b",
     padding: "20px",
-    borderRadius: "10px",
+    borderRadius: "12px",
     marginBottom: "15px",
+    boxShadow: "0 4px 10px rgba(0,0,0,0.3)",
   },
 
   input: {
@@ -197,25 +245,19 @@ const styles = {
     border: "none",
     borderRadius: "8px",
     color: "white",
+    fontWeight: "bold",
+    cursor: "pointer",
   },
 
   edit: {
-    marginTop: "10px",
-    padding: "10px",
+    marginTop: "15px",
+    padding: "12px",
     background: "#2563eb",
     border: "none",
     borderRadius: "8px",
     color: "white",
     width: "100%",
-  },
-
-  back: {
-    marginBottom: "10px",
-    padding: "8px",
-    background: "#2563eb",
-    border: "none",
-    borderRadius: "6px",
-    color: "white",
+    cursor: "pointer",
   },
 };
 

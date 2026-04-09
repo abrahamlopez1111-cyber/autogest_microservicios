@@ -1,71 +1,55 @@
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 
-function CitasHoyMecanico({ onSeleccionar }) {
+function CitasHoyMecanico() {
   const [citas, setCitas] = useState([]);
   const [loading, setLoading] = useState(true);
 
+  const [usuarios, setUsuarios] = useState([]);
+  const [vehiculos, setVehiculos] = useState([]);
+
+  const navigate = useNavigate();
+
   useEffect(() => {
-    const cargarCitas = async () => {
+    const cargarCitasHoy = async () => {
       try {
-        const user = JSON.parse(localStorage.getItem("usuario") || "null");
-
-        if (!user) return;
-
-        const mecanicoId = user.id || user.id_usuarios;
-        if (!mecanicoId) return;
+        const usuario = JSON.parse(localStorage.getItem("usuario") || "null");
+        if (!usuario) return;
 
         setLoading(true);
 
-        const resCitas = await fetch(
-          `http://localhost:8000/citas/mecanico/${mecanicoId}`
+        // 🔥 1. obtener mecánico
+        const resMecanicos = await fetch("http://localhost:8000/mecanicos");
+        const mecanicos = await resMecanicos.json();
+
+        const mecanico = mecanicos.find(
+          (m) => m.usuario_id === usuario.id_usuarios
         );
 
+        if (!mecanico) {
+          setCitas([]);
+          return;
+        }
+
+        // 🔥 2. citas del día
+        const resCitas = await fetch(
+          `http://localhost:8000/citas/mecanico/${mecanico.id}/hoy`
+        );
         const citasData = await resCitas.json();
 
-        const [resSuc, resUsuarios, resVehiculos] = await Promise.all([
-          fetch("http://localhost:8000/sucursales"),
+        // 🔥 3. traer datos extra
+        const [resUsuarios, resVehiculos] = await Promise.all([
           fetch("http://localhost:8002/usuarios"),
-          fetch("http://localhost:8003/vehiculos"), // 🔥 AJUSTA SI NECESARIO
+          fetch("http://localhost:8003/vehiculos"),
         ]);
 
-        const sucursales = await resSuc.json();
-        const usuarios = await resUsuarios.json();
-        const vehiculos = await resVehiculos.json();
+        const usuariosData = await resUsuarios.json();
+        const vehiculosData = await resVehiculos.json();
 
-        const hoy = new Date().toLocaleDateString("en-CA");
+        setUsuarios(usuariosData);
+        setVehiculos(vehiculosData);
 
-        const citasHoy = citasData
-          .filter((c) => {
-            if (!c.fecha_hora_inicio) return false;
-
-            const fechaLocal = new Date(c.fecha_hora_inicio)
-              .toLocaleDateString("en-CA");
-
-            return fechaLocal === hoy;
-          })
-          .map((c) => {
-            const sucursal = sucursales.find(
-              (s) => s.id === c.sucursal_id
-            );
-
-            const cliente = usuarios.find(
-              (u) => u.id_usuarios === c.usuario_id
-            );
-
-            const vehiculo = vehiculos.find(
-              (v) => v.id === c.vehiculo_id
-            );
-
-            return {
-              ...c,
-              cliente_nombre: cliente?.nombre || "Cliente",
-              telefono: cliente?.telefono || "N/A", // 🔥 si luego lo tienes
-              placa: vehiculo?.placa || "N/A",
-              sucursal_nombre: sucursal?.nombre || "N/A",
-            };
-          });
-
-        setCitas(citasHoy);
+        setCitas(citasData);
 
       } catch (error) {
         console.error("❌ Error:", error);
@@ -74,15 +58,8 @@ function CitasHoyMecanico({ onSeleccionar }) {
       }
     };
 
-    cargarCitas();
+    cargarCitasHoy();
   }, []);
-
-  const formatearHora = (fecha) => {
-    return new Date(fecha).toLocaleTimeString("es-CO", {
-      hour: "2-digit",
-      minute: "2-digit",
-    });
-  };
 
   return (
     <div style={styles.container}>
@@ -91,20 +68,36 @@ function CitasHoyMecanico({ onSeleccionar }) {
       {loading ? (
         <p>Cargando...</p>
       ) : citas.length === 0 ? (
-        <p>No tienes citas hoy</p>
+        <p>No hay citas hoy</p>
       ) : (
-        citas.map((c) => (
-          <button
-            key={c.id}
-            style={styles.card}
-            onClick={() => onSeleccionar(c)} // 🔥 CLAVE
-          >
-            <p><strong>👤 Cliente:</strong> {c.cliente_nombre}</p>
-            <p><strong>📱 Teléfono:</strong> {c.telefono}</p>
-            <p><strong>🚗 Placa:</strong> {c.placa}</p>
-            <p><strong>⏰ Hora:</strong> {formatearHora(c.fecha_hora_inicio)}</p>
-          </button>
-        ))
+        citas.map((c) => {
+          const cliente = usuarios.find(
+            (u) => u.id_usuarios === c.usuario_id
+          );
+
+          const vehiculo = vehiculos.find(
+            (v) => v.id === c.vehiculo_id
+          );
+
+          return (
+            <button
+              key={c.id}
+              style={styles.card}
+              onClick={() => navigate(`/detalle-cita/${c.id}`)}
+            >
+              <p><strong>👤 Nombre:</strong> {cliente?.nombre || "N/A"}</p>
+              <p><strong>📱 Teléfono:</strong> {cliente?.telefono || "N/A"}</p>
+              <p><strong>🚗 Placa:</strong> {vehiculo?.placa || "N/A"}</p>
+
+              <p>
+                <strong>⏰ Hora:</strong>{" "}
+                {new Date(c.fecha_hora_inicio).toLocaleTimeString("es-CO", {
+                  timeZone: "America/Bogota",
+                })}
+              </p>
+            </button>
+          );
+        })
       )}
     </div>
   );
@@ -116,10 +109,12 @@ const styles = {
     margin: "auto",
     color: "white",
   },
+
   title: {
     textAlign: "center",
     marginBottom: "20px",
   },
+
   card: {
     background: "#1e293b",
     padding: "15px",

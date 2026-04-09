@@ -1,4 +1,9 @@
-import { BrowserRouter as Router, Routes, Route, Link, useNavigate } from "react-router-dom";
+import {
+  BrowserRouter as Router,
+  Routes,
+  Route,
+  useNavigate,
+} from "react-router-dom";
 
 // 📄 Páginas
 import Admin from "./pages/admin/AdminDashboard";
@@ -9,6 +14,10 @@ import Citas from "./pages/citas";
 import ClienteDashboard from "./pages/cliente/ClienteDashboard";
 import DashboardMecanico from "./pages/mecanico/DashboardMecanico";
 import Register from "./pages/Register";
+
+// 🔥 NUEVAS PÁGINAS
+import CitasHoyMecanico from "./pages/mecanico/CitasHoyMecanico";
+import DetalleCita from "./pages/mecanico/DetalleCita";
 
 // 🔐 Protección
 import ProtectedRoute from "./components/ProtectedRoute";
@@ -29,8 +38,7 @@ function AppContent() {
 
   return (
     <div>
-
-      {/* 🔥 NAVBAR */}
+      {/* 🔥 NAVBAR LIMPIO */}
       <nav
         style={{
           display: "flex",
@@ -41,66 +49,10 @@ function AppContent() {
           color: "white",
         }}
       >
+        {/* SOLO NOMBRE */}
         <h3 style={{ margin: 0 }}>AUTOGEST</h3>
 
-        {/* LINKS */}
-        <div>
-          <Link to="/" style={{ color: "white", marginRight: "15px" }}>
-            Inicio
-          </Link>
-
-          {!usuario && (
-            <>
-              <Link to="/login" style={{ color: "white", marginRight: "15px" }}>
-                Login
-              </Link>
-
-              {/* 🔥 NUEVO */}
-              <Link to="/register" style={{ color: "white", marginRight: "15px" }}>
-                Registro
-              </Link>
-            </>
-          )}
-
-          {usuario && (
-            <>
-              {/* 👤 CLIENTE */}
-              {usuario.rol === "cliente" && (
-                <Link to="/citas" style={{ color: "white", marginRight: "15px" }}>
-                  Mis Citas
-                </Link>
-              )}
-
-              {/* 🔧 MECÁNICO */}
-              {usuario.rol === "mecanico" && (
-                <Link to="/mecanico" style={{ color: "white", marginRight: "15px" }}>
-                  Agenda
-                </Link>
-              )}
-
-              {/* 🧑‍💼 RECEPCIÓN */}
-              {usuario.rol === "recepcionista" && (
-                <Link to="/recepcion" style={{ color: "white", marginRight: "15px" }}>
-                  Gestión
-                </Link>
-              )}
-
-              {/* 👑 ADMIN */}
-              {usuario.rol === "admin" && (
-                <>
-                  <Link to="/usuarios" style={{ color: "white", marginRight: "15px" }}>
-                    Usuarios
-                  </Link>
-                  <Link to="/admin" style={{ color: "white", marginRight: "15px" }}>
-                    Panel
-                  </Link>
-                </>
-              )}
-            </>
-          )}
-        </div>
-
-        {/* USUARIO */}
+        {/* SOLO USUARIO + LOGOUT */}
         <div>
           {usuario && (
             <>
@@ -133,7 +85,7 @@ function AppContent() {
           {/* 🌍 PÚBLICAS */}
           <Route path="/" element={<Home />} />
           <Route path="/login" element={<Login />} />
-          <Route path="/register" element={<Register />} /> {/* 🔥 NUEVO */}
+          <Route path="/register" element={<Register />} />
 
           {/* 📅 CLIENTE */}
           <Route
@@ -151,6 +103,25 @@ function AppContent() {
             element={
               <ProtectedRoute rolesPermitidos={["mecanico"]}>
                 <DashboardMecanico />
+              </ProtectedRoute>
+            }
+          />
+
+          {/* 🔥 NUEVAS RUTAS MECÁNICO */}
+          <Route
+            path="/citas-hoy"
+            element={
+              <ProtectedRoute rolesPermitidos={["mecanico"]}>
+                <CitasHoyMecanico />
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/detalle-cita/:id"
+            element={
+              <ProtectedRoute rolesPermitidos={["mecanico"]}>
+                <DetalleCita />
               </ProtectedRoute>
             }
           />
@@ -196,7 +167,6 @@ function AppContent() {
 
         </Routes>
       </div>
-
     </div>
   );
 }

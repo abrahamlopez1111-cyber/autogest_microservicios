@@ -5,22 +5,40 @@ function VerCitasMecanico() {
   const [loading, setLoading] = useState(true);
 
   const usuario = JSON.parse(localStorage.getItem("usuario") || "null");
-  const mecanicoId = usuario?.id || usuario?.id_usuarios;
 
   useEffect(() => {
-    if (!mecanicoId) return;
+    let ejecutado = false; // 🔥 evita doble ejecución
 
     const cargarCitas = async () => {
-      try {
-        setLoading(true);
+      if (!usuario || ejecutado) return;
 
-        // 🔥 traer citas del mecánico
-        const resCitas = await fetch(
-          `http://localhost:8000/citas/mecanico/${mecanicoId}`
+      ejecutado = true;
+
+      try {
+        console.log("🚀 Cargando citas...");
+
+        // 🔥 1. obtener mecánicos
+        const resMecanicos = await fetch("http://localhost:8000/mecanicos");
+        const mecanicos = await resMecanicos.json();
+
+        const mecanico = mecanicos.find(
+          (m) => m.usuario_id === usuario.id_usuarios
         );
+
+        if (!mecanico) {
+          console.warn("⛔ No hay mecánico");
+          setLoading(false);
+          return;
+        }
+
+        // 🔥 2. traer citas
+        const resCitas = await fetch(
+          `http://localhost:8000/citas/mecanico/${mecanico.id}`
+        );
+
         const citasData = await resCitas.json();
 
-        // 🔥 traer datos extra
+        // 🔥 3. datos extra
         const [resSuc, resUsuarios] = await Promise.all([
           fetch("http://localhost:8000/sucursales"),
           fetch("http://localhost:8002/usuarios"),
@@ -29,7 +47,7 @@ function VerCitasMecanico() {
         const sucursales = await resSuc.json();
         const usuarios = await resUsuarios.json();
 
-        // 🔥 enriquecer citas
+        // 🔥 4. enriquecer
         const citasFinal = citasData.map((c) => {
           const sucursal = sucursales.find(
             (s) => s.id === c.sucursal_id
@@ -49,16 +67,15 @@ function VerCitasMecanico() {
         setCitas(citasFinal);
 
       } catch (error) {
-        console.error("❌ Error cargando citas:", error);
+        console.error("❌ Error:", error);
       } finally {
         setLoading(false);
       }
     };
 
     cargarCitas();
-  }, [mecanicoId]);
+  }, []); // 🔥 SOLO UNA VEZ
 
-  // 📅 formato bonito
   const formatearFecha = (fecha) => {
     return new Date(fecha).toLocaleString("es-CO", {
       timeZone: "America/Bogota",
@@ -106,6 +123,7 @@ const styles = {
     padding: "15px",
     marginBottom: "10px",
     borderRadius: "10px",
+    transition: "all 0.2s ease", // 🔥 mejora visual
   },
 };
 

@@ -29,6 +29,7 @@ function CrearCita() {
     mecanico_id: "",
     vehiculo_id: "",
     fecha_hora_inicio: "",
+    observacion_cliente: "", // 🔥 NUEVO
   });
 
   const [fecha, setFecha] = useState(null);
@@ -97,6 +98,7 @@ function CrearCita() {
     );
     if (res.ok) setVehiculos(await res.json());
   };
+  
 
   // 📅 días no laborales + días pasados
   const esDiaNoLaboral = (date) => {
@@ -330,6 +332,16 @@ const esHoraPasada = (hora) => {
           </option>
         ))}
       </select>
+      
+      {/* 🔥 OBSERVACIÓN CLIENTE */}
+      <textarea
+        placeholder="Describe el problema del vehículo..."
+        value={form.observacion_cliente}
+        onChange={(e) =>
+          setForm({ ...form, observacion_cliente: e.target.value })
+        }
+        style={styles.textarea}
+      />
 
       <button style={styles.addBtn} onClick={() => setShowModal(true)}>
         ➕ Agregar Vehículo
@@ -554,6 +566,18 @@ const styles = {
     color: "white",
     width: "48%",
   },
+
+  textarea: {
+  width: "100%",
+  padding: 12,
+  marginBottom: 12,
+  borderRadius: 10,
+  border: "1px solid #334155",
+  background: "#0f172a",
+  color: "white",
+  minHeight: "80px",
+},
+
 };
 
 export default CrearCita;

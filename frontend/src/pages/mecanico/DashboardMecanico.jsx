@@ -1,9 +1,10 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 
 import VerCitasMecanico from "./VerCitasMecanico";
 import VehiculosMecanico from "./VehiculosMecanico";
 import PerfilUsuario from "../../components/perfil/PerfilUsuario";
 import PerfilGuard from "../../components/perfil/PerfilGuard";
+import CitasHoyMecanico from "./CitasHoyMecanico"; // 🔥 AHORA ES COMPONENTE SEPARADO
 
 // ============================
 // 🚀 COMPONENTE PRINCIPAL
@@ -21,7 +22,6 @@ function DashboardMecanico() {
 // ============================
 function MecanicoContenido() {
   const [vista, setVista] = useState(null);
-  const [citaSeleccionada, setCitaSeleccionada] = useState(null);
 
   return (
     <div style={styles.container}>
@@ -59,44 +59,17 @@ function MecanicoContenido() {
         {/* 🔵 CONTENIDO */}
         {vista && (
           <>
-            <button style={styles.backBtn} onClick={() => {
-              setVista(null);
-              setCitaSeleccionada(null);
-            }}>
+            <button
+              style={styles.backBtn}
+              onClick={() => setVista(null)}
+            >
               ⬅ Volver
             </button>
 
             <div style={styles.content}>
               {vista === "citas" && <VerCitasMecanico />}
               {vista === "vehiculos" && <VehiculosMecanico />}
-
-              {/* 🔥 CITAS DE HOY */}
-              {vista === "hoy" && !citaSeleccionada && (
-                <CitasHoyMecanico onSeleccionar={setCitaSeleccionada} />
-              )}
-
-              {/* 🔥 FUTURO: DETALLE */}
-              {citaSeleccionada && (
-                <div style={styles.cardCita}>
-                  <h3>🔍 Detalle de cita</h3>
-                  <p>ID: {citaSeleccionada.id}</p>
-                  <p>Cliente: {citaSeleccionada.usuario_id}</p>
-                  <p>
-                    Hora:{" "}
-                    {new Date(
-                      citaSeleccionada.fecha_hora_inicio
-                    ).toLocaleTimeString("es-CO")}
-                  </p>
-
-                  <button
-                    style={styles.backBtn}
-                    onClick={() => setCitaSeleccionada(null)}
-                  >
-                    ⬅ Volver a lista
-                  </button>
-                </div>
-              )}
-
+              {vista === "hoy" && <CitasHoyMecanico />}
               {vista === "perfil" && (
                 <PerfilUsuario volver={() => setVista(null)} />
               )}
@@ -104,92 +77,6 @@ function MecanicoContenido() {
           </>
         )}
       </div>
-    </div>
-  );
-}
-
-// ============================
-// 📅 CITAS DE HOY (FIX REAL)
-// ============================
-function CitasHoyMecanico({ onSeleccionar }) {
-  const [citas, setCitas] = useState([]);
-  const [usuario, setUsuario] = useState(null);
-  const [loading, setLoading] = useState(true);
-
-  // 🔥 cargar usuario
-  useEffect(() => {
-    const user = JSON.parse(localStorage.getItem("usuario") || "null");
-    setUsuario(user);
-  }, []);
-
-  // 🔥 cargar citas
-  useEffect(() => {
-    if (!usuario) return;
-
-    const mecanicoId = usuario.id || usuario.id_usuarios;
-
-    if (!mecanicoId) {
-      console.warn("⛔ ID inválido");
-      return;
-    }
-
-    const cargarCitasHoy = async () => {
-      try {
-        setLoading(true);
-
-        const res = await fetch(
-          `http://localhost:8000/citas/mecanico/${mecanicoId}`
-        );
-
-        const data = await res.json();
-
-        // 🔥 fecha LOCAL segura
-        const hoy = new Date().toLocaleDateString("en-CA");
-
-        const filtradas = data.filter((c) => {
-          if (!c.fecha_hora_inicio) return false;
-
-          const fecha = new Date(c.fecha_hora_inicio)
-            .toLocaleDateString("en-CA");
-
-          return fecha === hoy;
-        });
-
-        setCitas(filtradas);
-
-      } catch (error) {
-        console.error("❌ Error:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    cargarCitasHoy();
-  }, [usuario]);
-
-  return (
-    <div>
-      <h2>📅 Citas de Hoy</h2>
-
-      {loading ? (
-        <p>Cargando...</p>
-      ) : citas.length === 0 ? (
-        <p>No hay citas hoy</p>
-      ) : (
-        citas.map((c) => (
-          <button
-            key={c.id}
-            style={styles.cardCita}
-            onClick={() => onSeleccionar(c)} // 🔥 CLICK
-          >
-            <p><strong>Cliente:</strong> {c.usuario_id}</p>
-            <p>
-              <strong>Hora:</strong>{" "}
-              {new Date(c.fecha_hora_inicio).toLocaleTimeString("es-CO")}
-            </p>
-          </button>
-        ))
-      )}
     </div>
   );
 }
@@ -245,17 +132,6 @@ const styles = {
     border: "none",
     borderRadius: "8px",
     color: "white",
-    cursor: "pointer",
-  },
-
-  cardCita: {
-    background: "#1e293b",
-    padding: "15px",
-    borderRadius: "10px",
-    marginBottom: "10px",
-    border: "none",
-    width: "100%",
-    textAlign: "left",
     cursor: "pointer",
   },
 };
