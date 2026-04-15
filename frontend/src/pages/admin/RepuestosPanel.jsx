@@ -1,136 +1,161 @@
-import React, { useState } from "react";
+/* eslint-disable react-hooks/purity */
+import { useState, useEffect } from "react";
 
 function RepuestosPanel() {
 
-  const [repuestos, setRepuestos] = useState([]);
-  const [editandoId, setEditandoId] = useState(null);
-
-  const [form, setForm] = useState({
-    nombre: "",
-    precio: "",
-    stock: ""
+  const [repuestos, setRepuestos] = useState(() => {
+    const datos = localStorage.getItem("repuestos");
+    return datos ? JSON.parse(datos) : [];
   });
 
-  const handleChange = (e) => {
-    setForm({
-      ...form,
-      [e.target.name]: e.target.value
-    });
-  };
+  const [nombre, setNombre] = useState("");
+  const [precio, setPrecio] = useState("");
+  const [stock, setStock] = useState("");
 
-  // AGREGAR
+  const [busqueda, setBusqueda] = useState("");
+  const [editando, setEditando] = useState(null);
+
+  useEffect(() => {
+    localStorage.setItem("repuestos", JSON.stringify(repuestos));
+  }, [repuestos]);
+
+  const repuestosFiltrados = repuestos.filter(r =>
+    r.nombre.toLowerCase().includes(busqueda.toLowerCase())
+  );
+
   const agregarRepuesto = () => {
 
-    if (!form.nombre || !form.precio || !form.stock) {
+    if (!nombre || !precio || !stock) {
       alert("Complete todos los campos");
       return;
     }
 
-    const nuevoRepuesto = {
-      id: repuestos.length + 1,
-      nombre: form.nombre,
-      precio: form.precio,
-      stock: form.stock
+    const nuevo = {
+      id: Date.now(),
+      nombre,
+      precio,
+      stock
     };
 
-    setRepuestos([...repuestos, nuevoRepuesto]);
+    setRepuestos([...repuestos, nuevo]);
 
-    setForm({
-      nombre: "",
-      precio: "",
-      stock: ""
-    });
+    limpiarFormulario();
   };
 
-  // ELIMINAR
+  const limpiarFormulario = () => {
+    setNombre("");
+    setPrecio("");
+    setStock("");
+    setEditando(null);
+  };
+
   const eliminarRepuesto = (id) => {
     setRepuestos(repuestos.filter(r => r.id !== id));
   };
 
-  // EDITAR
   const editarRepuesto = (repuesto) => {
-    setForm({
-      nombre: repuesto.nombre,
-      precio: repuesto.precio,
-      stock: repuesto.stock
-    });
-
-    setEditandoId(repuesto.id);
+    setNombre(repuesto.nombre);
+    setPrecio(repuesto.precio);
+    setStock(repuesto.stock);
+    setEditando(repuesto.id);
   };
 
-  // GUARDAR EDICIÓN
   const guardarEdicion = () => {
 
-    const nuevos = repuestos.map(r => {
-      if (r.id === editandoId) {
+    const actualizados = repuestos.map(r => {
+
+      if (r.id === editando) {
         return {
           ...r,
-          nombre: form.nombre,
-          precio: form.precio,
-          stock: form.stock
+          nombre,
+          precio,
+          stock
         };
       }
+
       return r;
     });
 
-    setRepuestos(nuevos);
-    setEditandoId(null);
+    setRepuestos(actualizados);
 
-    setForm({
-      nombre: "",
-      precio: "",
-      stock: ""
-    });
+    limpiarFormulario();
   };
 
   return (
+
     <div style={styles.container}>
 
-      <h2 style={styles.title}>🧰 Gestión de Repuestos</h2>
+      {/* BARRA SUPERIOR */}
+
+      <div style={styles.topBar}>
+
+        <h3 style={{ margin: 0 }}>Panel de Administrador</h3>
+
+        <button
+          style={styles.btnVolver}
+          onClick={() => window.history.back()}
+        >
+          ← Volver
+        </button>
+
+      </div>
+
+      <h2 style={styles.title}>🔧 Gestión de Repuestos</h2>
+
+      {/* BUSCADOR */}
+
+      <input
+        style={styles.buscar}
+        placeholder="Buscar repuesto..."
+        value={busqueda}
+        onChange={(e) => setBusqueda(e.target.value)}
+      />
 
       {/* FORMULARIO */}
+
       <div style={styles.form}>
 
         <input
-          type="text"
-          name="nombre"
-          placeholder="Nombre del repuesto"
-          value={form.nombre}
-          onChange={handleChange}
           style={styles.input}
+          placeholder="Nombre"
+          value={nombre}
+          onChange={(e) => setNombre(e.target.value)}
         />
 
         <input
-          type="number"
-          name="precio"
+          style={styles.input}
           placeholder="Precio"
-          value={form.precio}
-          onChange={handleChange}
-          style={styles.input}
+          type="number"
+          value={precio}
+          onChange={(e) => setPrecio(e.target.value)}
         />
 
         <input
-          type="number"
-          name="stock"
-          placeholder="Stock"
-          value={form.stock}
-          onChange={handleChange}
           style={styles.input}
+          placeholder="Stock"
+          type="number"
+          value={stock}
+          onChange={(e) => setStock(e.target.value)}
         />
 
-        {editandoId ? (
-          <button style={styles.editBtn} onClick={guardarEdicion}>
-            💾 Guardar
+        {editando ? (
+
+          <button style={styles.btnGuardar} onClick={guardarEdicion}>
+            Guardar cambios
           </button>
+
         ) : (
-          <button style={styles.addBtn} onClick={agregarRepuesto}>
-            ➕ Agregar
+
+          <button style={styles.btnAgregar} onClick={agregarRepuesto}>
+            Agregar repuesto
           </button>
+
         )}
 
       </div>
 
       {/* TABLA */}
+
       <table style={styles.table}>
 
         <thead>
@@ -144,38 +169,35 @@ function RepuestosPanel() {
 
         <tbody>
 
-          {repuestos.length === 0 ? (
-            <tr>
-              <td colSpan="4">No hay repuestos registrados</td>
+          {repuestosFiltrados.map((r) => (
+
+            <tr key={r.id}>
+
+              <td>{r.nombre}</td>
+              <td>${r.precio}</td>
+              <td>{r.stock}</td>
+
+              <td>
+
+                <button
+                  style={styles.btnEditar}
+                  onClick={() => editarRepuesto(r)}
+                >
+                  ✏️
+                </button>
+
+                <button
+                  style={styles.btnEliminar}
+                  onClick={() => eliminarRepuesto(r.id)}
+                >
+                  🗑
+                </button>
+
+              </td>
+
             </tr>
-          ) : (
-            repuestos.map((r) => (
-              <tr key={r.id}>
-                <td>{r.nombre}</td>
-                <td>${r.precio}</td>
-                <td>{r.stock}</td>
 
-                <td>
-
-                  <button
-                    style={styles.editBtn}
-                    onClick={() => editarRepuesto(r)}
-                  >
-                    Editar
-                  </button>
-
-                  <button
-                    style={styles.deleteBtn}
-                    onClick={() => eliminarRepuesto(r.id)}
-                  >
-                    Eliminar
-                  </button>
-
-                </td>
-
-              </tr>
-            ))
-          )}
+          ))}
 
         </tbody>
 
@@ -188,55 +210,72 @@ function RepuestosPanel() {
 const styles = {
 
   container: {
+    maxWidth: "1100px",
+    margin: "auto",
     background: "#1f2937",
     padding: "30px",
     borderRadius: "12px",
-    textAlign: "center"
+    color: "white"
+  },
+
+  topBar: {
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: "20px"
+  },
+
+  btnVolver: {
+    background: "#374151",
+    color: "white",
+    border: "none",
+    padding: "8px 15px",
+    borderRadius: "6px",
+    cursor: "pointer"
   },
 
   title: {
-    marginBottom: "25px"
+    textAlign: "center",
+    marginBottom: "20px"
+  },
+
+  buscar: {
+    width: "100%",
+    padding: "10px",
+    marginBottom: "20px",
+    borderRadius: "8px",
+    border: "none"
   },
 
   form: {
     display: "flex",
-    justifyContent: "center",
+    flexWrap: "wrap",
     gap: "10px",
-    marginBottom: "30px",
-    flexWrap: "wrap"
+    justifyContent: "center",
+    marginBottom: "25px"
   },
 
   input: {
     padding: "10px",
     borderRadius: "6px",
     border: "none",
-    width: "180px"
+    width: "150px"
   },
 
-  addBtn: {
-    background: "#22c55e",
+  btnAgregar: {
+    background: "#16a34a",
     color: "white",
     border: "none",
-    padding: "10px 18px",
+    padding: "10px 15px",
     borderRadius: "6px",
     cursor: "pointer"
   },
 
-  editBtn: {
-    background: "#f59e0b",
+  btnGuardar: {
+    background: "#2563eb",
     color: "white",
     border: "none",
-    padding: "6px 12px",
-    borderRadius: "6px",
-    marginRight: "5px",
-    cursor: "pointer"
-  },
-
-  deleteBtn: {
-    background: "#ef4444",
-    color: "white",
-    border: "none",
-    padding: "6px 12px",
+    padding: "10px 15px",
     borderRadius: "6px",
     cursor: "pointer"
   },
@@ -244,8 +283,26 @@ const styles = {
   table: {
     width: "100%",
     borderCollapse: "collapse",
-    background: "#111827",
-    color: "white"
+    background: "#111827"
+  },
+
+  btnEditar: {
+    background: "#f59e0b",
+    color: "white",
+    border: "none",
+    padding: "5px 10px",
+    marginRight: "5px",
+    borderRadius: "6px",
+    cursor: "pointer"
+  },
+
+  btnEliminar: {
+    background: "#dc2626",
+    color: "white",
+    border: "none",
+    padding: "5px 10px",
+    borderRadius: "6px",
+    cursor: "pointer"
   }
 
 };

@@ -7,10 +7,18 @@
 -- PostgreSQL database dump
 --
 
+\c inventario;
 
--- TOC entry 220 (class 1259 OID 16558)
--- Name: catalogo_repuestos; Type: TABLE; Schema: public; Owner: postgres
---
+DROP TABLE IF EXISTS catalogo_repuestos;
+
+CREATE TABLE catalogo_repuestos (
+    id SERIAL PRIMARY KEY,
+    codigo_inventario VARCHAR(50),
+    nombre VARCHAR(100),
+    descripcion VARCHAR(100),
+    cantidad INT,
+    precio DECIMAL
+);
 
 CREATE TABLE public.catalogo_repuestos (
     id integer NOT NULL,
