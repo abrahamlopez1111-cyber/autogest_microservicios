@@ -1,18 +1,16 @@
--- =====================================
+-- 
 -- INIT.SQL - AUTOGEST CITAS (PRO FINAL)
--- =====================================
+-- 
 
--- =========================
+-- 
 -- LIMPIEZA
--- =========================
+-- 
 DROP TABLE IF EXISTS citas CASCADE;
 DROP TABLE IF EXISTS mecanicos CASCADE;
 DROP TABLE IF EXISTS contrato_flota CASCADE;
 DROP TABLE IF EXISTS sucursales CASCADE;
 
--- =========================
--- TABLA: SUCURSALES
--- =========================
+
 CREATE TABLE sucursales (
     id SERIAL PRIMARY KEY,
     nombre VARCHAR(100) NOT NULL,
@@ -20,18 +18,16 @@ CREATE TABLE sucursales (
     capacidad_elevadores INTEGER NOT NULL CHECK (capacidad_elevadores > 0)
 );
 
--- =========================
--- TABLA: CONTRATO FLOTA
--- =========================
+
+
+
 CREATE TABLE contrato_flota (
     id SERIAL PRIMARY KEY,
     cliente_id INTEGER NOT NULL,
     politica_autorizacion TEXT
 );
 
--- =========================
--- TABLA: MECANICOS
--- =========================
+
 CREATE TABLE mecanicos (
     id SERIAL PRIMARY KEY,
     usuario_id INTEGER NOT NULL UNIQUE,
@@ -43,9 +39,7 @@ CREATE TABLE mecanicos (
     ON DELETE CASCADE
 );
 
--- =========================
--- TABLA: CITAS (🔥 MEJORADA)
--- =========================
+
 CREATE TABLE citas (
     id SERIAL PRIMARY KEY,
 
@@ -81,9 +75,7 @@ CREATE TABLE citas (
     ON DELETE SET NULL
 );
 
--- =========================
--- ⚡ ÍNDICES (PERFORMANCE)
--- =========================
+
 CREATE INDEX idx_citas_mecanico_fecha
 ON citas(mecanico_id, fecha_hora_inicio);
 
@@ -93,15 +85,11 @@ ON citas(usuario_id);
 CREATE INDEX idx_mecanicos_sucursal
 ON mecanicos(sucursal_id);
 
--- =========================
--- 🚫 EVITAR DUPLICADOS
--- =========================
+
 CREATE UNIQUE INDEX unique_cita_exacta
 ON citas (mecanico_id, fecha_hora_inicio);
 
--- =========================
--- 🧪 DATOS DE PRUEBA
--- =========================
+
 INSERT INTO sucursales (nombre, pais, capacidad_elevadores)
 VALUES
 ('Sucursal Centro', 'Colombia', 5),
