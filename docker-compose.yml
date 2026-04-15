@@ -1,0 +1,103 @@
+version: "3.9"
+
+services:
+
+  # ======================
+  # BASE DE DATOS CITAS
+  # ======================
+  microservicio_citas:
+    image: postgres:15
+    container_name: microservicio_citas
+    environment:
+      POSTGRES_DB: microservicio_citas
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5433:5432"
+    volumes:
+      - ./database/citas/init.sql:/docker-entrypoint-initdb.d/init.sql
+
+  # ======================
+  # BASE DE DATOS INVENTARIO
+  # ======================
+  microservicio_inventario:
+    image: postgres:15
+    container_name: microservicio_inventario
+    environment:
+      POSTGRES_DB: microservicio_inventario
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5434:5432"
+    volumes:
+      - ./database/inventario/init.sql:/docker-entrypoint-initdb.d/init.sql
+
+  # ======================
+  # BASE DE DATOS USUARIOS
+  # ======================
+  microservicio_usuarios:
+    image: postgres:15
+    container_name: microservicio_usuarios
+    environment:
+      POSTGRES_DB: microservicio_usuarios
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5435:5432"
+    volumes:
+      - ./database/usuarios/init.sql:/docker-entrypoint-initdb.d/init.sql
+
+  # ======================
+  # 🆕 BASE DE DATOS HISTORIAL
+  # ======================
+  microservicio_historial:
+    image: postgres:15
+    container_name: microservicio_historial
+    environment:
+      POSTGRES_DB: microservicio_historial
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5436:5432"
+    volumes:
+      - ./database/historial/init.sql:/docker-entrypoint-initdb.d/init.sql
+
+  # ======================
+  # MICROSERVICIO CITAS
+  # ======================
+  citas_service:
+    build: ./backend/microservicio_citas
+    ports:
+      - "8000:8000"
+    depends_on:
+      - microservicio_citas
+
+  # ======================
+  # MICROSERVICIO INVENTARIO
+  # ======================
+  inventario_service:
+    build: ./backend/microservicio_inventario
+    ports:
+      - "8001:8001"
+    depends_on:
+      - microservicio_inventario
+
+  # ======================
+  # MICROSERVICIO USUARIOS
+  # ======================
+  usuarios_service:
+    build: ./backend/microservicio_usuarios
+    ports:
+      - "8002:8002"
+    depends_on:
+      - microservicio_usuarios
+
+  # ======================
+  # 🆕 MICROSERVICIO HISTORIAL
+  # ======================
+  historial_service:
+    build: ./backend/microservicio_historial
+    ports:
+      - "8003:8003"
+    depends_on:
+      - microservicio_historial
