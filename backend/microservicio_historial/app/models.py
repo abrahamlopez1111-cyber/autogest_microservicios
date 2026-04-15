@@ -27,6 +27,14 @@ class ServicioHistorico(Base):
     observaciones = Column(Text)
 
 
+
+    #  NUEVO (ROL MECÁNICO)
+    diagnostico = Column(Text)
+    recomendacion = Column(Text)
+    precio_mano_obra = Column(Integer)
+
+
+
 class DetalleRepuesto(Base):
     __tablename__ = "detalles_repuestos"
 

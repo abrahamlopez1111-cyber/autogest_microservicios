@@ -1,4 +1,8 @@
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+
+>>>>>>> 888a0433c32c88dc9f25d7d408f7a7fcccc7a3f1
 --
 -- PostgreSQL database dump
 --
@@ -356,6 +360,7 @@ ALTER TABLE ONLY public.transferencias
 
 
 
+<<<<<<< HEAD
 =======
 -- =========================
 -- ESTRUCTURA BASE DE DATOS
@@ -365,6 +370,17 @@ ALTER TABLE ONLY public.transferencias
 -- =========================
 -- TABLA VEHICULOS
 -- =========================
+=======
+
+-- 
+-- ESTRUCTURA BASE DE DATOS
+-- MICROSERVICIO HISTORIAL
+-- 
+
+-- 
+-- TABLA VEHICULOS
+-- 
+>>>>>>> 888a0433c32c88dc9f25d7d408f7a7fcccc7a3f1
 CREATE TABLE vehiculos (
     id SERIAL PRIMARY KEY,
     placa VARCHAR(10) NOT NULL UNIQUE,
@@ -375,17 +391,29 @@ CREATE TABLE vehiculos (
     color VARCHAR(50)
 );
 
+<<<<<<< HEAD
 -- =========================
 -- TABLA TIPOS DE SERVICIO
 -- =========================
+=======
+-- 
+-- TABLA TIPOS DE SERVICIO
+-- 
+>>>>>>> 888a0433c32c88dc9f25d7d408f7a7fcccc7a3f1
 CREATE TABLE tipos_servicio (
     id SERIAL PRIMARY KEY,
     nombre VARCHAR(100) NOT NULL
 );
 
+<<<<<<< HEAD
 -- =========================
 -- TABLA HISTORIAL
 -- =========================
+=======
+-- 
+-- TABLA HISTORIAL
+-- 
+>>>>>>> 888a0433c32c88dc9f25d7d408f7a7fcccc7a3f1
 CREATE TABLE historial (
     id SERIAL PRIMARY KEY,
     vehiculo_id INTEGER NOT NULL,
@@ -402,9 +430,15 @@ CREATE TABLE historial (
         REFERENCES tipos_servicio(id)
 );
 
+<<<<<<< HEAD
 -- =========================
 -- DATOS DE PRUEBA
 -- =========================
+=======
+-- 
+-- DATOS DE PRUEBA
+-- 
+>>>>>>> 888a0433c32c88dc9f25d7d408f7a7fcccc7a3f1
 
 -- VEHICULOS
 INSERT INTO vehiculos (placa, propietario, marca, modelo, anio, color)
@@ -430,4 +464,8 @@ VALUES
 (1, 1, 'Cambio de aceite'),
 (2, 2, 'Reparación de frenos'),
 (3, 3, 'Revisión general');
+<<<<<<< HEAD
 >>>>>>> 693fb39 (Microservicios con historial de vehiculos y clientes con 8 endpoints)
+=======
+
+>>>>>>> 888a0433c32c88dc9f25d7d408f7a7fcccc7a3f1
