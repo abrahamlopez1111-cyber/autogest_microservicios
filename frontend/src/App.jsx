@@ -9,7 +9,6 @@ import {
 import Admin from "./pages/admin/AdminDashboard";
 import Home from "./pages/Home";
 import Login from "./pages/Login";
-import Usuarios from "./pages/usuarios";
 import Citas from "./pages/citas";
 import ClienteDashboard from "./pages/cliente/ClienteDashboard";
 import DashboardMecanico from "./pages/mecanico/DashboardMecanico";
@@ -25,6 +24,15 @@ import ProtectedRoute from "./components/ProtectedRoute";
 // 🔑 Auth
 import { getUsuario } from "./utils/auth";
 
+// 🧱 LAYOUT GLOBAL (🔥 clave para todo el proyecto)
+function Layout({ children }) {
+  return (
+    <div style={styles.layout}>
+      {children}
+    </div>
+  );
+}
+
 function AppContent() {
   const usuario = getUsuario();
   const navigate = useNavigate();
@@ -37,22 +45,11 @@ function AppContent() {
   };
 
   return (
-    <div>
-      {/* 🔥 NAVBAR LIMPIO */}
-      <nav
-        style={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-          padding: "15px 25px",
-          background: "#1e3a8a",
-          color: "white",
-        }}
-      >
-        {/* SOLO NOMBRE */}
+    <Layout>
+      {/* 🔥 NAVBAR */}
+      <nav style={styles.nav}>
         <h3 style={{ margin: 0 }}>AUTOGEST</h3>
 
-        {/* SOLO USUARIO + LOGOUT */}
         <div>
           {usuario && (
             <>
@@ -60,17 +57,7 @@ function AppContent() {
                 {usuario.nombre}
               </span>
 
-              <button
-                onClick={handleLogout}
-                style={{
-                  padding: "5px 10px",
-                  background: "#ef4444",
-                  border: "none",
-                  color: "white",
-                  cursor: "pointer",
-                  borderRadius: "5px",
-                }}
-              >
+              <button onClick={handleLogout} style={styles.logoutBtn}>
                 Cerrar sesión
               </button>
             </>
@@ -79,7 +66,7 @@ function AppContent() {
       </nav>
 
       {/* 📦 CONTENIDO */}
-      <div style={{ padding: "20px" }}>
+      <main style={styles.main}>
         <Routes>
 
           {/* 🌍 PÚBLICAS */}
@@ -107,7 +94,6 @@ function AppContent() {
             }
           />
 
-          {/* 🔥 NUEVAS RUTAS MECÁNICO */}
           <Route
             path="/citas-hoy"
             element={
@@ -131,21 +117,13 @@ function AppContent() {
             path="/recepcion"
             element={
               <ProtectedRoute rolesPermitidos={["recepcionista"]}>
-                <h2>Panel Recepción</h2>
+                <h2 style={{ color: "white" }}>Panel Recepción</h2>
               </ProtectedRoute>
             }
           />
 
           {/* 👑 ADMIN */}
-          <Route
-            path="/usuarios"
-            element={
-              <ProtectedRoute rolesPermitidos={["admin"]}>
-                <Usuarios />
-              </ProtectedRoute>
-            }
-          />
-
+          {/* 🔥 IMPORTANTE: dejamos solo /admin */}
           <Route
             path="/admin"
             element={
@@ -166,8 +144,8 @@ function AppContent() {
           />
 
         </Routes>
-      </div>
-    </div>
+      </main>
+    </Layout>
   );
 }
 
@@ -180,3 +158,40 @@ function App() {
 }
 
 export default App;
+
+// 🎨 ESTILOS GLOBALES
+const styles = {
+  layout: {
+    minHeight: "100vh",
+    width: "100%",
+    display: "flex",
+    flexDirection: "column",
+    background: "#0f172a",
+  },
+
+  nav: {
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "center",
+    padding: "15px 25px",
+    background: "#1e3a8a",
+    color: "white",
+    width: "100%",
+  },
+
+  main: {
+    flex: 1,
+    width: "100%",
+    padding: "20px",
+    boxSizing: "border-box",
+  },
+
+  logoutBtn: {
+    padding: "6px 12px",
+    background: "#ef4444",
+    border: "none",
+    color: "white",
+    cursor: "pointer",
+    borderRadius: "6px",
+  },
+};
