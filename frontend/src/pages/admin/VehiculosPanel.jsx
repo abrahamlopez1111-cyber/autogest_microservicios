@@ -1,233 +1,132 @@
-/* eslint-disable react-hooks/purity */
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 function VehiculosPanel() {
 
-  const [vehiculos, setVehiculos] = useState([
-    { id: 1, placa: "ABC123", marca: "Toyota", modelo: "Corolla", sucursal: "Sucursal Norte", estado: "Activo" },
-    { id: 2, placa: "XYZ456", marca: "Chevrolet", modelo: "Spark", sucursal: "Sucursal Centro", estado: "En mantenimiento" },
-  ]);
-
-  const [placa, setPlaca] = useState("");
-  const [marca, setMarca] = useState("");
-  const [modelo, setModelo] = useState("");
-  const [sucursal, setSucursal] = useState("");
-  const [estado, setEstado] = useState("");
-
+  const [vehiculos, setVehiculos] = useState([]);
   const [busqueda, setBusqueda] = useState("");
-  const [editando, setEditando] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
 
-  // FILTRO DE BUSQUEDA
-  const vehiculosFiltrados = vehiculos.filter(v =>
-    v.placa.toLowerCase().includes(busqueda.toLowerCase()) ||
-    v.marca.toLowerCase().includes(busqueda.toLowerCase())
-  );
+  useEffect(() => {
+    cargarDatos();
+  }, []);
 
-  // AGREGAR
-  const agregarVehiculo = () => {
+  const cargarDatos = async () => {
+    try {
+      setLoading(true);
 
-    if (!placa || !marca || !modelo || !sucursal || !estado) {
-      alert("Complete todos los campos");
-      return;
-    }
+      // 🚗 VEHÍCULOS
+      const resVehiculos = await fetch("http://localhost:8003/vehiculos");
+      const dataVehiculos = await resVehiculos.json();
 
-    const nuevo = {
-      id: Date.now(),
-      placa,
-      marca,
-      modelo,
-      sucursal,
-      estado
-    };
+      // 👤 USUARIOS
+      const resUsuarios = await fetch("http://localhost:8002/usuarios");
+      const dataUsuarios = await resUsuarios.json();
 
-    setVehiculos([...vehiculos, nuevo]);
+      // 📞 PERFIL
+      const perfiles = await Promise.all(
+        dataVehiculos.map(async (v) => {
+          try {
+            const res = await fetch(`http://localhost:8002/perfil/${v.usuario_id}`);
+            return await res.json();
+          } catch {
+            return null;
+          }
+        })
+      );
 
-    limpiarFormulario();
-  };
+      // 🔗 UNIR DATOS
+      const combinados = dataVehiculos.map((v, index) => {
+        const usuario = dataUsuarios.find(
+          (u) => u.id === v.usuario_id || u.id_usuarios === v.usuario_id
+        );
 
-  const limpiarFormulario = () => {
-    setPlaca("");
-    setMarca("");
-    setModelo("");
-    setSucursal("");
-    setEstado("");
-    setEditando(null);
-  };
+        const perfil = perfiles[index];
 
-  // ELIMINAR
-  const eliminarVehiculo = (id) => {
-    setVehiculos(vehiculos.filter(v => v.id !== id));
-  };
-
-  // EDITAR
-  const editarVehiculo = (vehiculo) => {
-
-    setPlaca(vehiculo.placa);
-    setMarca(vehiculo.marca);
-    setModelo(vehiculo.modelo);
-    setSucursal(vehiculo.sucursal);
-    setEstado(vehiculo.estado);
-
-    setEditando(vehiculo.id);
-  };
-
-  // GUARDAR EDICION
-  const guardarEdicion = () => {
-
-    const actualizados = vehiculos.map(v => {
-
-      if (v.id === editando) {
         return {
           ...v,
-          placa,
-          marca,
-          modelo,
-          sucursal,
-          estado
+          nombre: usuario?.nombre || "N/A",
+          telefono: perfil?.telefono || "N/A",
+          documento: perfil?.documento || "N/A"
         };
-      }
+      });
 
-      return v;
-    });
+      setVehiculos(combinados);
 
-    setVehiculos(actualizados);
-
-    limpiarFormulario();
+    } catch (err) {
+      console.error(err);
+      setError("Error cargando vehículos");
+    } finally {
+      setLoading(false);
+    }
   };
 
-  return (
+  // 🔥 FILTRO DINÁMICO (mientras escribes)
+  const vehiculosFiltrados = vehiculos.filter((v) => {
+    const texto = busqueda.toLowerCase();
 
+    return (
+      v.placa?.toLowerCase().includes(texto) ||
+      v.marca?.toLowerCase().includes(texto) ||
+      v.modelo?.toLowerCase().includes(texto) ||
+      v.nombre?.toLowerCase().includes(texto) ||
+      v.documento?.toLowerCase().includes(texto)
+    );
+  });
+
+  return (
     <div style={styles.container}>
 
-      <h2 style={styles.title}>🚗 Gestión de Vehículos</h2>
+      <h2 style={styles.title}>🚗 Vehículos Registrados</h2>
 
-      {/* BUSCADOR */}
-
+      {/* 🔍 BUSCADOR */}
       <input
         style={styles.buscar}
-        placeholder="Buscar por placa o marca..."
+        placeholder="Buscar por placa, marca, modelo o usuario..."
         value={busqueda}
         onChange={(e) => setBusqueda(e.target.value)}
       />
 
-      {/* FORMULARIO */}
+      {/* 🔄 ESTADOS */}
+      {loading && <p style={styles.mensaje}>Cargando vehículos...</p>}
+      {error && <p style={styles.error}>{error}</p>}
 
-      <div style={styles.form}>
+      {!loading && vehiculosFiltrados.length === 0 && (
+        <p style={styles.mensaje}>No se encontraron resultados</p>
+      )}
 
-        <input
-          style={styles.input}
-          placeholder="Placa"
-          value={placa}
-          onChange={(e) => setPlaca(e.target.value)}
-        />
+      {/* 📋 TABLA */}
+      {!loading && vehiculosFiltrados.length > 0 && (
+        <table style={styles.table}>
 
-        <input
-          style={styles.input}
-          placeholder="Marca"
-          value={marca}
-          onChange={(e) => setMarca(e.target.value)}
-        />
-
-        <input
-          style={styles.input}
-          placeholder="Modelo"
-          value={modelo}
-          onChange={(e) => setModelo(e.target.value)}
-        />
-
-        {/* SUCURSAL */}
-
-        <select
-          style={styles.input}
-          value={sucursal}
-          onChange={(e) => setSucursal(e.target.value)}
-        >
-          <option value="">Seleccione sucursal</option>
-          <option value="Sucursal Norte">Sucursal Norte</option>
-          <option value="Sucursal Centro">Sucursal Centro</option>
-        </select>
-
-        {/* ESTADO */}
-
-        <select
-          style={styles.input}
-          value={estado}
-          onChange={(e) => setEstado(e.target.value)}
-        >
-          <option value="">Seleccione estado</option>
-          <option value="Activo">Activo</option>
-          <option value="En mantenimiento">En mantenimiento</option>
-          <option value="Fuera de servicio">Fuera de servicio</option>
-        </select>
-
-        {editando ? (
-
-          <button style={styles.btnGuardar} onClick={guardarEdicion}>
-            Guardar cambios
-          </button>
-
-        ) : (
-
-          <button style={styles.btnAgregar} onClick={agregarVehiculo}>
-            Agregar vehículo
-          </button>
-
-        )}
-
-      </div>
-
-      {/* TABLA */}
-
-      <table style={styles.table}>
-
-        <thead>
-          <tr>
-            <th>Placa</th>
-            <th>Marca</th>
-            <th>Modelo</th>
-            <th>Sucursal</th>
-            <th>Estado</th>
-            <th>Acciones</th>
-          </tr>
-        </thead>
-
-        <tbody>
-
-          {vehiculosFiltrados.map((v) => (
-
-            <tr key={v.id}>
-
-              <td>{v.placa}</td>
-              <td>{v.marca}</td>
-              <td>{v.modelo}</td>
-              <td>{v.sucursal}</td>
-              <td>{v.estado}</td>
-
-              <td>
-
-                <button
-                  style={styles.btnEditar}
-                  onClick={() => editarVehiculo(v)}
-                >
-                  ✏️
-                </button>
-
-                <button
-                  style={styles.btnEliminar}
-                  onClick={() => eliminarVehiculo(v.id)}
-                >
-                  🗑
-                </button>
-
-              </td>
-
+          <thead>
+            <tr>
+              <th>Placa</th>
+              <th>Marca</th>
+              <th>Modelo</th>
+              <th>Año</th>
+              <th>Usuario</th>
+              <th>Teléfono</th>
+              <th>Documento</th>
             </tr>
+          </thead>
 
-          ))}
+          <tbody>
+            {vehiculosFiltrados.map((v) => (
+              <tr key={v.id}>
+                <td>{v.placa}</td>
+                <td>{v.marca}</td>
+                <td>{v.modelo}</td>
+                <td>{v.anio_fabricacion}</td>
+                <td>{v.nombre}</td>
+                <td>{v.telefono}</td>
+                <td>{v.documento}</td>
+              </tr>
+            ))}
+          </tbody>
 
-        </tbody>
-
-      </table>
+        </table>
+      )}
 
     </div>
   );
@@ -236,8 +135,7 @@ function VehiculosPanel() {
 const styles = {
 
   container: {
-    maxWidth: "1100px",
-    margin: "auto",
+    width: "100%",
     background: "#1f2937",
     padding: "30px",
     borderRadius: "12px"
@@ -250,43 +148,11 @@ const styles = {
 
   buscar: {
     width: "100%",
-    padding: "10px",
+    padding: "12px",
     marginBottom: "20px",
     borderRadius: "8px",
-    border: "none"
-  },
-
-  form: {
-    display: "flex",
-    flexWrap: "wrap",
-    gap: "10px",
-    justifyContent: "center",
-    marginBottom: "25px"
-  },
-
-  input: {
-    padding: "10px",
-    borderRadius: "6px",
     border: "none",
-    width: "150px"
-  },
-
-  btnAgregar: {
-    background: "#16a34a",
-    color: "white",
-    border: "none",
-    padding: "10px 15px",
-    borderRadius: "6px",
-    cursor: "pointer"
-  },
-
-  btnGuardar: {
-    background: "#2563eb",
-    color: "white",
-    border: "none",
-    padding: "10px 15px",
-    borderRadius: "6px",
-    cursor: "pointer"
+    fontSize: "14px"
   },
 
   table: {
@@ -295,23 +161,15 @@ const styles = {
     background: "#111827"
   },
 
-  btnEditar: {
-    background: "#f59e0b",
-    color: "white",
-    border: "none",
-    padding: "5px 10px",
-    marginRight: "5px",
-    borderRadius: "6px",
-    cursor: "pointer"
+  mensaje: {
+    textAlign: "center",
+    marginTop: "20px"
   },
 
-  btnEliminar: {
-    background: "#dc2626",
-    color: "white",
-    border: "none",
-    padding: "5px 10px",
-    borderRadius: "6px",
-    cursor: "pointer"
+  error: {
+    color: "red",
+    textAlign: "center",
+    marginTop: "20px"
   }
 
 };
