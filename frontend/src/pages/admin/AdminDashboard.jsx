@@ -16,16 +16,17 @@ function AdminDashboard() {
   );
 }
 
+// 🔥 SEPARAMOS LA LÓGICA (MEJOR PRÁCTICA)
 function AdminContenido() {
   const [vista, setVista] = useState("menu");
 
   return (
     <div style={styles.container}>
-      <h1 style={styles.title}>⚙️ Panel Administrador</h1>
+      <h1 style={styles.title}>Panel Administrador</h1>
 
+      {/* 🟢 MENU */}
       {vista === "menu" && (
         <div style={styles.grid}>
-
           <div style={styles.card} onClick={() => setVista("usuarios")}>
             <h2>👤 Usuarios</h2>
             <p>Gestión de usuarios del sistema</p>
@@ -41,44 +42,43 @@ function AdminContenido() {
             <p>Asignación de personal técnico</p>
           </div>
 
-          <div style={styles.card} onClick={() => setVista("perfil")}>
-            <h2>👤 Mi Perfil</h2>
-            <p>Gestionar información personal</p>
+          <div style={styles.card} onClick={() => setVista("vehiculos")}>
+            <h2>🚗 Vehículos</h2>
+            <p>Administrar flota y estado de los vehículos</p>
           </div>
 
           <div style={styles.card} onClick={() => setVista("repuestos")}>
             <h2>🧰 Repuestos</h2>
-            <p>Gestión de repuestos y precios</p>
+            <p>Gestión de inventario de repuestos</p>
           </div>
 
-          <div style={styles.card} onClick={() => setVista("vehiculos")}>
-            <h2>🚗 Vehículos</h2>
-            <p>Ver vehículos y su sucursal</p>
+          <div style={styles.card} onClick={() => setVista("perfil")}>
+            <h2>👤 Mi Perfil</h2>
+            <p>Gestionar información personal</p>
           </div>
-
         </div>
       )}
 
+      {/* 🔵 VISTAS */}
       {vista !== "menu" && (
         <>
           <button
             style={styles.backBtn}
             onClick={() => setVista("menu")}
           >
-            ⬅ Volver
+            Volver
           </button>
 
           <div style={styles.content}>
-            {vista === "usuarios" && <UsuariosPanel />}
-            {vista === "sucursales" && <SucursalesPanel />}
-            {vista === "mecanicos" && <MecanicosPanel />}
-            {vista === "perfil" && <PerfilUsuario />}
-            {vista === "repuestos" && <RepuestosPanel />}
-            {vista === "vehiculos" && <VehiculosPanel />}
+            {vista === "usuarios" && <UsuariosPanel volver={() => setVista("menu")} />}
+            {vista === "sucursales" && <SucursalesPanel volver={() => setVista("menu")} />}
+            {vista === "mecanicos" && <MecanicosPanel volver={() => setVista("menu")} />}
+            {vista === "perfil" && <PerfilUsuario volver={() => setVista("menu")} />}
+            {vista === "repuestos" && <RepuestosPanel volver={() => setVista("menu")} />}
+            {vista === "vehiculos" && <VehiculosPanel volver={() => setVista("menu")} />}
           </div>
         </>
       )}
-
     </div>
   );
 }
@@ -108,6 +108,7 @@ const styles = {
     borderRadius: "12px",
     cursor: "pointer",
     textAlign: "center",
+    transition: "all 0.3s ease",
     boxShadow: "0 4px 12px rgba(0,0,0,0.4)",
   },
 

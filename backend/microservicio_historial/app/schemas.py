@@ -36,10 +36,13 @@ class ServicioHistoricoBase(BaseModel):
     kilometraje: Optional[int] = None
     observaciones: Optional[str] = None
 
+
+
     # 🔥 NUEVO (ROL MECÁNICO)
     diagnostico: Optional[str] = None
     recomendacion: Optional[str] = None
     precio_mano_obra: Optional[int] = None
+
 
 
 class ServicioHistoricoCreate(ServicioHistoricoBase):

@@ -26,10 +26,13 @@ class ServicioHistorico(Base):
     kilometraje = Column(Integer)
     observaciones = Column(Text)
 
+
+
     #  NUEVO (ROL MECÁNICO)
     diagnostico = Column(Text)
     recomendacion = Column(Text)
     precio_mano_obra = Column(Integer)
+
 
 
 class DetalleRepuesto(Base):

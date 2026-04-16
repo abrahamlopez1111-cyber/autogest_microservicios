@@ -10,7 +10,7 @@ function Home() {
         background: "#0f172a",
         color: "white"
       }}>
-        <h2>AUTOGEST</h2>
+        <h2></h2>
         <div>
           <a href="/login" style={{ marginRight: "15px", color: "white" }}>
             Iniciar Sesión
