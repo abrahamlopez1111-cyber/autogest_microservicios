@@ -1,0 +1,43 @@
+[33mff8677c[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m, [m[1;31morigin/main[m[33m, [m[1;31morigin/HEAD[m[33m)[m cambio en navbar
+[33m9648e2d[m mostrar vehiculos en el dashboard
+[33m8729481[m correcciones hechas en la clase para entregar
+[33m0cff0ab[m merge
+[33m3ae4cde[m primer commit
+[33m5ba69dd[m Conflicto resuelto en AdminDashboard
+[33m3fbf9bc[m Resolviendo conflicto en Windows
+[33mfcc1ea5[m cambios
+[33m0d71e53[m cambios
+[33m888a043[m update: cambios en historial y base de datos
+[33m549e073[m Subiendo proyecto de microservicios autogest
+[33m3059c7a[m dashboard mecanico
+[33m4134256[m dashboard mecanico
+[33md0d968f[m dashboard mecanico
+[33m3a2e9ef[m agregar informacion personal a los usuarios
+[33m86a0e17[m agregar una tabla a la base de datos del micoservicio usuarios
+[33m6572018[m crear usuario cliente gestionar cita cliente vista cita mecanico
+[33m4f20066[m gestion de citas y usuario con rol de mecatico
+[33mc7dc92b[m gestion de citas
+[33mddba707[m arreglo de microservicio de historial vehiculos y clientes
+[33m0eb6473[m panel de cliente creacion de citas
+[33mc70c2f1[m cambios bd citas
+[33mb2b27b6[m cambios bd citas
+[33m52baa65[m cambios menores
+[33mb4607ba[m ingreso de sucursales
+[33m603c277[m actualizacion usuarios administrador
+[33m4a78fe5[m frontend usuarios y roles
+[33m023c8f3[m frontend de los tres microservicios y parte de usuarios con crud
+[33m0cbe894[m fix conflictos merge
+[33m5fff732[m actualizacion minima
+[33mb2760ee[m Microservicios con historial de vehiculos y clientes con 8 endpoints
+[33mfc239ee[m microservicio usuarios parte backend
+[33m211a106[m actualizacion minima
+[33mef50e27[m frontend inventario hecho pero le falta cosas
+[33m80eeda1[m se le agrego 7 endpoints al microservicio inventarios
+[33m4e8dc12[m nuevo microservicio inventario
+[33m0aa1359[m actualizacion
+[33m8815a9b[m actualizacion de microservicio con docker y base de datos
+[33m383ef2f[m agregado gitignore y limpieza de cache
+[33mf1618ca[m agregado script de base de datos microservicio citas
+[33m3b14011[m avance microservicio citas con fastapi conectado a postgresql
+[33mf0a5aa8[m agregadas carpetas de microservicios restantes
+[33mb95fa43[m estructura inicial de microservicios

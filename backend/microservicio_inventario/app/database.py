@@ -2,7 +2,7 @@ from sqlalchemy import create_engine # type: ignore
 from sqlalchemy.orm import sessionmaker, declarative_base # type: ignore
 import time
 
-DATABASE_URL = "postgresql://postgres:postgres@microservicio_inventario:5432/inventario"
+DATABASE_URL = "postgresql://postgres:postgres@microservicio_inventario:5432/microservicio_inventario"
 
 engine = None
 

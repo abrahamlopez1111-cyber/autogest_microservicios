@@ -122,12 +122,6 @@ ON mecanicos(sucursal_id);
 CREATE UNIQUE INDEX unique_cita_exacta
 ON citas (mecanico_id, fecha_hora_inicio);
 
--- =========================
--- 🧪 DATOS DE PRUEBA
--- =========================
-
-CREATE UNIQUE INDEX unique_cita_exacta
-ON citas (mecanico_id, fecha_hora_inicio);
 
 
 INSERT INTO sucursales (nombre, pais, capacidad_elevadores)
