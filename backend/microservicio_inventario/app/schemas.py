@@ -1,11 +1,12 @@
-from pydantic import BaseModel # type: ignore
+from pydantic import BaseModel
 
 
+# ======================
+# PRODUCTO
+# ======================
 class RepuestoBase(BaseModel):
-    codigo_inventario: str
-    descripcion: str
+    nombre: str
     precio: float
-    stock: int
 
 
 class RepuestoCreate(RepuestoBase):
@@ -17,3 +18,12 @@ class Repuesto(RepuestoBase):
 
     class Config:
         from_attributes = True
+
+
+# ======================
+# STOCK
+# ======================
+class StockCreate(BaseModel):
+    sucursal_id: int
+    catalogo_repuestos_id: int
+    cantidad_disponible: int

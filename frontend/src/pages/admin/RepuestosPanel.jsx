@@ -1,118 +1,131 @@
-/* eslint-disable react-hooks/purity */
 import { useState, useEffect } from "react";
 
 function RepuestosPanel() {
 
-  const [repuestos, setRepuestos] = useState(() => {
-    const datos = localStorage.getItem("repuestos");
-    return datos ? JSON.parse(datos) : [];
-  });
+  const API = "http://localhost:8004/inventario/repuestos/inventario-completo";
+  const API_CREAR = "http://localhost:8004/inventario/repuestos";
+  const API_STOCK = "http://localhost:8004/inventario/repuestos/stock";
+  const API_SUCURSALES = "http://localhost:8000/sucursales";
+
+  const [datos, setDatos] = useState([]);
+  const [sucursales, setSucursales] = useState([]);
 
   const [nombre, setNombre] = useState("");
   const [precio, setPrecio] = useState("");
-  const [stock, setStock] = useState("");
+  const [cantidad, setCantidad] = useState("");
+  const [sucursalId, setSucursalId] = useState("");
 
   const [busqueda, setBusqueda] = useState("");
-  const [editando, setEditando] = useState(null);
 
   useEffect(() => {
-    localStorage.setItem("repuestos", JSON.stringify(repuestos));
-  }, [repuestos]);
+    cargarDatos();
+    obtenerSucursales();
+  }, []);
 
-  const repuestosFiltrados = repuestos.filter(r =>
-    r.nombre.toLowerCase().includes(busqueda.toLowerCase())
-  );
+  // =========================
+  // 📦 INVENTARIO COMPLETO
+  // =========================
+  const cargarDatos = async () => {
+    try {
+      const res = await fetch(API);
+      const data = await res.json();
+      setDatos(data);
+    } catch {
+      alert("Error al cargar inventario");
+    }
+  };
 
-  const agregarRepuesto = () => {
+  // =========================
+  // 🏬 SUCURSALES
+  // =========================
+  const obtenerSucursales = async () => {
+    const res = await fetch(API_SUCURSALES);
+    const data = await res.json();
+    setSucursales(data);
+  };
 
-    if (!nombre || !precio || !stock) {
+  // =========================
+  // ➕ CREAR + STOCK
+  // =========================
+  const agregar = async () => {
+
+    if (!nombre || !precio || !cantidad || !sucursalId) {
       alert("Complete todos los campos");
       return;
     }
 
-    const nuevo = {
-      id: Date.now(),
-      nombre,
-      precio,
-      stock
-    };
+    try {
 
-    setRepuestos([...repuestos, nuevo]);
+      // 1️⃣ crear producto
+      const resProducto = await fetch(API_CREAR + "/", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          nombre,
+          precio: Number(precio)
+        })
+      });
 
-    limpiarFormulario();
+      const producto = await resProducto.json();
+
+      // 2️⃣ asignar stock
+      await fetch(API_STOCK, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          sucursal_id: Number(sucursalId),
+          catalogo_repuestos_id: producto.id,
+          cantidad_disponible: Number(cantidad)
+        })
+      });
+
+      alert("Guardado correctamente");
+
+      limpiar();
+      cargarDatos();
+
+    } catch {
+      alert("Error al guardar");
+    }
   };
 
-  const limpiarFormulario = () => {
+  const limpiar = () => {
     setNombre("");
     setPrecio("");
-    setStock("");
-    setEditando(null);
+    setCantidad("");
+    setSucursalId("");
   };
 
-  const eliminarRepuesto = (id) => {
-    setRepuestos(repuestos.filter(r => r.id !== id));
-  };
+  // =========================
+  // 🔍 FILTRO
+  // =========================
+  const filtrados = datos.filter(d =>
+    d.nombre.toLowerCase().includes(busqueda.toLowerCase())
+  );
 
-  const editarRepuesto = (repuesto) => {
-    setNombre(repuesto.nombre);
-    setPrecio(repuesto.precio);
-    setStock(repuesto.stock);
-    setEditando(repuesto.id);
-  };
-
-  const guardarEdicion = () => {
-
-    const actualizados = repuestos.map(r => {
-
-      if (r.id === editando) {
-        return {
-          ...r,
-          nombre,
-          precio,
-          stock
-        };
-      }
-
-      return r;
-    });
-
-    setRepuestos(actualizados);
-
-    limpiarFormulario();
+  // =========================
+  // 🏬 OBTENER NOMBRE SUCURSAL
+  // =========================
+  const nombreSucursal = (id) => {
+    const s = sucursales.find(s => s.id === id);
+    return s ? s.nombre : "N/A";
   };
 
   return (
 
     <div style={styles.container}>
 
-      {/* BARRA SUPERIOR */}
-
-      <div style={styles.topBar}>
-
-        <h3 style={{ margin: 0 }}>Panel de Administrador</h3>
-
-        <button
-          style={styles.btnVolver}
-          onClick={() => window.history.back()}
-        >
-          ← Volver
-        </button>
-
-      </div>
-
-      <h2 style={styles.title}>🔧 Gestión de Repuestos</h2>
+      <h2 style={styles.title}>📦 Inventario por Sucursal</h2>
 
       {/* BUSCADOR */}
-
       <input
         style={styles.buscar}
-        placeholder="Buscar repuesto..."
+        placeholder="Buscar producto..."
         value={busqueda}
         onChange={(e) => setBusqueda(e.target.value)}
       />
 
       {/* FORMULARIO */}
-
       <div style={styles.form}>
 
         <input
@@ -124,83 +137,60 @@ function RepuestosPanel() {
 
         <input
           style={styles.input}
-          placeholder="Precio"
           type="number"
+          placeholder="Precio"
           value={precio}
           onChange={(e) => setPrecio(e.target.value)}
         />
 
         <input
           style={styles.input}
-          placeholder="Stock"
           type="number"
-          value={stock}
-          onChange={(e) => setStock(e.target.value)}
+          placeholder="Cantidad"
+          value={cantidad}
+          onChange={(e) => setCantidad(e.target.value)}
         />
 
-        {editando ? (
+        <select
+          style={styles.input}
+          value={sucursalId}
+          onChange={(e) => setSucursalId(e.target.value)}
+        >
+          <option value="">Seleccione sucursal</option>
+          {sucursales.map(s => (
+            <option key={s.id} value={s.id}>
+              {s.nombre}
+            </option>
+          ))}
+        </select>
 
-          <button style={styles.btnGuardar} onClick={guardarEdicion}>
-            Guardar cambios
-          </button>
-
-        ) : (
-
-          <button style={styles.btnAgregar} onClick={agregarRepuesto}>
-            Agregar repuesto
-          </button>
-
-        )}
+        <button style={styles.btnAgregar} onClick={agregar}>
+          Agregar
+        </button>
 
       </div>
 
-      {/* TABLA */}
-
+      {/* TABLA FINAL 🔥 */}
       <table style={styles.table}>
-
         <thead>
           <tr>
-            <th>Nombre</th>
+            <th>Producto</th>
             <th>Precio</th>
-            <th>Stock</th>
-            <th>Acciones</th>
+            <th>Cantidad</th>
+            <th>Sucursal</th>
           </tr>
         </thead>
 
         <tbody>
-
-          {repuestosFiltrados.map((r) => (
-
-            <tr key={r.id}>
-
-              <td>{r.nombre}</td>
-              <td>${r.precio}</td>
-              <td>{r.stock}</td>
-
-              <td>
-
-                <button
-                  style={styles.btnEditar}
-                  onClick={() => editarRepuesto(r)}
-                >
-                  ✏️
-                </button>
-
-                <button
-                  style={styles.btnEliminar}
-                  onClick={() => eliminarRepuesto(r.id)}
-                >
-                  🗑
-                </button>
-
-              </td>
-
+          {filtrados.map(item => (
+            <tr key={item.id}>
+              <td>{item.nombre}</td>
+              <td>${item.precio}</td>
+              <td>{item.cantidad}</td>
+              <td>{nombreSucursal(item.sucursal_id)}</td>
             </tr>
-
           ))}
-
         </tbody>
-
       </table>
 
     </div>
@@ -208,103 +198,13 @@ function RepuestosPanel() {
 }
 
 const styles = {
-
-  container: {
-    maxWidth: "1100px",
-    margin: "auto",
-    background: "#1f2937",
-    padding: "30px",
-    borderRadius: "12px",
-    color: "white"
-  },
-
-  topBar: {
-    display: "flex",
-    justifyContent: "space-between",
-    alignItems: "center",
-    marginBottom: "20px"
-  },
-
-  btnVolver: {
-    background: "#374151",
-    color: "white",
-    border: "none",
-    padding: "8px 15px",
-    borderRadius: "6px",
-    cursor: "pointer"
-  },
-
-  title: {
-    textAlign: "center",
-    marginBottom: "20px"
-  },
-
-  buscar: {
-    width: "100%",
-    padding: "10px",
-    marginBottom: "20px",
-    borderRadius: "8px",
-    border: "none"
-  },
-
-  form: {
-    display: "flex",
-    flexWrap: "wrap",
-    gap: "10px",
-    justifyContent: "center",
-    marginBottom: "25px"
-  },
-
-  input: {
-    padding: "10px",
-    borderRadius: "6px",
-    border: "none",
-    width: "150px"
-  },
-
-  btnAgregar: {
-    background: "#16a34a",
-    color: "white",
-    border: "none",
-    padding: "10px 15px",
-    borderRadius: "6px",
-    cursor: "pointer"
-  },
-
-  btnGuardar: {
-    background: "#2563eb",
-    color: "white",
-    border: "none",
-    padding: "10px 15px",
-    borderRadius: "6px",
-    cursor: "pointer"
-  },
-
-  table: {
-    width: "100%",
-    borderCollapse: "collapse",
-    background: "#111827"
-  },
-
-  btnEditar: {
-    background: "#f59e0b",
-    color: "white",
-    border: "none",
-    padding: "5px 10px",
-    marginRight: "5px",
-    borderRadius: "6px",
-    cursor: "pointer"
-  },
-
-  btnEliminar: {
-    background: "#dc2626",
-    color: "white",
-    border: "none",
-    padding: "5px 10px",
-    borderRadius: "6px",
-    cursor: "pointer"
-  }
-
+  container: { padding: 20, color: "white" },
+  title: { textAlign: "center" },
+  buscar: { width: "100%", marginBottom: 20 },
+  form: { display: "flex", gap: 10, marginBottom: 20 },
+  input: { padding: 10 },
+  btnAgregar: { background: "green", color: "white" },
+  table: { width: "100%", marginTop: 20 }
 };
 
 export default RepuestosPanel;

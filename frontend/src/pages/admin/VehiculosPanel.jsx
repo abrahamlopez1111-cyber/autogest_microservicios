@@ -16,7 +16,7 @@ function VehiculosPanel() {
       setLoading(true);
 
       // 🚗 VEHÍCULOS
-      const resVehiculos = await fetch("http://localhost:8003/vehiculos");
+      const resVehiculos = await fetch("http://localhost:8003/historial/vehiculos");
       const dataVehiculos = await resVehiculos.json();
 
       // 👤 USUARIOS

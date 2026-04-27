@@ -139,7 +139,7 @@ def crear_mecanico(db: Session, mecanico):
 
     try:
         res = requests.get(
-            f"http://usuarios_service:8002/usuarios/{mecanico.usuario_id}"
+            f"http://usuarios_service:8000/usuarios/{mecanico.usuario_id}"
         )
 
         if res.status_code != 200:

@@ -7,7 +7,7 @@ import models
 import schemas
 import crud
 
-from database import SessionLocal, engine, wait_for_db
+from database import SessionLocal, engine, wait_for_db, get_db
 
 from datetime import datetime, timedelta
 import pytz
@@ -38,17 +38,6 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
-
-# =========================
-# 🔌 DB
-# =========================
-def get_db():
-    db = SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
 
 
 # =========================
@@ -96,8 +85,7 @@ def obtener_cita(id: int, db: Session = Depends(get_db)):
 
 @app.get("/citas/mecanico/{mecanico_id}")
 def citas_por_mecanico(mecanico_id: int, db: Session = Depends(get_db)):
-    citas = crud.obtener_citas_por_mecanico(db, mecanico_id)
-    return citas or []
+    return crud.obtener_citas_por_mecanico(db, mecanico_id) or []
 
 
 @app.delete("/citas/{cita_id}")
@@ -128,7 +116,7 @@ def actualizar_estado(cita_id: int, estado: str, db: Session = Depends(get_db)):
 
 
 # =========================
-# 🔥 OBSERVACIONES (CORREGIDO)
+# 🔥 OBSERVACIÓN CORREGIDA
 # =========================
 @app.put("/citas/{id}/observacion")
 def guardar_observacion(id: int, observacion: str, db: Session = Depends(get_db)):
@@ -137,7 +125,7 @@ def guardar_observacion(id: int, observacion: str, db: Session = Depends(get_db)
     if not cita:
         raise HTTPException(status_code=404, detail="Cita no encontrada")
 
-    cita.observaciones = observacion
+    cita.observacion_cliente = observacion  # ✅ CORREGIDO
     db.commit()
 
     return {"ok": True}
@@ -187,12 +175,12 @@ def eliminar_mecanico(id: int, db: Session = Depends(get_db)):
     return {"mensaje": "Mecánico eliminado"}
 
 
-
-
+# =========================
+# 📅 CITAS HOY MECÁNICO
+# =========================
 @app.get("/citas/mecanico/{mecanico_id}/hoy")
 def citas_hoy_mecanico(mecanico_id: int, db: Session = Depends(get_db)):
     
-    # 🇨🇴 zona Colombia
     tz = pytz.timezone("America/Bogota")
 
     hoy_inicio = datetime.now(tz).replace(hour=0, minute=0, second=0, microsecond=0)

@@ -22,6 +22,17 @@ class UsuarioOut(UsuarioBase):
         from_attributes = True
 
 
+# 🔥 NUEVO (para listas internas como recepcionistas)
+class UsuarioSimple(BaseModel):
+    id_usuarios: int
+    nombre: str
+    email: str
+    rol: str
+
+    class Config:
+        from_attributes = True
+
+
 # =========================
 # 🔐 LOGIN
 # =========================
@@ -31,7 +42,7 @@ class Login(BaseModel):
 
 
 # =========================
-# 📄 PERFIL USUARIO
+# 📄 PERFIL
 # =========================
 class PerfilCreate(BaseModel):
     telefono: Optional[str] = None

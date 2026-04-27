@@ -1,60 +1,225 @@
 import { useEffect, useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams } from "react-router-dom";
 
 function DetalleCita() {
   const { id } = useParams();
-  const navigate = useNavigate();
 
   const [cita, setCita] = useState(null);
-  const [cliente, setCliente] = useState(null);
-  const [vehiculo, setVehiculo] = useState(null);
+  const [repuestos, setRepuestos] = useState([]);
 
+  const [form, setForm] = useState({
+    descripcion_falla: "",
+    reparacion: "",
+    criticidad: "",
+    repuestos: [],
+  });
+
+  // =========================
+  // 🔥 CARGAR DATOS
+  // =========================
   useEffect(() => {
-    const cargar = async () => {
-      try {
-        const resCita = await fetch(`http://localhost:8000/citas/${id}`);
-        const citaData = await resCita.json();
+    cargarCita();
+    cargarRepuestos();
+  }, []);
 
-        const resUser = await fetch(
-          `http://localhost:8002/usuarios/${citaData.usuario_id}`
-        );
-        const userData = await resUser.json();
+  const cargarCita = async () => {
+    try {
+      const res = await fetch(`http://localhost:8000/citas/${id}`);
+      const data = await res.json();
+      setCita(data);
+    } catch (error) {
+      console.error(error);
+    }
+  };
 
-        const resVehiculo = await fetch(
-          `http://localhost:8003/vehiculos/${citaData.vehiculo_id}`
-        );
-        const vehiculoData = await resVehiculo.json();
+  const cargarRepuestos = async () => {
+    try {
+      const res = await fetch("http://localhost:8001/repuestos");
+      const data = await res.json();
+      setRepuestos(data);
+    } catch (error) {
+      console.error(error);
+    }
+  };
 
-        setCita(citaData);
-        setCliente(userData);
-        setVehiculo(vehiculoData);
+  // =========================
+  // 🔥 MANEJO FORMULARIO
+  // =========================
+  const handleChange = (campo, valor) => {
+    setForm({
+      ...form,
+      [campo]: valor,
+    });
+  };
 
-      } catch (error) {
-        console.error("❌ Error:", error);
-      }
-    };
+  const toggleRepuesto = (rep) => {
+    const existe = form.repuestos.includes(rep);
 
-    cargar();
-  }, [id]);
+    if (existe) {
+      setForm({
+        ...form,
+        repuestos: form.repuestos.filter((r) => r !== rep),
+      });
+    } else {
+      setForm({
+        ...form,
+        repuestos: [...form.repuestos, rep],
+      });
+    }
+  };
 
-  if (!cita || !cliente || !vehiculo) return <p>Cargando...</p>;
+  // =========================
+  // 💾 GUARDAR (SIMULADO)
+  // =========================
+  const guardarDiagnostico = async () => {
+    console.log("Datos a enviar:", form);
+
+    alert("Diagnóstico guardado (simulado) ✅");
+
+    // 🔥 aquí luego irá tu microservicio 5
+  };
+
+  if (!cita) return <p style={{ color: "white" }}>Cargando...</p>;
 
   return (
-    <div style={{ color: "white", padding: "20px" }}>
-      <h2>🔧 Detalle del Servicio</h2>
+    <div style={styles.container}>
+      <h2>🔧 Detalle de Cita #{id}</h2>
 
-      <p><strong>Cliente:</strong> {cliente.nombre}</p>
-      <p><strong>Teléfono:</strong> {cliente.telefono}</p>
+      {/* ========================= */}
+      {/* 📋 INFO VEHÍCULO */}
+      {/* ========================= */}
+      <div style={styles.card}>
+        <h3>Información del Vehículo</h3>
+        <p><strong>Placa:</strong> {cita.placa}</p>
+        <p><strong>Marca:</strong> {cita.marca}</p>
+        <p><strong>Modelo:</strong> {cita.modelo}</p>
+      </div>
 
-      <p><strong>Placa:</strong> {vehiculo.placa}</p>
-      <p><strong>Marca:</strong> {vehiculo.marca}</p>
-      <p><strong>Modelo:</strong> {vehiculo.modelo}</p>
+      {/* ========================= */}
+      {/* 🧠 DIAGNÓSTICO */}
+      {/* ========================= */}
+      <div style={styles.card}>
+        <h3>Diagnóstico</h3>
 
-      <p><strong>Observación cliente:</strong> {cita.observacion_cliente}</p>
+        <textarea
+          placeholder="Descripción de la falla"
+          value={form.descripcion_falla}
+          onChange={(e) =>
+            handleChange("descripcion_falla", e.target.value)
+          }
+          style={styles.textarea}
+        />
 
-      <button onClick={() => navigate(-1)}>⬅ Volver</button>
+        <textarea
+          placeholder="Reparación realizada"
+          value={form.reparacion}
+          onChange={(e) =>
+            handleChange("reparacion", e.target.value)
+          }
+          style={styles.textarea}
+        />
+
+        <select
+          value={form.criticidad}
+          onChange={(e) =>
+            handleChange("criticidad", e.target.value)
+          }
+          style={styles.select}
+        >
+          <option value="">Nivel de criticidad</option>
+          <option value="baja">Baja</option>
+          <option value="media">Media</option>
+          <option value="alta">Alta</option>
+        </select>
+      </div>
+
+      {/* ========================= */}
+      {/* 🧰 REPUESTOS */}
+      {/* ========================= */}
+      <div style={styles.card}>
+        <h3>Repuestos utilizados</h3>
+
+        <div style={styles.repuestos}>
+          {repuestos.map((r) => (
+            <label key={r.id} style={styles.checkbox}>
+              <input
+                type="checkbox"
+                onChange={() => toggleRepuesto(r.nombre)}
+              />
+              {r.nombre}
+            </label>
+          ))}
+        </div>
+      </div>
+
+      {/* ========================= */}
+      {/* 💾 BOTÓN */}
+      {/* ========================= */}
+      <button style={styles.btn} onClick={guardarDiagnostico}>
+        💾 Guardar Diagnóstico
+      </button>
     </div>
   );
 }
+
+// =========================
+// 🎨 ESTILOS
+// =========================
+const styles = {
+  container: {
+    color: "white",
+    maxWidth: "800px",
+    margin: "auto",
+  },
+
+  card: {
+    background: "#1e293b",
+    padding: "20px",
+    borderRadius: "12px",
+    marginBottom: "20px",
+  },
+
+  textarea: {
+    width: "100%",
+    padding: "10px",
+    marginTop: "10px",
+    borderRadius: "8px",
+    background: "#0f172a",
+    color: "white",
+    border: "1px solid #334155",
+  },
+
+  select: {
+    width: "100%",
+    padding: "10px",
+    marginTop: "10px",
+    borderRadius: "8px",
+    background: "#0f172a",
+    color: "white",
+  },
+
+  repuestos: {
+    display: "flex",
+    flexWrap: "wrap",
+    gap: "10px",
+  },
+
+  checkbox: {
+    background: "#0f172a",
+    padding: "8px",
+    borderRadius: "8px",
+  },
+
+  btn: {
+    width: "100%",
+    padding: "15px",
+    background: "#10b981",
+    border: "none",
+    borderRadius: "10px",
+    color: "white",
+    fontWeight: "bold",
+    cursor: "pointer",
+  },
+};
 
 export default DetalleCita;

@@ -32,14 +32,15 @@ function PerfilGuard({ children }) {
     if (usuarioId) verificarPerfil();
   }, [usuarioId]);
 
-  if (loading) return <p>Cargando...</p>;
+  if (loading) return <p style={{ color: "white" }}>Cargando...</p>;
 
-  // 🔥 SI NO TIENE PERFIL → BLOQUEA TODO
+  // 🔥 SI NO TIENE PERFIL → SOLO muestra perfil (SIN BLOQUEAR NAVIGACIÓN)
   if (!tienePerfil) {
     return (
       <div style={{ padding: "20px", color: "white" }}>
         <h2>⚠️ Completa tu perfil antes de continuar</h2>
-        <PerfilUsuario volver={() => {}} />
+
+        <PerfilUsuario />
       </div>
     );
   }

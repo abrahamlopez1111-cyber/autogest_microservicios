@@ -1,10 +1,39 @@
-from sqlalchemy import create_engine # type: ignore
-from sqlalchemy.orm import sessionmaker, declarative_base # type: ignore
+import os
+import time
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker, declarative_base
 
-DATABASE_URL = "postgresql://postgres:postgres@microservicio_historial:5432/microservicio_historial"
+DB_HOST = os.getenv("DB_HOST", "db_historial")
+DB_PORT = os.getenv("DB_PORT", "5432")
+DB_NAME = os.getenv("DB_NAME", "historial")
+DB_USER = os.getenv("DB_USER", "postgres")
+DB_PASSWORD = os.getenv("DB_PASSWORD", "postgres")
+
+DATABASE_URL = f"postgresql://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}"
 
 engine = create_engine(DATABASE_URL)
 
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
-
 Base = declarative_base()
+
+
+def wait_for_db():
+    for i in range(10):
+        try:
+            conn = engine.connect()
+            conn.close()
+            print("✅ DB historial lista")
+            return
+        except Exception:
+            print("⏳ Esperando DB historial...")
+            time.sleep(3)
+
+    raise Exception("❌ No conecta DB historial")
+
+
+def get_db():
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()

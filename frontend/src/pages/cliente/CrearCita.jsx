@@ -94,7 +94,7 @@ function CrearCita() {
   // 🚗 vehículos
   const cargarVehiculos = async () => {
     const res = await fetchAuth(
-      `http://localhost:8003/vehiculos/usuario/${usuarioId}`
+      `http://localhost:8003/historial/vehiculos/usuario/${usuarioId}`
     );
     if (res.ok) setVehiculos(await res.json());
   };
@@ -219,7 +219,7 @@ const esHoraPasada = (hora) => {
       return;
     }
 
-    const res = await fetchAuth("http://localhost:8003/vehiculos", {
+    const res = await fetchAuth("http://localhost:8003/historial/vehiculos", {
       method: "POST",
       body: JSON.stringify({
         ...nuevoVehiculo,

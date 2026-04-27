@@ -2,7 +2,7 @@ from fastapi import FastAPI, Depends, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
 
-from .database import engine, wait_for_db, SessionLocal, get_db
+from .database import engine, SessionLocal, get_db, wait_for_db
 from . import models, crud
 from .routes import usuarios
 from .routes import perfil
@@ -47,25 +47,36 @@ def crear_admin(db: Session):
         )
         db.add(nuevo)
         db.commit()
+        print("👑 Admin creado")
+    else:
+        print("👑 Admin ya existe")
 
 
 # ======================
-# 🚀 STARTUP
+# 🚀 STARTUP (ARREGLADO)
 # ======================
 @app.on_event("startup")
 def startup():
+    print("⏳ Esperando base de datos...")
+    
+    # 🔥 ESPERAR A QUE POSTGRES ESTÉ LISTO
     wait_for_db()
+
+    print("📦 Creando tablas...")
     models.Base.metadata.create_all(bind=engine)
 
+    # 🔥 CREAR ADMIN
     db = SessionLocal()
-    crear_admin(db)
-    db.close()
+    try:
+        crear_admin(db)
+    finally:
+        db.close()
 
-    print("Admin listo 🚀")
+    print("✅ Microservicio usuarios listo")
 
 
 # ======================
-# 🔥 ENDPOINT CORREGIDO
+# 🔥 ENDPOINT EXTRA
 # ======================
 @app.get("/usuarios/{usuario_id}")
 def obtener_usuario(usuario_id: int, db: Session = Depends(get_db)):

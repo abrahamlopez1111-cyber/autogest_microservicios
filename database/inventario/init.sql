@@ -1,18 +1,49 @@
+--
+-- PostgreSQL database dump
+--
 
+\restrict erbnAd58ZWmTwszrVzh23YArUeeYSnBltRlQSZthgXw8W2hcvTxc8jSR4Fc857B
+
+-- Dumped from database version 15.17 (Debian 15.17-1.pgdg13+1)
+-- Dumped by pg_dump version 18.3
+
+-- Started on 2026-04-26 19:55:10
+
+SET statement_timeout = 0;
+SET lock_timeout = 0;
+SET idle_in_transaction_session_timeout = 0;
+SET transaction_timeout = 0;
+SET client_encoding = 'UTF8';
+SET standard_conforming_strings = on;
+SELECT pg_catalog.set_config('search_path', '', false);
+SET check_function_bodies = false;
+SET xmloption = content;
+SET client_min_messages = warning;
+SET row_security = off;
+
+SET default_tablespace = '';
+
+SET default_table_access_method = heap;
+
+--
+-- TOC entry 214 (class 1259 OID 16385)
+-- Name: catalogo_repuestos; Type: TABLE; Schema: public; Owner: postgres
+--
 
 CREATE TABLE public.catalogo_repuestos (
     id integer NOT NULL,
     codigo_inventario character varying(50) NOT NULL,
-    descripcion character varying(255) NOT NULL,
+    nombre character varying(255) NOT NULL,
     requiere_lote boolean DEFAULT false,
-    punto_pedido_global integer DEFAULT 0
+    punto_pedido_global integer DEFAULT 0,
+    precio integer NOT NULL
 );
 
 
 ALTER TABLE public.catalogo_repuestos OWNER TO postgres;
 
 --
--- TOC entry 219 (class 1259 OID 16557)
+-- TOC entry 215 (class 1259 OID 16390)
 -- Name: catalogo_repuestos_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
 --
 
@@ -28,8 +59,8 @@ CREATE SEQUENCE public.catalogo_repuestos_id_seq
 ALTER SEQUENCE public.catalogo_repuestos_id_seq OWNER TO postgres;
 
 --
--- TOC entry 5051 (class 0 OID 0)
--- Dependencies: 219
+-- TOC entry 3456 (class 0 OID 0)
+-- Dependencies: 215
 -- Name: catalogo_repuestos_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
 --
 
@@ -37,7 +68,7 @@ ALTER SEQUENCE public.catalogo_repuestos_id_seq OWNED BY public.catalogo_repuest
 
 
 --
--- TOC entry 224 (class 1259 OID 16607)
+-- TOC entry 216 (class 1259 OID 16391)
 -- Name: lotes_inventario; Type: TABLE; Schema: public; Owner: postgres
 --
 
@@ -54,7 +85,7 @@ CREATE TABLE public.lotes_inventario (
 ALTER TABLE public.lotes_inventario OWNER TO postgres;
 
 --
--- TOC entry 223 (class 1259 OID 16606)
+-- TOC entry 217 (class 1259 OID 16394)
 -- Name: lotes_inventario_id_lotes_seq; Type: SEQUENCE; Schema: public; Owner: postgres
 --
 
@@ -70,8 +101,8 @@ CREATE SEQUENCE public.lotes_inventario_id_lotes_seq
 ALTER SEQUENCE public.lotes_inventario_id_lotes_seq OWNER TO postgres;
 
 --
--- TOC entry 5052 (class 0 OID 0)
--- Dependencies: 223
+-- TOC entry 3457 (class 0 OID 0)
+-- Dependencies: 217
 -- Name: lotes_inventario_id_lotes_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
 --
 
@@ -79,22 +110,22 @@ ALTER SEQUENCE public.lotes_inventario_id_lotes_seq OWNED BY public.lotes_invent
 
 
 --
--- TOC entry 222 (class 1259 OID 16593)
+-- TOC entry 218 (class 1259 OID 16395)
 -- Name: stock_sucursal; Type: TABLE; Schema: public; Owner: postgres
 --
 
 CREATE TABLE public.stock_sucursal (
     id integer NOT NULL,
-    sucursal_id integer,
+    sucursal_id integer NOT NULL,
     catalogo_repuestos_id integer NOT NULL,
-    cantidad_disponible integer
+    cantidad_disponible integer DEFAULT 0 NOT NULL
 );
 
 
 ALTER TABLE public.stock_sucursal OWNER TO postgres;
 
 --
--- TOC entry 221 (class 1259 OID 16592)
+-- TOC entry 219 (class 1259 OID 16398)
 -- Name: stock_sucursal_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
 --
 
@@ -110,8 +141,8 @@ CREATE SEQUENCE public.stock_sucursal_id_seq
 ALTER SEQUENCE public.stock_sucursal_id_seq OWNER TO postgres;
 
 --
--- TOC entry 5053 (class 0 OID 0)
--- Dependencies: 221
+-- TOC entry 3458 (class 0 OID 0)
+-- Dependencies: 219
 -- Name: stock_sucursal_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
 --
 
@@ -119,7 +150,7 @@ ALTER SEQUENCE public.stock_sucursal_id_seq OWNED BY public.stock_sucursal.id;
 
 
 --
--- TOC entry 226 (class 1259 OID 16623)
+-- TOC entry 220 (class 1259 OID 16399)
 -- Name: transferencias; Type: TABLE; Schema: public; Owner: postgres
 --
 
@@ -136,7 +167,7 @@ CREATE TABLE public.transferencias (
 ALTER TABLE public.transferencias OWNER TO postgres;
 
 --
--- TOC entry 225 (class 1259 OID 16622)
+-- TOC entry 221 (class 1259 OID 16403)
 -- Name: transferencias_id_transferencias_seq; Type: SEQUENCE; Schema: public; Owner: postgres
 --
 
@@ -152,8 +183,8 @@ CREATE SEQUENCE public.transferencias_id_transferencias_seq
 ALTER SEQUENCE public.transferencias_id_transferencias_seq OWNER TO postgres;
 
 --
--- TOC entry 5054 (class 0 OID 0)
--- Dependencies: 225
+-- TOC entry 3459 (class 0 OID 0)
+-- Dependencies: 221
 -- Name: transferencias_id_transferencias_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
 --
 
@@ -161,7 +192,7 @@ ALTER SEQUENCE public.transferencias_id_transferencias_seq OWNED BY public.trans
 
 
 --
--- TOC entry 4871 (class 2604 OID 16561)
+-- TOC entry 3278 (class 2604 OID 16404)
 -- Name: catalogo_repuestos id; Type: DEFAULT; Schema: public; Owner: postgres
 --
 
@@ -169,7 +200,7 @@ ALTER TABLE ONLY public.catalogo_repuestos ALTER COLUMN id SET DEFAULT nextval('
 
 
 --
--- TOC entry 4875 (class 2604 OID 16610)
+-- TOC entry 3281 (class 2604 OID 16405)
 -- Name: lotes_inventario id_lotes; Type: DEFAULT; Schema: public; Owner: postgres
 --
 
@@ -177,7 +208,7 @@ ALTER TABLE ONLY public.lotes_inventario ALTER COLUMN id_lotes SET DEFAULT nextv
 
 
 --
--- TOC entry 4874 (class 2604 OID 16596)
+-- TOC entry 3282 (class 2604 OID 16406)
 -- Name: stock_sucursal id; Type: DEFAULT; Schema: public; Owner: postgres
 --
 
@@ -185,7 +216,7 @@ ALTER TABLE ONLY public.stock_sucursal ALTER COLUMN id SET DEFAULT nextval('publ
 
 
 --
--- TOC entry 4876 (class 2604 OID 16626)
+-- TOC entry 3284 (class 2604 OID 16407)
 -- Name: transferencias id_transferencias; Type: DEFAULT; Schema: public; Owner: postgres
 --
 
@@ -193,18 +224,18 @@ ALTER TABLE ONLY public.transferencias ALTER COLUMN id_transferencias SET DEFAUL
 
 
 --
--- TOC entry 5039 (class 0 OID 16558)
--- Dependencies: 220
+-- TOC entry 3443 (class 0 OID 16385)
+-- Dependencies: 214
 -- Data for Name: catalogo_repuestos; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
-COPY public.catalogo_repuestos (id, codigo_inventario, descripcion, requiere_lote, punto_pedido_global) FROM stdin;
+COPY public.catalogo_repuestos (id, codigo_inventario, nombre, requiere_lote, punto_pedido_global, precio) FROM stdin;
 \.
 
 
 --
--- TOC entry 5043 (class 0 OID 16607)
--- Dependencies: 224
+-- TOC entry 3445 (class 0 OID 16391)
+-- Dependencies: 216
 -- Data for Name: lotes_inventario; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
@@ -213,8 +244,8 @@ COPY public.lotes_inventario (id_lotes, catalogo_repuestos_id, sucursal_id, codi
 
 
 --
--- TOC entry 5041 (class 0 OID 16593)
--- Dependencies: 222
+-- TOC entry 3447 (class 0 OID 16395)
+-- Dependencies: 218
 -- Data for Name: stock_sucursal; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
@@ -223,8 +254,8 @@ COPY public.stock_sucursal (id, sucursal_id, catalogo_repuestos_id, cantidad_dis
 
 
 --
--- TOC entry 5045 (class 0 OID 16623)
--- Dependencies: 226
+-- TOC entry 3449 (class 0 OID 16399)
+-- Dependencies: 220
 -- Data for Name: transferencias; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
@@ -233,8 +264,8 @@ COPY public.transferencias (id_transferencias, catalogo_repuestos_id, sucursal_o
 
 
 --
--- TOC entry 5055 (class 0 OID 0)
--- Dependencies: 219
+-- TOC entry 3460 (class 0 OID 0)
+-- Dependencies: 215
 -- Name: catalogo_repuestos_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
@@ -242,8 +273,8 @@ SELECT pg_catalog.setval('public.catalogo_repuestos_id_seq', 1, false);
 
 
 --
--- TOC entry 5056 (class 0 OID 0)
--- Dependencies: 223
+-- TOC entry 3461 (class 0 OID 0)
+-- Dependencies: 217
 -- Name: lotes_inventario_id_lotes_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
@@ -251,8 +282,8 @@ SELECT pg_catalog.setval('public.lotes_inventario_id_lotes_seq', 1, false);
 
 
 --
--- TOC entry 5057 (class 0 OID 0)
--- Dependencies: 221
+-- TOC entry 3462 (class 0 OID 0)
+-- Dependencies: 219
 -- Name: stock_sucursal_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
@@ -260,8 +291,8 @@ SELECT pg_catalog.setval('public.stock_sucursal_id_seq', 1, false);
 
 
 --
--- TOC entry 5058 (class 0 OID 0)
--- Dependencies: 225
+-- TOC entry 3463 (class 0 OID 0)
+-- Dependencies: 221
 -- Name: transferencias_id_transferencias_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
@@ -269,7 +300,7 @@ SELECT pg_catalog.setval('public.transferencias_id_transferencias_seq', 1, false
 
 
 --
--- TOC entry 4887 (class 2606 OID 16634)
+-- TOC entry 3297 (class 2606 OID 16409)
 -- Name: transferencias PK_id_transferencias; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -278,7 +309,7 @@ ALTER TABLE ONLY public.transferencias
 
 
 --
--- TOC entry 4879 (class 2606 OID 16570)
+-- TOC entry 3287 (class 2606 OID 16411)
 -- Name: catalogo_repuestos codigo; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -287,7 +318,7 @@ ALTER TABLE ONLY public.catalogo_repuestos
 
 
 --
--- TOC entry 4881 (class 2606 OID 16568)
+-- TOC entry 3289 (class 2606 OID 16413)
 -- Name: catalogo_repuestos pk_id; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -296,7 +327,7 @@ ALTER TABLE ONLY public.catalogo_repuestos
 
 
 --
--- TOC entry 4885 (class 2606 OID 16616)
+-- TOC entry 3291 (class 2606 OID 16415)
 -- Name: lotes_inventario pk_id_lotes; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -305,7 +336,7 @@ ALTER TABLE ONLY public.lotes_inventario
 
 
 --
--- TOC entry 4883 (class 2606 OID 16600)
+-- TOC entry 3293 (class 2606 OID 16417)
 -- Name: stock_sucursal pk_id_stock; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -314,7 +345,16 @@ ALTER TABLE ONLY public.stock_sucursal
 
 
 --
--- TOC entry 4888 (class 2606 OID 16601)
+-- TOC entry 3295 (class 2606 OID 24627)
+-- Name: stock_sucursal unique_stock; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.stock_sucursal
+    ADD CONSTRAINT unique_stock UNIQUE (sucursal_id);
+
+
+--
+-- TOC entry 3299 (class 2606 OID 16418)
 -- Name: stock_sucursal fk_catalogo_repuestos; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -323,7 +363,7 @@ ALTER TABLE ONLY public.stock_sucursal
 
 
 --
--- TOC entry 4889 (class 2606 OID 16617)
+-- TOC entry 3298 (class 2606 OID 16423)
 -- Name: lotes_inventario fk_catalogo_repuestos_id; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -332,7 +372,7 @@ ALTER TABLE ONLY public.lotes_inventario
 
 
 --
--- TOC entry 4890 (class 2606 OID 16635)
+-- TOC entry 3300 (class 2606 OID 16428)
 -- Name: transferencias fk_catalogo_repuestos_id; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -340,10 +380,11 @@ ALTER TABLE ONLY public.transferencias
     ADD CONSTRAINT fk_catalogo_repuestos_id FOREIGN KEY (catalogo_repuestos_id) REFERENCES public.catalogo_repuestos(id);
 
 
--- Completed on 2026-04-18 18:30:58
+-- Completed on 2026-04-26 19:55:11
 
 --
 -- PostgreSQL database dump complete
 --
 
+\unrestrict erbnAd58ZWmTwszrVzh23YArUeeYSnBltRlQSZthgXw8W2hcvTxc8jSR4Fc857B
 

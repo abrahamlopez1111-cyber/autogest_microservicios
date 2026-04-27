@@ -1,11 +1,12 @@
-from fastapi import APIRouter, Depends # pyright: ignore[reportMissingImports]
-from sqlalchemy.orm import Session # pyright: ignore[reportMissingImports]
+from fastapi import APIRouter, Depends, HTTPException
+from sqlalchemy.orm import Session
 from app.database import SessionLocal
 from app import models, schemas
+import time
 
-router = APIRouter()
+router = APIRouter(prefix="/repuestos", tags=["Repuestos"])
 
-# Dependencia DB
+
 def get_db():
     db = SessionLocal()
     try:
@@ -14,39 +15,108 @@ def get_db():
         db.close()
 
 
-# CREAR REPUESTO
-@router.post("/repuestos", response_model=schemas.Repuesto)
-def crear_repuesto(repuesto: schemas.RepuestoCreate, db: Session = Depends(get_db)):
-    nuevo = models.CatalogoRepuestos(**repuesto.dict())
+# =========================
+# ✅ CREAR PRODUCTO
+# =========================
+@router.post("/", response_model=schemas.Repuesto)
+def crear_repuesto(data: schemas.RepuestoCreate, db: Session = Depends(get_db)):
+
+    nuevo = models.CatalogoRepuestos(
+        codigo_inventario=f"REP-{int(time.time())}",
+        nombre=data.nombre,  # 🔥 CORREGIDO
+        precio=data.precio
+    )
+
     db.add(nuevo)
     db.commit()
     db.refresh(nuevo)
+
     return nuevo
 
 
-# LISTAR REPUESTOS
-@router.get("/repuestos", response_model=list[schemas.Repuesto])
+# =========================
+# ✅ LISTAR
+# =========================
+@router.get("/", response_model=list[schemas.Repuesto])
 def listar_repuestos(db: Session = Depends(get_db)):
     return db.query(models.CatalogoRepuestos).all()
 
 
-# OBTENER REPUESTO
-@router.get("/repuestos/{repuesto_id}", response_model=schemas.Repuesto)
-def obtener_repuesto(repuesto_id: int, db: Session = Depends(get_db)):
-    return db.query(models.CatalogoRepuestos).filter(
-        models.CatalogoRepuestos.id == repuesto_id
+# =========================
+# ✅ STOCK (CREAR)
+# =========================
+@router.post("/stock")
+def crear_stock(data: schemas.StockCreate, db: Session = Depends(get_db)):
+
+    existente = db.query(models.StockSucursal).filter(
+        models.StockSucursal.catalogo_repuestos_id == data.catalogo_repuestos_id,
+        models.StockSucursal.sucursal_id == data.sucursal_id
     ).first()
 
-
-# ELIMINAR REPUESTO
-@router.delete("/repuestos/{repuesto_id}")
-def eliminar_repuesto(repuesto_id: int, db: Session = Depends(get_db)):
-    repuesto = db.query(models.CatalogoRepuestos).filter(
-        models.CatalogoRepuestos.id == repuesto_id
-    ).first()
-
-    if repuesto:
-        db.delete(repuesto)
+    if existente:
+        existente.cantidad_disponible += data.cantidad_disponible
         db.commit()
+        return {"mensaje": "Stock actualizado"}
 
-    return {"mensaje": "Repuesto eliminado"}
+    nuevo = models.StockSucursal(**data.dict())
+    db.add(nuevo)
+    db.commit()
+
+    return {"mensaje": "Stock creado"}
+
+
+# =========================
+# ✅ STOCK POR SUCURSAL
+# =========================
+@router.get("/stock/{sucursal_id}")
+def stock_por_sucursal(sucursal_id: int, db: Session = Depends(get_db)):
+
+    return db.query(models.StockSucursal).filter(
+        models.StockSucursal.sucursal_id == sucursal_id
+    ).all()
+
+
+# =========================
+# ✅ DISPONIBILIDAD
+# =========================
+@router.get("/disponibilidad/{repuesto_id}/{sucursal_id}")
+def disponibilidad(repuesto_id: int, sucursal_id: int, db: Session = Depends(get_db)):
+
+    stock = db.query(models.StockSucursal).filter(
+        models.StockSucursal.catalogo_repuestos_id == repuesto_id,
+        models.StockSucursal.sucursal_id == sucursal_id
+    ).first()
+
+    if not stock:
+        return {"disponible": False, "cantidad": 0}
+
+    return {
+        "disponible": stock.cantidad_disponible > 0,
+        "cantidad": stock.cantidad_disponible
+    }
+    
+    
+@router.get("/inventario-completo")
+def inventario_completo(db: Session = Depends(get_db)):
+
+    data = db.query(
+        models.CatalogoRepuestos.id,
+        models.CatalogoRepuestos.nombre,
+        models.CatalogoRepuestos.precio,
+        models.StockSucursal.cantidad_disponible,
+        models.StockSucursal.sucursal_id
+    ).join(
+        models.StockSucursal,
+        models.CatalogoRepuestos.id == models.StockSucursal.catalogo_repuestos_id
+    ).all()
+
+    return [
+        {
+            "id": r.id,
+            "nombre": r.nombre,
+            "precio": r.precio,
+            "cantidad": r.cantidad_disponible,
+            "sucursal_id": r.sucursal_id
+        }
+        for r in data
+    ]

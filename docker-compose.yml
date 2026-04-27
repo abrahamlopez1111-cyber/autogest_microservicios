@@ -1,65 +1,71 @@
-version: "3.9"
-
 services:
 
   # ======================
   # BASE DE DATOS CITAS
   # ======================
-  microservicio_citas:
+  db_citas:
     image: postgres:15
-    container_name: microservicio_citas
+    container_name: db_citas
+    restart: always
     environment:
-      POSTGRES_DB: microservicio_citas
+      POSTGRES_DB: citas
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
     ports:
       - "5433:5432"
     volumes:
+      - citas_data:/var/lib/postgresql/data
       - ./database/citas/init.sql:/docker-entrypoint-initdb.d/init.sql
 
   # ======================
   # BASE DE DATOS INVENTARIO
   # ======================
-  microservicio_inventario:
+  db_inventario:
     image: postgres:15
-    container_name: microservicio_inventario
+    container_name: db_inventario
+    restart: always
     environment:
-      POSTGRES_DB: microservicio_inventario
+      POSTGRES_DB: inventario
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
     ports:
       - "5434:5432"
     volumes:
+      - inventario_data:/var/lib/postgresql/data
       - ./database/inventario/init.sql:/docker-entrypoint-initdb.d/init.sql
 
   # ======================
   # BASE DE DATOS USUARIOS
   # ======================
-  microservicio_usuarios:
+  db_usuarios:
     image: postgres:15
-    container_name: microservicio_usuarios
+    container_name: db_usuarios
+    restart: always
     environment:
-      POSTGRES_DB: microservicio_usuarios
+      POSTGRES_DB: usuarios
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
     ports:
       - "5435:5432"
     volumes:
+      - usuarios_data:/var/lib/postgresql/data
       - ./database/usuarios/init.sql:/docker-entrypoint-initdb.d/init.sql
 
   # ======================
-  # 🆕 BASE DE DATOS HISTORIAL
+  # BASE DE DATOS HISTORIAL
   # ======================
-  microservicio_historial:
+  db_historial:
     image: postgres:15
-    container_name: microservicio_historial
+    container_name: db_historial
+    restart: always
     environment:
-      POSTGRES_DB: microservicio_historial
+      POSTGRES_DB: historial
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
     ports:
       - "5436:5432"
     volumes:
+      - historial_data:/var/lib/postgresql/data
       - ./database/historial/init.sql:/docker-entrypoint-initdb.d/init.sql
 
   # ======================
@@ -67,37 +73,74 @@ services:
   # ======================
   citas_service:
     build: ./backend/microservicio_citas
+    container_name: citas_service
     ports:
       - "8000:8000"
     depends_on:
-      - microservicio_citas
+      - db_citas
+    environment:
+      DB_HOST: db_citas
+      DB_PORT: 5432
+      DB_NAME: citas
+      DB_USER: postgres
+      DB_PASSWORD: postgres
 
   # ======================
   # MICROSERVICIO INVENTARIO
   # ======================
   inventario_service:
     build: ./backend/microservicio_inventario
+    container_name: inventario_service
     ports:
-      - "8001:8001"
+      - "8004:8000"
     depends_on:
-      - microservicio_inventario
+      - db_inventario
+    environment:
+      DB_HOST: db_inventario
+      DB_PORT: 5432
+      DB_NAME: inventario
+      DB_USER: postgres
+      DB_PASSWORD: postgres
 
   # ======================
   # MICROSERVICIO USUARIOS
   # ======================
   usuarios_service:
     build: ./backend/microservicio_usuarios
+    container_name: usuarios_service
     ports:
-      - "8002:8002"
+      - "8002:8000"
     depends_on:
-      - microservicio_usuarios
+      - db_usuarios
+    environment:
+      DB_HOST: db_usuarios
+      DB_PORT: 5432
+      DB_NAME: usuarios
+      DB_USER: postgres
+      DB_PASSWORD: postgres
 
   # ======================
-  # 🆕 MICROSERVICIO HISTORIAL
+  # MICROSERVICIO HISTORIAL
   # ======================
   historial_service:
     build: ./backend/microservicio_historial
+    container_name: historial_service
     ports:
-      - "8003:8003"
+      - "8003:8000"
     depends_on:
-      - microservicio_historial
+      - db_historial
+    environment:
+      DB_HOST: db_historial
+      DB_PORT: 5432
+      DB_NAME: historial
+      DB_USER: postgres
+      DB_PASSWORD: postgres
+
+# ======================
+# VOLUMENES (CLAVE 🔥)
+# ======================
+volumes:
+  citas_data:
+  inventario_data:
+  usuarios_data:
+  historial_data:

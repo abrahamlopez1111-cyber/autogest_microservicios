@@ -88,6 +88,7 @@ function UsuariosPanel({ volver }) {
             <option value="cliente">Cliente</option>
             <option value="mecanico">Mecánico</option>
             <option value="admin">Administrador</option>
+            <option value="recepcionista">Recepcionista</option>
           </select>
 
           <button style={styles.btnCrear} onClick={handleCrear}>

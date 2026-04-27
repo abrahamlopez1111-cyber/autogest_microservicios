@@ -1,19 +1,9 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
-from .. import schemas, crud, database, models
+from .. import schemas, crud, models
+from ..database import get_db
 
 router = APIRouter(prefix="", tags=["Usuarios"])
-
-
-# =========================
-# 🔌 DB
-# =========================
-def get_db():
-    db = database.SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
 
 
 # =========================
@@ -22,7 +12,6 @@ def get_db():
 @router.post("/usuarios", response_model=schemas.UsuarioOut)
 def crear_usuario(usuario: schemas.UsuarioCreate, db: Session = Depends(get_db)):
 
-    # 🔥 valor por defecto
     if not usuario.rol:
         usuario.rol = "cliente"
 
@@ -50,8 +39,7 @@ def login(data: schemas.Login, db: Session = Depends(get_db)):
     return {
         "mensaje": "Login exitoso",
         "usuario": {
-            "id": user.id_usuarios,  # 🔥 CONSISTENTE
-            "id_usuarios": user.id_usuarios,  # 🔥 clave para frontend
+            "id_usuarios": user.id_usuarios,
             "nombre": user.nombre,
             "email": user.email,
             "rol": user.rol.lower()
@@ -62,21 +50,14 @@ def login(data: schemas.Login, db: Session = Depends(get_db)):
 # =========================
 # 🔹 OBTENER USUARIO POR ID
 # =========================
-@router.get("/usuarios/{id}")
+@router.get("/usuarios/{id}", response_model=schemas.UsuarioOut)
 def obtener_usuario(id: int, db: Session = Depends(get_db)):
     usuario = crud.obtener_usuario_por_id(db, id)
 
     if not usuario:
         raise HTTPException(status_code=404, detail="Usuario no encontrado")
 
-    # 🔥 IMPORTANTE: devolver formato consistente
-    return {
-        "id": usuario.id_usuarios,
-        "id_usuarios": usuario.id_usuarios,
-        "nombre": usuario.nombre,
-        "email": usuario.email,
-        "rol": usuario.rol.lower()
-    }
+    return usuario
 
 
 # =========================
@@ -84,6 +65,7 @@ def obtener_usuario(id: int, db: Session = Depends(get_db)):
 # =========================
 @router.put("/usuarios/{id}", response_model=schemas.UsuarioOut)
 def actualizar_usuario(id: int, datos: schemas.UsuarioCreate, db: Session = Depends(get_db)):
+
     usuario = db.query(models.Usuario).filter(
         models.Usuario.id_usuarios == id
     ).first()
@@ -107,6 +89,7 @@ def actualizar_usuario(id: int, datos: schemas.UsuarioCreate, db: Session = Depe
 # =========================
 @router.delete("/usuarios/{id}")
 def eliminar_usuario(id: int, db: Session = Depends(get_db)):
+
     usuario = db.query(models.Usuario).filter(
         models.Usuario.id_usuarios == id
     ).first()
@@ -125,6 +108,7 @@ def eliminar_usuario(id: int, db: Session = Depends(get_db)):
 # =========================
 @router.get("/usuarios/{id}/es-mecanico")
 def es_mecanico(id: int, db: Session = Depends(get_db)):
+
     usuario = db.query(models.Usuario).filter(
         models.Usuario.id_usuarios == id
     ).first()
@@ -133,6 +117,17 @@ def es_mecanico(id: int, db: Session = Depends(get_db)):
         raise HTTPException(status_code=404, detail="Usuario no encontrado")
 
     return {
-        "id": usuario.id_usuarios,
+        "id_usuarios": usuario.id_usuarios,
         "es_mecanico": usuario.rol.lower() == "mecanico"
     }
+
+
+# =========================
+# 🧑‍💼 RECEPCIONISTAS
+# =========================
+@router.get("/recepcionistas", response_model=list[schemas.UsuarioOut])
+def listar_recepcionistas(db: Session = Depends(get_db)):
+
+    return db.query(models.Usuario).filter(
+        models.Usuario.rol == "recepcionista"
+    ).all()

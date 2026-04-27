@@ -29,12 +29,21 @@ def obtener_perfil(usuario_id: int, db: Session = Depends(get_db)):
 @router.post("/{usuario_id}", response_model=schemas.PerfilOut)
 def crear_perfil(usuario_id: int, datos: schemas.PerfilCreate, db: Session = Depends(get_db)):
 
+    # 🔍 Verificar si ya existe
     existente = db.query(models.PerfilUsuario).filter(
         models.PerfilUsuario.usuario_id == usuario_id
     ).first()
 
     if existente:
         raise HTTPException(status_code=400, detail="El perfil ya existe")
+
+    # 🔍 Validar que el usuario exista (IMPORTANTE)
+    usuario = db.query(models.Usuario).filter(
+        models.Usuario.id_usuarios == usuario_id
+    ).first()
+
+    if not usuario:
+        raise HTTPException(status_code=404, detail="Usuario no encontrado")
 
     nuevo = models.PerfilUsuario(
         usuario_id=usuario_id,
@@ -61,6 +70,7 @@ def actualizar_perfil(usuario_id: int, datos: schemas.PerfilCreate, db: Session 
     if not perfil:
         raise HTTPException(status_code=404, detail="Perfil no encontrado")
 
+    # 🔥 Solo actualiza campos enviados
     for key, value in datos.dict(exclude_unset=True).items():
         setattr(perfil, key, value)
 
