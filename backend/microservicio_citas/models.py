@@ -100,3 +100,25 @@ class Cita(Base):
     sucursal = relationship("Sucursal", back_populates="citas")
     mecanico = relationship("Mecanico", back_populates="citas")
     contrato_flota = relationship("ContratoFlota", back_populates="citas")
+    
+    
+    
+    
+class RecepcionCita(Base):
+    __tablename__ = "recepcion_citas"
+
+    id = Column(Integer, primary_key=True, index=True)
+    cita_id = Column(Integer)
+    kilometraje = Column(Integer)
+    observaciones = Column(String)
+    
+    
+
+
+
+class Recepcionista(Base):
+    __tablename__ = "recepcionistas"
+
+    id = Column(Integer, primary_key=True, index=True)
+    usuario_id = Column(Integer, nullable=False, unique=True)
+    sucursal_id = Column(Integer, nullable=False)

@@ -75,3 +75,27 @@ class MecanicoOut(MecanicoBase):
 
     class Config:
         from_attributes = True
+        
+# =========================
+# 🧑‍💼 RECEPCIONISTA
+# =========================
+class RecepcionistaCreate(BaseModel):
+    usuario_id: int
+    sucursal_id: int
+
+
+class RecepcionistaOut(BaseModel):
+    id: int
+    usuario_id: int
+    sucursal_id: int
+
+    class Config:
+        from_attributes = True
+
+
+# =========================
+# 🚗 RECEPCIÓN DE VEHÍCULO
+# =========================
+class RecepcionCreate(BaseModel):
+    kilometraje: int
+    observaciones: Optional[str] = None

@@ -14,6 +14,10 @@ import ClienteDashboard from "./pages/cliente/ClienteDashboard";
 import DashboardMecanico from "./pages/mecanico/DashboardMecanico";
 import Register from "./pages/Register";
 
+// 🔥 RECEPCIONISTA
+import RecepcionistaDashboard from "./pages/recepcionista/recepcionista_dashboard";
+import CitasHoyRecepcionista from "./pages/recepcionista/CitasHoyRecepcionista";
+
 // 🔥 ADMIN PANELES
 import UsuariosPanel from "./pages/admin/UsuariosPanel";
 import SucursalesPanel from "./pages/admin/SucursalesPanel";
@@ -75,7 +79,7 @@ function AppContent() {
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
 
-          {/* 👑 ADMIN DASHBOARD */}
+          {/* 👑 ADMIN */}
           <Route
             path="/admin"
             element={
@@ -88,42 +92,15 @@ function AppContent() {
           />
 
           {/* 🔥 ADMIN RUTAS */}
-          <Route
-            path="/admin/usuarios"
-            element={<UsuariosPanel />}
-          />
+          <Route path="/admin/usuarios" element={<UsuariosPanel />} />
+          <Route path="/admin/sucursales" element={<SucursalesPanel />} />
+          <Route path="/admin/mecanicos" element={<MecanicosPanel />} />
+          <Route path="/admin/recepcionistas" element={<RecepcionistasPanel />} />
+          <Route path="/admin/vehiculos" element={<VehiculosPanel />} />
+          <Route path="/admin/repuestos" element={<RepuestosPanel />} />
+          <Route path="/admin/perfil" element={<PerfilUsuario />} />
 
-          <Route
-            path="/admin/sucursales"
-            element={<SucursalesPanel />}
-          />
-
-          <Route
-            path="/admin/mecanicos"
-            element={<MecanicosPanel />}
-          />
-
-          <Route
-            path="/admin/recepcionistas"
-            element={<RecepcionistasPanel />}
-          />
-
-          <Route
-            path="/admin/vehiculos"
-            element={<VehiculosPanel />}
-          />
-
-          <Route
-            path="/admin/repuestos"
-            element={<RepuestosPanel />}
-          />
-
-          <Route
-            path="/admin/perfil"
-            element={<PerfilUsuario />}
-          />
-
-          {/* 📅 CLIENTE */}
+          {/* 👤 CLIENTE */}
           <Route
             path="/cliente"
             element={
@@ -180,13 +157,24 @@ function AppContent() {
             }
           />
 
-          {/* 🧑‍💼 RECEPCIÓN */}
+          {/* 🧑‍💼 RECEPCIONISTA */}
           <Route
-            path="/recepcion"
+            path="/recepcionista"
             element={
               <ProtectedRoute rolesPermitidos={["recepcionista"]}>
                 <PerfilGuard>
-                  <h2 style={{ color: "white" }}>Panel Recepción</h2>
+                  <RecepcionistaDashboard />
+                </PerfilGuard>
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/recepcionista/citas-hoy"
+            element={
+              <ProtectedRoute rolesPermitidos={["recepcionista"]}>
+                <PerfilGuard>
+                  <CitasHoyRecepcionista />
                 </PerfilGuard>
               </ProtectedRoute>
             }

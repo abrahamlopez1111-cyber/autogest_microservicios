@@ -3,6 +3,8 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import HTMLResponse
 from sqlalchemy.orm import Session
 
+
+
 import models
 import schemas
 import crud
@@ -193,3 +195,185 @@ def citas_hoy_mecanico(mecanico_id: int, db: Session = Depends(get_db)):
     ).all()
 
     return citas
+
+
+
+
+
+@app.put("/citas/{id}/recibir")
+def recibir_cita(id: int, data: schemas.RecepcionCreate, db: Session = Depends(get_db)):
+
+    cita = db.query(models.Cita).filter(models.Cita.id == id).first()
+
+    if not cita:
+        raise HTTPException(status_code=404, detail="Cita no encontrada")
+
+    # 🔥 Guardar recepción
+    recepcion = models.RecepcionCita(
+        cita_id=id,
+        kilometraje=data.kilometraje,
+        observaciones=data.observaciones
+    )
+
+    db.add(recepcion)
+
+    # 🔥 Cambiar estado
+    cita.estado = "recibida"
+
+    db.commit()
+    db.refresh(cita)
+
+    return {
+        "mensaje": "Cita recibida correctamente",
+        "estado": cita.estado
+    }
+    
+    
+# =========================
+# 📅 CITAS HOY POR SUCURSAL (RECEPCIÓN)
+# =========================
+@app.get("/citas/sucursal/{sucursal_id}/hoy")
+def citas_hoy_sucursal(sucursal_id: int, db: Session = Depends(get_db)):
+
+    import pytz
+    from datetime import datetime, timedelta
+
+    tz = pytz.timezone("America/Bogota")
+
+    hoy_inicio = datetime.now(tz).replace(hour=0, minute=0, second=0, microsecond=0)
+    hoy_fin = hoy_inicio + timedelta(days=1)
+
+    citas = db.query(models.Cita).filter(
+        models.Cita.sucursal_id == sucursal_id,
+        models.Cita.fecha_hora_inicio >= hoy_inicio,
+        models.Cita.fecha_hora_inicio < hoy_fin
+    ).all()
+
+    return citas
+
+
+@app.get("/recepcionistas")
+def listar_recepcionistas(db: Session = Depends(get_db)):
+    return db.query(models.Recepcionista).all()
+
+
+@app.post("/recepcionistas")
+def crear_recepcionista(data: schemas.RecepcionistaCreate, db: Session = Depends(get_db)):
+
+    nuevo = models.Recepcionista(
+        usuario_id=data.usuario_id,
+        sucursal_id=data.sucursal_id
+    )
+
+    db.add(nuevo)
+    db.commit()
+    db.refresh(nuevo)
+
+    return nuevo
+
+
+
+
+
+
+
+# =========================
+# 🚗 RECIBIR CITA
+# =========================
+@app.put("/citas/{id}/recibir", response_model=schemas.CitaOut)
+def recibir_cita(
+    id: int,
+    data: schemas.RecepcionCreate,
+    db: Session = Depends(get_db)
+):
+    cita = db.query(models.Cita).filter(models.Cita.id == id).first()
+
+    if not cita:
+        raise HTTPException(status_code=404, detail="Cita no encontrada")
+
+    # 🔒 Evitar procesar dos veces
+    if cita.estado != "programada":
+        raise HTTPException(
+            status_code=400,
+            detail=f"La cita no se puede recibir (estado actual: {cita.estado})"
+        )
+
+    # 🔥 Guardar recepción
+    recepcion = models.RecepcionCita(
+        cita_id=id,
+        kilometraje=data.kilometraje,
+        observaciones=data.observaciones
+    )
+
+    db.add(recepcion)
+
+    # 🔥 Cambiar estado
+    cita.estado = "recibida"
+
+    db.commit()
+    db.refresh(cita)
+
+    return cita
+
+
+# =========================
+# 📅 CITAS HOY POR SUCURSAL
+# =========================
+@app.get("/citas/sucursal/{sucursal_id}/hoy", response_model=list[schemas.CitaOut])
+def citas_hoy_sucursal(
+    sucursal_id: int,
+    db: Session = Depends(get_db)
+):
+    tz = pytz.timezone("America/Bogota")
+
+    hoy_inicio = datetime.now(tz).replace(
+        hour=0, minute=0, second=0, microsecond=0
+    )
+    hoy_fin = hoy_inicio + timedelta(days=1)
+
+    citas = db.query(models.Cita).filter(
+        models.Cita.sucursal_id == sucursal_id,
+        models.Cita.fecha_hora_inicio >= hoy_inicio,
+        models.Cita.fecha_hora_inicio < hoy_fin
+    ).all()
+
+    return citas
+
+
+# =========================
+# 🧑‍💼 LISTAR RECEPCIONISTAS
+# =========================
+@app.get("/recepcionistas", response_model=list[schemas.RecepcionistaOut])
+def listar_recepcionistas(db: Session = Depends(get_db)):
+    return db.query(models.Recepcionista).all()
+
+
+# =========================
+# 🧑‍💼 CREAR RECEPCIONISTA
+# =========================
+@app.post("/recepcionistas", response_model=schemas.RecepcionistaOut)
+def crear_recepcionista(
+    data: schemas.RecepcionistaCreate,
+    db: Session = Depends(get_db)
+):
+    # 🔒 evitar duplicados por usuario
+    existe = db.query(models.Recepcionista).filter(
+        models.Recepcionista.usuario_id == data.usuario_id
+    ).first()
+
+    if existe:
+        raise HTTPException(
+            status_code=400,
+            detail="El usuario ya es recepcionista"
+        )
+
+    nuevo = models.Recepcionista(
+        usuario_id=data.usuario_id,
+        sucursal_id=data.sucursal_id
+    )
+
+    db.add(nuevo)
+    db.commit()
+    db.refresh(nuevo)
+
+    return nuevo

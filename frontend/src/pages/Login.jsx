@@ -17,7 +17,7 @@ function Login() {
     admin: "/admin",
     cliente: "/cliente",
     mecanico: "/mecanico",
-    recepcionista: "/recepcion",
+    recepcionista: "/recepcionista",
   };
 
   const handleLogin = async () => {

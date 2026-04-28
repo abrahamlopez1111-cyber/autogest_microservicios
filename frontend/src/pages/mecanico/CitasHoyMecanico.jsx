@@ -7,6 +7,7 @@ function CitasHoyMecanico() {
 
   const [usuarios, setUsuarios] = useState([]);
   const [vehiculos, setVehiculos] = useState([]);
+  const [perfiles, setPerfiles] = useState({}); // 🔥 NUEVO
 
   const navigate = useNavigate();
 
@@ -37,10 +38,10 @@ function CitasHoyMecanico() {
         );
         const citasData = await resCitas.json();
 
-        // 🔥 3. traer datos extra
+        // 🔥 3. traer datos base
         const [resUsuarios, resVehiculos] = await Promise.all([
           fetch("http://localhost:8002/usuarios"),
-          fetch("http://localhost:8003/vehiculos"),
+          fetch("http://localhost:8003/historial/vehiculos"),
         ]);
 
         const usuariosData = await resUsuarios.json();
@@ -48,8 +49,29 @@ function CitasHoyMecanico() {
 
         setUsuarios(usuariosData);
         setVehiculos(vehiculosData);
-
         setCitas(citasData);
+
+        // 🔥 4. TRAER PERFILES (AQUÍ ESTÁ LA CLAVE)
+        const perfilesTemp = {};
+
+        await Promise.all(
+          citasData.map(async (c) => {
+            try {
+              const resPerfil = await fetch(
+                `http://localhost:8002/perfil/${c.usuario_id}`
+              );
+
+              if (resPerfil.ok) {
+                const perfil = await resPerfil.json();
+                perfilesTemp[c.usuario_id] = perfil;
+              }
+            } catch (error) {
+              console.log("Error perfil:", error);
+            }
+          })
+        );
+
+        setPerfiles(perfilesTemp);
 
       } catch (error) {
         console.error("❌ Error:", error);
@@ -75,6 +97,8 @@ function CitasHoyMecanico() {
             (u) => u.id_usuarios === c.usuario_id
           );
 
+          const perfil = perfiles[c.usuario_id]; // 🔥 AQUÍ
+
           const vehiculo = vehiculos.find(
             (v) => v.id === c.vehiculo_id
           );
@@ -86,7 +110,12 @@ function CitasHoyMecanico() {
               onClick={() => navigate(`/detalle-cita/${c.id}`)}
             >
               <p><strong>👤 Nombre:</strong> {cliente?.nombre || "N/A"}</p>
-              <p><strong>📱 Teléfono:</strong> {cliente?.telefono || "N/A"}</p>
+
+              <p>
+                <strong>📱 Teléfono:</strong>{" "}
+                {perfil?.telefono || "N/A"}
+              </p>
+
               <p><strong>🚗 Placa:</strong> {vehiculo?.placa || "N/A"}</p>
 
               <p>
