@@ -118,14 +118,7 @@ function MisCitas() {
             <p><strong>Estado:</strong> {c.estado}</p>
             <p><strong>Inicio:</strong> {formatearFecha(c.fecha_hora_inicio)}</p>
 
-            {c.estado !== "cancelada" && (
-              <button
-                style={styles.btnEliminar}
-                onClick={() => eliminarCita(c.id)}
-              >
-                ❌ Cancelar cita
-              </button>
-            )}
+            
           </div>
         ))
       )}

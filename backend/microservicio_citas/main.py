@@ -181,15 +181,28 @@ def eliminar_mecanico(id: int, db: Session = Depends(get_db)):
 # 📅 CITAS HOY MECÁNICO
 # =========================
 @app.get("/citas/mecanico/{mecanico_id}/hoy")
-def citas_hoy_mecanico(mecanico_id: int, db: Session = Depends(get_db)):
-    
+def citas_hoy_mecanico(
+    mecanico_id: int,
+    db: Session = Depends(get_db)
+):
+
+    import pytz
+    from datetime import datetime, timedelta
+
     tz = pytz.timezone("America/Bogota")
 
-    hoy_inicio = datetime.now(tz).replace(hour=0, minute=0, second=0, microsecond=0)
+    hoy_inicio = datetime.now(tz).replace(
+        hour=0,
+        minute=0,
+        second=0,
+        microsecond=0
+    )
+
     hoy_fin = hoy_inicio + timedelta(days=1)
 
     citas = db.query(models.Cita).filter(
         models.Cita.mecanico_id == mecanico_id,
+        models.Cita.estado == "recibida",  # 🔥 CLAVE
         models.Cita.fecha_hora_inicio >= hoy_inicio,
         models.Cita.fecha_hora_inicio < hoy_fin
     ).all()
@@ -377,3 +390,47 @@ def crear_recepcionista(
     db.refresh(nuevo)
 
     return nuevo
+
+
+@app.get("/citas/{cita_id}/recepcion")
+def obtener_recepcion(cita_id: int, db: Session = Depends(get_db)):
+
+    recepcion = db.query(models.RecepcionCita).filter(
+        models.RecepcionCita.cita_id == cita_id
+    ).first()
+
+    if not recepcion:
+        raise HTTPException(
+            status_code=404,
+            detail="Recepción no encontrada"
+        )
+
+    return recepcion
+
+
+@app.put("/citas/{id}/estado/{estado}")
+def cambiar_estado_cita(
+    id: int,
+    estado: str,
+    db: Session = Depends(get_db)
+):
+
+    cita = db.query(models.Cita).filter(
+        models.Cita.id == id
+    ).first()
+
+    if not cita:
+        raise HTTPException(
+            status_code=404,
+            detail="Cita no encontrada"
+        )
+
+    cita.estado = estado
+
+    db.commit()
+    db.refresh(cita)
+
+    return {
+        "mensaje": "Estado actualizado",
+        "estado": cita.estado
+    }

@@ -1,34 +1,4 @@
---
--- PostgreSQL database dump
---
 
-\restrict erbnAd58ZWmTwszrVzh23YArUeeYSnBltRlQSZthgXw8W2hcvTxc8jSR4Fc857B
-
--- Dumped from database version 15.17 (Debian 15.17-1.pgdg13+1)
--- Dumped by pg_dump version 18.3
-
--- Started on 2026-04-26 19:55:10
-
-SET statement_timeout = 0;
-SET lock_timeout = 0;
-SET idle_in_transaction_session_timeout = 0;
-SET transaction_timeout = 0;
-SET client_encoding = 'UTF8';
-SET standard_conforming_strings = on;
-SELECT pg_catalog.set_config('search_path', '', false);
-SET check_function_bodies = false;
-SET xmloption = content;
-SET client_min_messages = warning;
-SET row_security = off;
-
-SET default_tablespace = '';
-
-SET default_table_access_method = heap;
-
---
--- TOC entry 214 (class 1259 OID 16385)
--- Name: catalogo_repuestos; Type: TABLE; Schema: public; Owner: postgres
---
 
 CREATE TABLE public.catalogo_repuestos (
     id integer NOT NULL,
@@ -379,12 +349,4 @@ ALTER TABLE ONLY public.lotes_inventario
 ALTER TABLE ONLY public.transferencias
     ADD CONSTRAINT fk_catalogo_repuestos_id FOREIGN KEY (catalogo_repuestos_id) REFERENCES public.catalogo_repuestos(id);
 
-
--- Completed on 2026-04-26 19:55:11
-
---
--- PostgreSQL database dump complete
---
-
-\unrestrict erbnAd58ZWmTwszrVzh23YArUeeYSnBltRlQSZthgXw8W2hcvTxc8jSR4Fc857B
 

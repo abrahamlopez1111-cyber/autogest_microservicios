@@ -68,6 +68,23 @@ services:
       - historial_data:/var/lib/postgresql/data
       - ./database/historial/init.sql:/docker-entrypoint-initdb.d/init.sql
 
+
+  # ======================
+  # BASE DE DATOS DIAGNOSTICO
+  # ======================
+  db_diagnostico:
+    image: postgres:15
+    container_name: db_diagnostico
+    restart: always
+    environment:
+      POSTGRES_DB: diagnostico
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5437:5432"
+    volumes:
+      - diagnostico_data:/var/lib/postgresql/data
+
   # ======================
   # MICROSERVICIO CITAS
   # ======================
@@ -136,6 +153,25 @@ services:
       DB_USER: postgres
       DB_PASSWORD: postgres
 
+
+  # ======================
+  # MICROSERVICIO DIAGNOSTICO
+  # ======================
+  diagnostico_service:
+    build: ./backend/microservicio_diagnostico
+    container_name: diagnostico_service
+    ports:
+      - "8005:8000"
+    depends_on:
+      - db_diagnostico
+    environment:
+      DB_HOST: db_diagnostico
+      DB_PORT: 5432
+      DB_NAME: diagnostico
+      DB_USER: postgres
+      DB_PASSWORD: postgres
+
+
 # ======================
 # VOLUMENES (CLAVE 🔥)
 # ======================
@@ -144,3 +180,4 @@ volumes:
   inventario_data:
   usuarios_data:
   historial_data:
+  diagnostico_data:
