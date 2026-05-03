@@ -5,81 +5,148 @@ import {
   useNavigate,
 } from "react-router-dom";
 
-// 📄 Páginas
-import Admin from "./pages/admin/AdminDashboard";
+
+// =========================
+// PÁGINAS GENERALES
+// =========================
 import Home from "./pages/Home";
 import Login from "./pages/Login";
-import Citas from "./pages/citas";
-import ClienteDashboard from "./pages/cliente/ClienteDashboard";
-import DashboardMecanico from "./pages/mecanico/DashboardMecanico";
 import Register from "./pages/Register";
+import Citas from "./pages/citas";
 
-// 🔥 RECEPCIONISTA
-import RecepcionistaDashboard from "./pages/recepcionista/recepcionista_dashboard";
-import CitasHoyRecepcionista from "./pages/recepcionista/CitasHoyRecepcionista";
 
-// 🔥 ADMIN PANELES
+// =========================
+// ADMIN
+// =========================
+import Admin from "./pages/admin/AdminDashboard";
 import UsuariosPanel from "./pages/admin/UsuariosPanel";
 import SucursalesPanel from "./pages/admin/SucursalesPanel";
 import MecanicosPanel from "./pages/admin/MecanicosPanel";
 import RecepcionistasPanel from "./pages/admin/RecepcionistasPanel";
 import VehiculosPanel from "./pages/admin/VehiculosPanel";
 import RepuestosPanel from "./pages/admin/RepuestosPanel";
-import PerfilUsuario from "./components/perfil/PerfilUsuario";
 
-// 🔥 MECÁNICO
+
+// =========================
+// CLIENTE
+// =========================
+import ClienteDashboard from "./pages/cliente/ClienteDashboard";
+
+
+// =========================
+// MECÁNICO
+// =========================
+import DashboardMecanico from "./pages/mecanico/DashboardMecanico";
 import CitasHoyMecanico from "./pages/mecanico/CitasHoyMecanico";
 import DetalleCita from "./pages/mecanico/DetalleCita";
 
-// 🔐 Protección
-import ProtectedRoute from "./components/ProtectedRoute";
+
+// =========================
+// RECEPCIONISTA
+// =========================
+import RecepcionistaDashboard from "./pages/recepcionista/recepcionista_dashboard";
+import CitasHoyRecepcionista from "./pages/recepcionista/CitasHoyRecepcionista";
+import FacturacionRecepcionista from "./pages/recepcionista/FacturacionRecepcionista";
+import MisFacturas from "./pages/recepcionista/MisFacturas";
+
+// =========================
+// PERFIL
+// =========================
+import PerfilUsuario from "./components/perfil/PerfilUsuario";
 import PerfilGuard from "./components/perfil/PerfilGuard";
 
-// 🔑 Auth
+
+// =========================
+// AUTH
+// =========================
+import ProtectedRoute from "./components/ProtectedRoute";
 import { getUsuario } from "./utils/auth";
 
-// 🧱 LAYOUT
+
+
+// =========================
+// LAYOUT
+// =========================
 function Layout({ children }) {
-  return <div style={styles.layout}>{children}</div>;
+  return (
+    <div style={styles.layout}>
+      {children}
+    </div>
+  );
 }
 
+
+
+// =========================
+// APP CONTENT
+// =========================
 function AppContent() {
+
   const usuario = getUsuario();
+
   const navigate = useNavigate();
 
+
   const handleLogout = () => {
+
     localStorage.clear();
+
     navigate("/login");
+
   };
+
 
   return (
     <Layout>
-      {/* 🔥 NAVBAR */}
+
+      {/* NAVBAR */}
       <nav style={styles.nav}>
+
         <h3>AUTOGEST</h3>
 
         {usuario && (
+
           <div>
+
             <span style={{ marginRight: "10px" }}>
               {usuario.nombre}
             </span>
-            <button onClick={handleLogout} style={styles.logoutBtn}>
+
+            <button
+              onClick={handleLogout}
+              style={styles.logoutBtn}
+            >
               Cerrar sesión
             </button>
+
           </div>
+
         )}
+
       </nav>
 
-      {/* 📦 CONTENIDO */}
+
+
+      {/* CONTENIDO */}
       <main style={styles.main}>
+
         <Routes>
 
-          {/* 🌍 PUBLICAS */}
+
+          {/* ========================= */}
+          {/* PÚBLICAS */}
+          {/* ========================= */}
           <Route path="/" element={<Home />} />
+
           <Route path="/login" element={<Login />} />
+
           <Route path="/register" element={<Register />} />
 
-          {/* 👑 ADMIN */}
+
+
+          {/* ========================= */}
+          {/* ADMIN */}
+          {/* ========================= */}
           <Route
             path="/admin"
             element={
@@ -91,16 +158,25 @@ function AppContent() {
             }
           />
 
-          {/* 🔥 ADMIN RUTAS */}
           <Route path="/admin/usuarios" element={<UsuariosPanel />} />
+
           <Route path="/admin/sucursales" element={<SucursalesPanel />} />
+
           <Route path="/admin/mecanicos" element={<MecanicosPanel />} />
+
           <Route path="/admin/recepcionistas" element={<RecepcionistasPanel />} />
+
           <Route path="/admin/vehiculos" element={<VehiculosPanel />} />
+
           <Route path="/admin/repuestos" element={<RepuestosPanel />} />
+
           <Route path="/admin/perfil" element={<PerfilUsuario />} />
 
-          {/* 👤 CLIENTE */}
+
+
+          {/* ========================= */}
+          {/* CLIENTE */}
+          {/* ========================= */}
           <Route
             path="/cliente"
             element={
@@ -123,7 +199,11 @@ function AppContent() {
             }
           />
 
-          {/* 🔧 MECÁNICO */}
+
+
+          {/* ========================= */}
+          {/* MECÁNICO */}
+          {/* ========================= */}
           <Route
             path="/mecanico"
             element={
@@ -157,7 +237,11 @@ function AppContent() {
             }
           />
 
-          {/* 🧑‍💼 RECEPCIONISTA */}
+
+
+          {/* ========================= */}
+          {/* RECEPCIONISTA */}
+          {/* ========================= */}
           <Route
             path="/recepcionista"
             element={
@@ -180,24 +264,63 @@ function AppContent() {
             }
           />
 
+          <Route
+            path="/recepcionista/facturacion"
+            element={
+              <ProtectedRoute rolesPermitidos={["recepcionista"]}>
+                <PerfilGuard>
+                  <FacturacionRecepcionista />
+                </PerfilGuard>
+              </ProtectedRoute>
+            }
+          />
+
+
+
+          <Route
+            path="/recepcionista/facturas"
+            element={
+              <ProtectedRoute rolesPermitidos={["recepcionista"]}>
+                <PerfilGuard>
+                  <MisFacturas />
+                </PerfilGuard>
+              </ProtectedRoute>
+            }
+          />
+
+
         </Routes>
+
       </main>
+
     </Layout>
   );
 }
 
+
+
+// =========================
+// APP
+// =========================
 function App() {
+
   return (
     <Router>
       <AppContent />
     </Router>
   );
+
 }
 
 export default App;
 
-// 🎨 ESTILOS
+
+
+// =========================
+// ESTILOS
+// =========================
 const styles = {
+
   layout: {
     minHeight: "100vh",
     display: "flex",
@@ -208,6 +331,7 @@ const styles = {
   nav: {
     display: "flex",
     justifyContent: "space-between",
+    alignItems: "center",
     padding: "15px 25px",
     background: "#1e3a8a",
     color: "white",
@@ -219,11 +343,12 @@ const styles = {
   },
 
   logoutBtn: {
-    padding: "6px 12px",
+    padding: "8px 14px",
     background: "#ef4444",
     border: "none",
     color: "white",
-    borderRadius: "6px",
+    borderRadius: "8px",
     cursor: "pointer",
   },
+
 };

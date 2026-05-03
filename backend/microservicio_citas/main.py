@@ -434,3 +434,23 @@ def cambiar_estado_cita(
         "mensaje": "Estado actualizado",
         "estado": cita.estado
     }
+    
+    
+    
+# =========================
+# 🏢 CITAS POR SUCURSAL RECEPCIONISTA FACTURA
+# =========================
+@app.get("/citas/sucursal/{sucursal_id}")
+def citas_por_sucursal(
+    sucursal_id: int,
+    db: Session = Depends(get_db)
+):
+
+    citas = db.query(
+        models.Cita
+    ).filter(
+        models.Cita.sucursal_id == sucursal_id
+    ).all()
+
+
+    return citas

@@ -85,6 +85,26 @@ services:
     volumes:
       - diagnostico_data:/var/lib/postgresql/data
 
+
+
+  # ======================
+  # BASE DE DATOS FACTURACION
+  # ======================
+  db_facturacion:
+    image: postgres:15
+    container_name: db_facturacion
+    restart: always
+    environment:
+      POSTGRES_DB: facturacion
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5438:5432"
+    volumes:
+      - facturacion_data:/var/lib/postgresql/data
+
+
+
   # ======================
   # MICROSERVICIO CITAS
   # ======================
@@ -172,6 +192,26 @@ services:
       DB_PASSWORD: postgres
 
 
+
+  # ======================
+  # MICROSERVICIO FACTURACION
+  # ======================
+  facturacion_service:
+    build: ./backend/microservicio_facturacion
+    container_name: facturacion_service
+    ports:
+      - "8006:8000"
+    depends_on:
+      - db_facturacion
+    environment:
+      DB_HOST: db_facturacion
+      DB_PORT: 5432
+      DB_NAME: facturacion
+      DB_USER: postgres
+      DB_PASSWORD: postgres
+
+
+
 # ======================
 # VOLUMENES (CLAVE 🔥)
 # ======================
@@ -181,3 +221,4 @@ volumes:
   usuarios_data:
   historial_data:
   diagnostico_data:
+  facturacion_data:

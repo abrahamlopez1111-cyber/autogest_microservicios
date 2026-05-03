@@ -120,3 +120,38 @@ def inventario_completo(db: Session = Depends(get_db)):
         }
         for r in data
     ]
+    
+    
+# =========================
+# ✅ OBTENER REPUESTO POR ID
+# =========================
+@router.get("/{repuesto_id}")
+def obtener_repuesto(
+    repuesto_id: int,
+    db: Session = Depends(get_db)
+):
+
+    repuesto = db.query(
+        models.CatalogoRepuestos
+    ).filter(
+        models.CatalogoRepuestos.id == repuesto_id
+    ).first()
+
+
+    if not repuesto:
+
+        raise HTTPException(
+            status_code=404,
+            detail="Repuesto no encontrado"
+        )
+
+
+    return {
+
+        "id": repuesto.id,
+
+        "nombre": repuesto.nombre,
+
+        "precio": repuesto.precio
+
+    }
