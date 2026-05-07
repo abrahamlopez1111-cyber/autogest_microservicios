@@ -35,7 +35,7 @@ function PerfilUsuario({ volver }) {
     const cargarPerfil = async () => {
       try {
         const res = await fetch(
-          `http://localhost:8002/perfil/${usuarioId}`
+          `http://localhost:8012/perfil/${usuarioId}`
         );
 
         if (res.ok) {
@@ -60,7 +60,7 @@ function PerfilUsuario({ volver }) {
   const guardarPerfil = async () => {
     try {
       const res = await fetch(
-        `http://localhost:8002/perfil/${usuarioId}`,
+        `http://localhost:8012/perfil/${usuarioId}`,
         {
           method: perfil ? "PUT" : "POST",
           headers: { "Content-Type": "application/json" },

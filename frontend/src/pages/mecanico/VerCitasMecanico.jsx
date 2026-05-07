@@ -18,7 +18,7 @@ function VerCitasMecanico() {
         console.log("🚀 Cargando citas...");
 
         // 🔥 1. obtener mecánicos
-        const resMecanicos = await fetch("http://localhost:8000/mecanicos");
+        const resMecanicos = await fetch("http://localhost:8012/mecanicos");
         const mecanicos = await resMecanicos.json();
 
         const mecanico = mecanicos.find(
@@ -33,15 +33,15 @@ function VerCitasMecanico() {
 
         // 🔥 2. traer citas
         const resCitas = await fetch(
-          `http://localhost:8000/citas/mecanico/${mecanico.id}`
+          `http://localhost:8012/citas/mecanico/${mecanico.id}`
         );
 
         const citasData = await resCitas.json();
 
         // 🔥 3. datos extra
         const [resSuc, resUsuarios] = await Promise.all([
-          fetch("http://localhost:8000/sucursales"),
-          fetch("http://localhost:8002/usuarios"),
+          fetch("http://localhost:8012/sucursales"),
+          fetch("http://localhost:8012/usuarios"),
         ]);
 
         const sucursales = await resSuc.json();

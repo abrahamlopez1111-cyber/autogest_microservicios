@@ -18,9 +18,9 @@ function RecepcionistasPanel({ volver }) {
   const cargarDatos = async () => {
     try {
       const [resUsuarios, resRecep, resSuc] = await Promise.all([
-        fetch("http://localhost:8002/usuarios"),
-        fetch("http://localhost:8000/recepcionistas"),
-        fetch("http://localhost:8000/sucursales"),
+        fetch("http://localhost:8012/usuarios"),
+        fetch("http://localhost:8012/recepcionistas"),
+        fetch("http://localhost:8012/sucursales"),
       ]);
 
       const usuariosData = await resUsuarios.json();
@@ -65,7 +65,7 @@ function RecepcionistasPanel({ volver }) {
     }
 
     try {
-      await fetch("http://localhost:8000/recepcionistas", {
+      await fetch("http://localhost:8012/recepcionistas", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -91,7 +91,7 @@ function RecepcionistasPanel({ volver }) {
     if (!confirm("¿Eliminar asignación?")) return;
 
     try {
-      const res = await fetch(`http://localhost:8000/recepcionistas/${id}`, {
+      const res = await fetch(`http://localhost:8012/recepcionistas/${id}`, {
         method: "DELETE",
       });
 

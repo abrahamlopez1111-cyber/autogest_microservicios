@@ -81,8 +81,8 @@ function CrearCita() {
   // 📥 datos generales
   const cargarDatos = async () => {
     const [sucRes, mecRes, usuariosRes] = await Promise.all([
-      fetchAuth("http://localhost:8000/sucursales"),
-      fetchAuth("http://localhost:8000/mecanicos"),
+      fetchAuth("http://localhost:8012/sucursales"),
+      fetchAuth("http://localhost:8012/mecanicos"),
       getUsuarios(),
     ]);
 
@@ -94,7 +94,7 @@ function CrearCita() {
   // 🚗 vehículos
   const cargarVehiculos = async () => {
     const res = await fetchAuth(
-      `http://localhost:8003/historial/vehiculos/usuario/${usuarioId}`
+      `http://localhost:8012/historial/vehiculos/usuario/${usuarioId}`
     );
     if (res.ok) setVehiculos(await res.json());
   };
@@ -129,7 +129,7 @@ function CrearCita() {
     const fechaStr = fecha.toISOString().split("T")[0];
 
     fetchAuth(
-      `http://localhost:8000/citas/disponibilidad/${form.mecanico_id}/${fechaStr}`
+      `http://localhost:8012/citas/disponibilidad/${form.mecanico_id}/${fechaStr}`
     )
       .then((res) => res.json())
       .then((data) => {
@@ -219,7 +219,7 @@ const esHoraPasada = (hora) => {
       return;
     }
 
-    const res = await fetchAuth("http://localhost:8003/historial/vehiculos", {
+    const res = await fetchAuth("http://localhost:8012/historial/vehiculos", {
       method: "POST",
       body: JSON.stringify({
         ...nuevoVehiculo,
@@ -252,7 +252,7 @@ const esHoraPasada = (hora) => {
     const fin = new Date(inicio);
     fin.setHours(fin.getHours() + 1);
 
-    const res = await fetchAuth("http://localhost:8000/citas", {
+    const res = await fetchAuth("http://localhost:8012/citas", {
       method: "POST",
       body: JSON.stringify({
         ...form,

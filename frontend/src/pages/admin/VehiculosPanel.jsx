@@ -16,18 +16,18 @@ function VehiculosPanel() {
       setLoading(true);
 
       // 🚗 VEHÍCULOS
-      const resVehiculos = await fetch("http://localhost:8003/historial/vehiculos");
+      const resVehiculos = await fetch("http://localhost:8012/historial/vehiculos");
       const dataVehiculos = await resVehiculos.json();
 
       // 👤 USUARIOS
-      const resUsuarios = await fetch("http://localhost:8002/usuarios");
+      const resUsuarios = await fetch("http://localhost:8012/usuarios");
       const dataUsuarios = await resUsuarios.json();
 
       // 📞 PERFIL
       const perfiles = await Promise.all(
         dataVehiculos.map(async (v) => {
           try {
-            const res = await fetch(`http://localhost:8002/perfil/${v.usuario_id}`);
+            const res = await fetch(`http://localhost:8012/perfil/${v.usuario_id}`);
             return await res.json();
           } catch {
             return null;

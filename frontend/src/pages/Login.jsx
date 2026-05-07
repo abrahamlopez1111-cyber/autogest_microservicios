@@ -31,7 +31,7 @@ function Login() {
     setLoading(true);
 
     try {
-      const res = await fetch("http://localhost:8002/login", {
+      const res = await fetch("http://localhost:8012/login", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

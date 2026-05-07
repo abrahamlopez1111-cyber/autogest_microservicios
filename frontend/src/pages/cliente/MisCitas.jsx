@@ -17,10 +17,10 @@ function MisCitas() {
         setLoading(true);
 
         const [resCitas, resSuc, resUsuarios, resMec] = await Promise.all([
-          fetch("http://localhost:8000/citas"),
-          fetch("http://localhost:8000/sucursales"),
-          fetch("http://localhost:8002/usuarios"),
-          fetch("http://localhost:8000/mecanicos"),
+          fetch("http://localhost:8012/citas"),
+          fetch("http://localhost:8012/sucursales"),
+          fetch("http://localhost:8012/usuarios"),
+          fetch("http://localhost:8012/mecanicos"),
         ]);
 
         const citasData = await resCitas.json();

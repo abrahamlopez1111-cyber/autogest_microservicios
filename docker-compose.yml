@@ -211,6 +211,22 @@ services:
       DB_PASSWORD: postgres
 
 
+  # ======================
+  # MICROSERVICIO GATEWAY
+  # ======================
+  gateway_service:
+    build: ./backend/microservicio_gateway
+    container_name: gateway_service
+    ports:
+      - "8012:8000"
+    depends_on:
+      - citas_service
+      - usuarios_service
+      - historial_service
+      - inventario_service
+      - diagnostico_service
+      - facturacion_service
+
 
 # ======================
 # VOLUMENES (CLAVE 🔥)

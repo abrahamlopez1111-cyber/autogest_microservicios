@@ -20,7 +20,7 @@ function FacturacionRecepcionista() {
       if (!usuario) return;
 
       // recepcionista
-      const resRecep = await fetch("http://localhost:8000/recepcionistas");
+      const resRecep = await fetch("http://localhost:8012/recepcionistas");
       const recepcionistas = await resRecep.json();
 
       const recepcionista = recepcionistas.find(
@@ -31,7 +31,7 @@ function FacturacionRecepcionista() {
 
       // citas sucursal
       const resCitas = await fetch(
-        `http://localhost:8000/citas/sucursal/${recepcionista.sucursal_id}`
+        `http://localhost:8012/citas/sucursal/${recepcionista.sucursal_id}`
       );
 
       const data = await resCitas.json();
@@ -56,7 +56,7 @@ function FacturacionRecepcionista() {
     try {
 
       const res = await fetch(
-        `http://localhost:8006/facturas/preview/${citaId}`
+        `http://localhost:8012/facturas/preview/${citaId}`
       );
 
       const data = await res.json();
@@ -84,7 +84,7 @@ function FacturacionRecepcionista() {
 
       // 1. intentar crear factura
       const res = await fetch(
-        `http://localhost:8006/facturas/${preview.cita_id}`,
+        `http://localhost:8012/facturas/${preview.cita_id}`,
         { method: "POST" }
       );
 
@@ -101,7 +101,7 @@ function FacturacionRecepcionista() {
       else if (data.detail === "Esta cita ya tiene factura") {
 
         const resFacturas = await fetch(
-          "http://localhost:8006/facturas"
+          "http://localhost:8012/facturas"
         );
 
         const facturas = await resFacturas.json();
@@ -121,7 +121,7 @@ function FacturacionRecepcionista() {
 
       // 5. 🔥 descargar PDF correctamente
       window.open(
-        `http://localhost:8006/facturas/${facturaId}/pdf`,
+        `http://localhost:8012/facturas/${facturaId}/pdf`,
         "_blank"
       );
 

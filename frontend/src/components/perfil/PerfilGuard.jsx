@@ -12,7 +12,7 @@ function PerfilGuard({ children }) {
     const verificarPerfil = async () => {
       try {
         const res = await fetch(
-          `http://localhost:8002/perfil/${usuarioId}`
+          `http://localhost:8012/perfil/${usuarioId}`
         );
 
         if (res.ok) {

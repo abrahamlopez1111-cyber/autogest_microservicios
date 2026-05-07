@@ -11,7 +11,7 @@ function MisFacturas() {
   const cargarFacturas = async () => {
 
     const res = await fetch(
-      "http://localhost:8006/facturas"
+      "http://localhost:8012/facturas"
     );
 
     const data = await res.json();
@@ -22,7 +22,7 @@ function MisFacturas() {
   const descargarFactura = (id) => {
 
     window.open(
-      `http://localhost:8006/facturas/${id}/pdf`,
+      `http://localhost:8012/facturas/${id}/pdf`,
       "_blank"
     );
   };

@@ -85,7 +85,7 @@ function MecanicosPanel({ volver }) {
     if (!confirm("¿Eliminar asignación?")) return;
 
     try {
-      const res = await fetch(`http://localhost:8000/mecanicos/${id}`, {
+      const res = await fetch(`http://localhost:8012/mecanicos/${id}`, {
         method: "DELETE",
       });
 

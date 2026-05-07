@@ -42,7 +42,7 @@ function DetalleCita() {
 
       // buscar mecánico
       const resMecanicos = await fetch(
-        "http://localhost:8000/mecanicos"
+        "http://localhost:8012/mecanicos"
       );
 
       const mecanicos = await resMecanicos.json();
@@ -53,21 +53,21 @@ function DetalleCita() {
 
       // cita
       const resCita = await fetch(
-        `http://localhost:8000/citas/${id}`
+        `http://localhost:8012/citas/${id}`
       );
 
       const citaData = await resCita.json();
 
       // recepción
       const resRecepcion = await fetch(
-        `http://localhost:8000/citas/${id}/recepcion`
+        `http://localhost:8012/citas/${id}/recepcion`
       );
 
       const recepcionData = await resRecepcion.json();
 
       // vehículos
       const resVehiculos = await fetch(
-        "http://localhost:8003/historial/vehiculos"
+        "http://localhost:8012/historial/vehiculos"
       );
 
       const vehiculos = await resVehiculos.json();
@@ -78,7 +78,7 @@ function DetalleCita() {
 
       // inventario completo de sucursal
       const resInventario = await fetch(
-        `http://localhost:8004/inventario/repuestos/inventario-completo`
+        `http://localhost:8012/inventario/repuestos/inventario-completo`
       );
 
       const inventarioData = await resInventario.json();
@@ -218,7 +218,7 @@ const guardarDiagnostico = async () => {
     };
 
     const resDiagnostico = await fetch(
-      "http://localhost:8005/diagnosticos/",
+      "http://localhost:8012/diagnosticos/",
       {
         method: "POST",
         headers: {
@@ -239,7 +239,7 @@ const guardarDiagnostico = async () => {
     // 2. CAMBIAR ESTADO CITA
     // =========================
     const resEstado = await fetch(
-      `http://localhost:8000/citas/${id}/estado/finalizada`,
+      `http://localhost:8012/citas/${id}/estado/finalizada`,
       {
         method: "PUT",
       }

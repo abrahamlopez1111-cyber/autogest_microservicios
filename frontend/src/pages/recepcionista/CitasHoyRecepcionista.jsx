@@ -55,7 +55,7 @@ function CitasHoyRecepcionista() {
 
       // recepcionista
       const resRecep = await fetch(
-        "http://localhost:8000/recepcionistas"
+        "http://localhost:8012/recepcionistas"
       );
 
       const recepcionistas =
@@ -72,7 +72,7 @@ function CitasHoyRecepcionista() {
 
       // citas de sucursal
       const resCitas = await fetch(
-        `http://localhost:8000/citas/sucursal/${recepcionista.sucursal_id}/hoy`
+        `http://localhost:8012/citas/sucursal/${recepcionista.sucursal_id}/hoy`
       );
 
       const citasData =
@@ -92,10 +92,10 @@ function CitasHoyRecepcionista() {
         resVehiculos,
       ] = await Promise.all([
         fetch(
-          "http://localhost:8002/usuarios"
+          "http://localhost:8012/usuarios"
         ),
         fetch(
-          "http://localhost:8003/historial/vehiculos"
+          "http://localhost:8012/historial/vehiculos"
         ),
       ]);
 
@@ -140,7 +140,7 @@ function CitasHoyRecepcionista() {
 
     try {
       const res = await fetch(
-        `http://localhost:8000/citas/${form.cita_id}/recibir`,
+        `http://localhost:8012/citas/${form.cita_id}/recibir`,
         {
           method: "PUT",
           headers: {

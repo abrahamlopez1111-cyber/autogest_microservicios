@@ -2,10 +2,10 @@ import { useState, useEffect } from "react";
 
 function RepuestosPanel() {
 
-  const API = "http://localhost:8004/inventario/repuestos/inventario-completo";
-  const API_CREAR = "http://localhost:8004/inventario/repuestos";
-  const API_STOCK = "http://localhost:8004/inventario/repuestos/stock";
-  const API_SUCURSALES = "http://localhost:8000/sucursales";
+  const API = "http://localhost:8012/inventario/repuestos/inventario-completo";
+  const API_CREAR = "http://localhost:8012/inventario/repuestos";
+  const API_STOCK = "http://localhost:8012/inventario/repuestos/stock";
+  const API_SUCURSALES = "http://localhost:8012/sucursales";
 
   const [datos, setDatos] = useState([]);
   const [sucursales, setSucursales] = useState([]);

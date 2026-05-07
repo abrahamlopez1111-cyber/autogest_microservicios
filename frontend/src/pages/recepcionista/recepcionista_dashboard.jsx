@@ -25,7 +25,7 @@ function RecepcionistaDashboard() {
 
         // obtener recepcionista
         const resRecep = await fetch(
-          "http://localhost:8000/recepcionistas"
+          "http://localhost:8012/recepcionistas"
         );
 
         const recepcionistas = await resRecep.json();
@@ -39,7 +39,7 @@ function RecepcionistaDashboard() {
 
         // citas de la sucursal
         const resCitas = await fetch(
-          `http://localhost:8000/citas/sucursal/${recepcionista.sucursal_id}`
+          `http://localhost:8012/citas/sucursal/${recepcionista.sucursal_id}`
         );
 
         const citas = await resCitas.json();
@@ -161,25 +161,7 @@ function RecepcionistaDashboard() {
 
 
 
-        {/* VOLVER */}
-        <button
-          style={styles.card}
-          onClick={() =>
-            navigate("/")
-          }
-        >
-
-          <span style={styles.icon}>
-            🔙
-          </span>
-
-          <h3>Volver</h3>
-
-          <p>
-            Menú principal
-          </p>
-
-        </button>
+        
 
 
       </div>
