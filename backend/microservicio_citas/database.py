@@ -3,19 +3,10 @@ import time
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, declarative_base
 
-# =========================
-# 🔥 VARIABLES DE ENTORNO
-# =========================
-DB_HOST = os.getenv("DB_HOST", "db_citas")
-DB_PORT = os.getenv("DB_PORT", "5432")
-DB_NAME = os.getenv("DB_NAME", "citas")
-DB_USER = os.getenv("DB_USER", "postgres")
-DB_PASSWORD = os.getenv("DB_PASSWORD", "postgres")
-
-# =========================
-# 🔗 URL DE CONEXIÓN
-# =========================
-DATABASE_URL = f"postgresql://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}"
+DATABASE_URL = os.getenv(
+    "DATABASE_URL",
+    "postgresql+psycopg2://postgres:postgres@db_citas:5432/citas"
+)
 
 engine = create_engine(DATABASE_URL)
 
@@ -28,26 +19,20 @@ SessionLocal = sessionmaker(
 Base = declarative_base()
 
 
-# =========================
-# ⏳ ESPERAR DB
-# =========================
 def wait_for_db():
-    for i in range(10):
+    for i in range(20):
         try:
             conn = engine.connect()
             conn.close()
             print("✅ DB citas lista")
             return
-        except Exception:
-            print("⏳ Esperando DB citas...")
-            time.sleep(3)
+        except Exception as e:
+            print(f"⏳ Esperando DB citas... intento {i+1}: {e}")
+            time.sleep(2)
 
-    raise Exception("❌ No conecta DB citas")
+    raise Exception("❌ No se pudo conectar a la DB")
 
 
-# =========================
-# 📦 SESIÓN DB
-# =========================
 def get_db():
     db = SessionLocal()
     try:
