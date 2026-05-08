@@ -3,6 +3,7 @@ import {
   Routes,
   Route,
   useNavigate,
+  Navigate,
 } from "react-router-dom";
 
 
@@ -49,6 +50,7 @@ import CitasHoyRecepcionista from "./pages/recepcionista/CitasHoyRecepcionista";
 import FacturacionRecepcionista from "./pages/recepcionista/FacturacionRecepcionista";
 import MisFacturas from "./pages/recepcionista/MisFacturas";
 
+
 // =========================
 // PERFIL
 // =========================
@@ -89,7 +91,7 @@ function AppContent() {
 
   const handleLogout = () => {
 
-    localStorage.clear();
+    localStorage.removeItem("usuario");
 
     navigate("/login");
 
@@ -133,20 +135,13 @@ function AppContent() {
         <Routes>
 
 
-          {/* ========================= */}
           {/* PÚBLICAS */}
-          {/* ========================= */}
           <Route path="/" element={<Home />} />
-
           <Route path="/login" element={<Login />} />
-
           <Route path="/register" element={<Register />} />
 
 
-
-          {/* ========================= */}
           {/* ADMIN */}
-          {/* ========================= */}
           <Route
             path="/admin"
             element={
@@ -159,24 +154,15 @@ function AppContent() {
           />
 
           <Route path="/admin/usuarios" element={<UsuariosPanel />} />
-
           <Route path="/admin/sucursales" element={<SucursalesPanel />} />
-
           <Route path="/admin/mecanicos" element={<MecanicosPanel />} />
-
           <Route path="/admin/recepcionistas" element={<RecepcionistasPanel />} />
-
           <Route path="/admin/vehiculos" element={<VehiculosPanel />} />
-
           <Route path="/admin/repuestos" element={<RepuestosPanel />} />
-
           <Route path="/admin/perfil" element={<PerfilUsuario />} />
 
 
-
-          {/* ========================= */}
           {/* CLIENTE */}
-          {/* ========================= */}
           <Route
             path="/cliente"
             element={
@@ -200,10 +186,7 @@ function AppContent() {
           />
 
 
-
-          {/* ========================= */}
           {/* MECÁNICO */}
-          {/* ========================= */}
           <Route
             path="/mecanico"
             element={
@@ -238,10 +221,7 @@ function AppContent() {
           />
 
 
-
-          {/* ========================= */}
           {/* RECEPCIONISTA */}
-          {/* ========================= */}
           <Route
             path="/recepcionista"
             element={
@@ -275,8 +255,6 @@ function AppContent() {
             }
           />
 
-
-
           <Route
             path="/recepcionista/facturas"
             element={
@@ -286,6 +264,13 @@ function AppContent() {
                 </PerfilGuard>
               </ProtectedRoute>
             }
+          />
+
+
+          {/* FALLBACK */}
+          <Route
+            path="*"
+            element={<Navigate to="/login" replace />}
           />
 
 
