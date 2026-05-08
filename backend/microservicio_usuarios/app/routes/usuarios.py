@@ -131,3 +131,14 @@ def listar_recepcionistas(db: Session = Depends(get_db)):
     return db.query(models.Usuario).filter(
         models.Usuario.rol == "recepcionista"
     ).all()
+    
+    
+# =========================
+# 🔧 MECÁNICOS
+# =========================
+@router.get("/mecanicos", response_model=list[schemas.UsuarioOut])
+def listar_mecanicos(db: Session = Depends(get_db)):
+
+    return db.query(models.Usuario).filter(
+        models.Usuario.rol == "mecanico"
+    ).all()

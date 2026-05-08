@@ -1,5 +1,5 @@
 from fastapi import FastAPI
-
+from fastapi.middleware.cors import CORSMiddleware
 from app.routes import (
     citas,
     usuarios,
@@ -11,6 +11,14 @@ from app.routes import (
 
 app = FastAPI(
     title="AUTOGEST Gateway"
+)
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # desarrollo
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
 app.include_router(citas.router)

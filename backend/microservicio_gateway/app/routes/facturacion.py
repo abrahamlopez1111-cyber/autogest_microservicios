@@ -1,17 +1,78 @@
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Request
 from fastapi.responses import Response
 import httpx
 
 from app.config import SERVICIOS
 
 router = APIRouter(
-    prefix="/facturas",
     tags=["Gateway Facturación"]
 )
 
 
-# Vista previa
-@router.get("/preview/{cita_id}")
+# =========================
+# GENERAR FACTURA
+# =========================
+@router.post("/facturas/{cita_id}")
+async def generar_factura(cita_id: int):
+    try:
+        async with httpx.AsyncClient() as client:
+            response = await client.post(
+                f"{SERVICIOS['facturacion']}/facturas/{cita_id}"
+            )
+
+        return response.json()
+
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail=str(e)
+        )
+
+
+# =========================
+# LISTAR FACTURAS
+# =========================
+@router.get("/facturas")
+async def listar_facturas():
+    try:
+        async with httpx.AsyncClient() as client:
+            response = await client.get(
+                f"{SERVICIOS['facturacion']}/facturas"
+            )
+
+        return response.json()
+
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail=str(e)
+        )
+
+
+# =========================
+# FACTURAS DEL CLIENTE
+# =========================
+@router.get("/facturas/cliente/{cliente_id}")
+async def facturas_cliente(cliente_id: int):
+    try:
+        async with httpx.AsyncClient() as client:
+            response = await client.get(
+                f"{SERVICIOS['facturacion']}/facturas/cliente/{cliente_id}"
+            )
+
+        return response.json()
+
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail=str(e)
+        )
+
+
+# =========================
+# VISTA PREVIA
+# =========================
+@router.get("/facturas/preview/{cita_id}")
 async def preview_factura(cita_id: int):
     try:
         async with httpx.AsyncClient() as client:
@@ -28,8 +89,33 @@ async def preview_factura(cita_id: int):
         )
 
 
-# Descargar PDF
-@router.get("/{factura_id}/pdf")
+# =========================
+# REGISTRAR PAGO
+# =========================
+@router.post("/pagos")
+async def registrar_pago(request: Request):
+    try:
+        body = await request.json()
+
+        async with httpx.AsyncClient() as client:
+            response = await client.post(
+                f"{SERVICIOS['facturacion']}/pagos",
+                json=body
+            )
+
+        return response.json()
+
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail=str(e)
+        )
+
+
+# =========================
+# DESCARGAR PDF
+# =========================
+@router.get("/facturas/{factura_id}/pdf")
 async def descargar_pdf(factura_id: int):
     try:
         async with httpx.AsyncClient() as client:

@@ -215,17 +215,21 @@ services:
   # MICROSERVICIO GATEWAY
   # ======================
   gateway_service:
-    build: ./backend/microservicio_gateway
-    container_name: gateway_service
-    ports:
-      - "8012:8000"
-    depends_on:
-      - citas_service
-      - usuarios_service
-      - historial_service
-      - inventario_service
-      - diagnostico_service
-      - facturacion_service
+  build: ./backend/microservicio_gateway
+  container_name: gateway_service
+  ports:
+    - "${GATEWAY_PORT}:8000"
+
+  env_file:
+    - .env
+
+  depends_on:
+    - citas_service
+    - usuarios_service
+    - historial_service
+    - inventario_service
+    - diagnostico_service
+    - facturacion_service
 
 
 # ======================
