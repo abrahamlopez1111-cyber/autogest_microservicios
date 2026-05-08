@@ -3,13 +3,7 @@ import time
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, declarative_base
 
-DB_HOST = os.getenv("DB_HOST", "db_usuarios")
-DB_PORT = os.getenv("DB_PORT", "5432")
-DB_NAME = os.getenv("DB_NAME", "usuarios")
-DB_USER = os.getenv("DB_USER", "postgres")
-DB_PASSWORD = os.getenv("DB_PASSWORD", "postgres")
-
-DATABASE_URL = f"postgresql+psycopg2://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}"
+DATABASE_URL = os.getenv("DATABASE_URL")
 
 engine = create_engine(DATABASE_URL)
 
@@ -29,8 +23,8 @@ def wait_for_db():
             conn.close()
             print("✅ DB usuarios lista")
             return
-        except Exception:
-            print(f"⏳ Esperando DB usuarios... intento {i+1}")
+        except Exception as e:
+            print(f"⏳ Esperando DB usuarios... intento {i+1}: {e}")
             time.sleep(2)
 
     raise Exception("❌ No se pudo conectar a la DB")
