@@ -31,45 +31,73 @@ function Login() {
     setLoading(true);
 
     try {
-      const res = await fetch("https://autogest-gateway.onrender.com/login", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(form),
-      });
+      const res = await fetch(
+        "https://autogest-gateway.onrender.com/login",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(form),
+        }
+      );
+
+      if (!res.ok) {
+        setError("Correo o contraseña incorrectos");
+        setLoading(false);
+        return;
+      }
 
       const data = await res.json();
 
-      console.log("LOGIN RESPONSE:", data); // 🔍 DEBUG
+      console.log("LOGIN RESPONSE:", data);
 
-      if (!data.usuario) {
+      // 🔥 Acepta ambos formatos:
+      // { usuario: {...} } o {...}
+      const usuario = data.usuario || data;
+
+      if (!usuario) {
         setError("Credenciales incorrectas");
         setLoading(false);
         return;
       }
 
       // 🔥 SOPORTE PARA id o id_usuarios
-      const userId = data.usuario.id || data.usuario.id_usuarios;
+      const userId = usuario.id || usuario.id_usuarios;
 
       if (!userId) {
-        console.error("Usuario sin ID:", data.usuario);
-        setError("Error: el usuario no tiene ID válido");
+        console.error("Usuario sin ID:", usuario);
+        setError("Error: usuario sin ID válido");
         setLoading(false);
         return;
       }
 
       // 🔥 Normalizar rol
-      const rol = (data.usuario.rol || "").toLowerCase();
+      const rol = (usuario.rol || "").toLowerCase();
 
-      // 🔐 Guardar en localStorage
-      localStorage.setItem("usuario", JSON.stringify(data.usuario));
+      if (!rol) {
+        setError("Error: usuario sin rol");
+        setLoading(false);
+        return;
+      }
+
+      // 🔐 Guardar sesión
+      localStorage.setItem(
+        "usuario",
+        JSON.stringify(usuario)
+      );
+
       localStorage.setItem("rol", rol);
-      localStorage.setItem("user_id", userId.toString());
 
-      console.log("USER ID GUARDADO:", userId);
+      localStorage.setItem(
+        "user_id",
+        userId.toString()
+      );
 
-      // 🔥 Redirección segura
+      console.log("USER ID:", userId);
+      console.log("ROL:", rol);
+
+      // 🔥 Redirigir según rol
       const ruta = roleRoutes[rol] || "/";
       navigate(ruta);
 
@@ -91,7 +119,10 @@ function Login() {
           placeholder="Correo electrónico"
           value={form.email}
           onChange={(e) =>
-            setForm({ ...form, email: e.target.value })
+            setForm({
+              ...form,
+              email: e.target.value,
+            })
           }
           style={styles.input}
         />
@@ -101,26 +132,40 @@ function Login() {
           placeholder="Contraseña"
           value={form.password}
           onChange={(e) =>
-            setForm({ ...form, password: e.target.value })
+            setForm({
+              ...form,
+              password: e.target.value,
+            })
           }
           style={styles.input}
         />
 
-        {error && <p style={styles.error}>{error}</p>}
+        {error && (
+          <p style={styles.error}>
+            {error}
+          </p>
+        )}
 
         <button
           onClick={handleLogin}
           style={styles.button}
           disabled={loading}
         >
-          {loading ? "Ingresando..." : "Entrar"}
+          {loading
+            ? "Ingresando..."
+            : "Entrar"}
         </button>
 
         <p style={styles.footer}>
           ¿No tienes cuenta?{" "}
           <span
-            onClick={() => navigate("/register")}
-            style={{ color: "#f97316", cursor: "pointer" }}
+            onClick={() =>
+              navigate("/register")
+            }
+            style={{
+              color: "#f97316",
+              cursor: "pointer",
+            }}
           >
             Crear usuario
           </span>
@@ -136,7 +181,8 @@ const styles = {
     justifyContent: "center",
     alignItems: "center",
     height: "100vh",
-    background: "linear-gradient(135deg, #1e3a8a, #f97316)",
+    background:
+      "linear-gradient(135deg, #1e3a8a, #f97316)",
     fontFamily: "Arial, sans-serif",
   },
 
@@ -145,7 +191,8 @@ const styles = {
     padding: "40px",
     borderRadius: "15px",
     width: "320px",
-    boxShadow: "0 10px 30px rgba(0,0,0,0.2)",
+    boxShadow:
+      "0 10px 30px rgba(0,0,0,0.2)",
     textAlign: "center",
   },
 
@@ -162,6 +209,7 @@ const styles = {
     border: "1px solid #ccc",
     outline: "none",
     fontSize: "14px",
+    boxSizing: "border-box",
   },
 
   button: {
