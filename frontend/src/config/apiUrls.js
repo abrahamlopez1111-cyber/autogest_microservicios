@@ -1,5 +1,6 @@
 export const API_URLS = {
-  citas: "https://autogest-gateway.onrender.com",
-  inventario: "https://autogest-gateway.onrender.com",
-  usuarios: "https://autogest-gateway.onrender.com",
+  usuarios: "https://autogest-usuarios.onrender.com",
+  citas: "https://autogest-citas.onrender.com",
+  historial: "https://autogest-historial.onrender.com",
+  gateway: "https://autogest-gateway.onrender.com"
 };
