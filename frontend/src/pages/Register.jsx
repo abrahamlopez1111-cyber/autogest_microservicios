@@ -12,6 +12,7 @@ function Register() {
 
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
+  const [loading, setLoading] = useState(false);
 
   const handleRegister = async () => {
     setError("");
@@ -22,19 +23,26 @@ function Register() {
       return;
     }
 
+    setLoading(true);
+
     try {
-      const res = await fetch("http://localhost:8012/usuarios", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          ...form,
-          rol: "cliente", // 🔥 SIEMPRE cliente
-        }),
-      });
+      const res = await fetch(
+        "https://autogest-gateway.onrender.com/usuarios",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            ...form,
+            rol: "cliente",
+          }),
+        }
+      );
 
       const data = await res.json();
+
+      console.log("REGISTER RESPONSE:", data);
 
       if (!res.ok) {
         throw new Error(data.detail || "Error al registrar");
@@ -42,13 +50,15 @@ function Register() {
 
       setSuccess("Usuario creado correctamente 🎉");
 
-      // Redirigir al login después de 2 segundos
       setTimeout(() => {
         navigate("/login");
-      }, 2000);
+      }, 1500);
 
     } catch (error) {
-      setError(error.message);
+      console.error("REGISTER ERROR:", error);
+      setError(error.message || "Error de conexión");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -90,8 +100,12 @@ function Register() {
         {error && <p style={styles.error}>{error}</p>}
         {success && <p style={styles.success}>{success}</p>}
 
-        <button onClick={handleRegister} style={styles.button}>
-          Crear Cuenta
+        <button
+          onClick={handleRegister}
+          style={styles.button}
+          disabled={loading}
+        >
+          {loading ? "Creando..." : "Crear Cuenta"}
         </button>
 
         <p style={styles.footer}>
@@ -141,6 +155,7 @@ const styles = {
     color: "white",
     border: "none",
     borderRadius: "8px",
+    cursor: "pointer",
   },
   error: {
     color: "red",
