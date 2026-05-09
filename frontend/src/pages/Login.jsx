@@ -12,7 +12,6 @@ function Login() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
-  // 🔥 Rutas según rol
   const roleRoutes = {
     admin: "/admin",
     cliente: "/cliente",
@@ -23,7 +22,6 @@ function Login() {
   const handleLogin = async () => {
     setError("");
 
-    // Validación
     if (!form.email || !form.password) {
       setError("Todos los campos son obligatorios");
       return;
@@ -43,7 +41,7 @@ function Login() {
         }
       );
 
-      // 🔥 Evita errores si backend responde vacío o texto
+      // leer como texto primero
       const text = await res.text();
 
       let data = {};
@@ -54,55 +52,28 @@ function Login() {
         data = {};
       }
 
-      console.log("LOGIN RESPONSE:", data);
+      console.log("LOGIN:", data);
 
-      // Si backend devuelve error
       if (!res.ok) {
         setError(
-          data.detail ||
-          data.mensaje ||
-          "Correo o contraseña incorrectos"
+          data.detail || "Correo o contraseña incorrectos"
         );
         return;
       }
 
-      // 🔥 Acepta ambos formatos:
-      // { usuario: {...} } o directamente {...}
-      const usuario = data.usuario || data;
+      const usuario = data.usuario;
 
       if (!usuario) {
-        setError("Usuario inválido");
+        setError("Respuesta inválida del servidor");
         return;
       }
 
-      // Obtener ID
-      const userId =
-        usuario.id ||
-        usuario.id_usuarios;
+      const userId = usuario.id_usuarios;
+      const rol = usuario.rol?.toLowerCase();
 
-      if (!userId) {
-        setError("Usuario sin ID válido");
-        return;
-      }
-
-      // Obtener rol
-      const rol =
-        (usuario.rol || "").toLowerCase();
-
-      if (!rol) {
-        setError("Usuario sin rol válido");
-        return;
-      }
-
-      // Guardar sesión
       localStorage.setItem(
         "usuario",
         JSON.stringify(usuario)
-      );
-
-      localStorage.setItem(
-        "rol",
-        rol
       );
 
       localStorage.setItem(
@@ -110,25 +81,16 @@ function Login() {
         userId.toString()
       );
 
-      console.log("LOGIN EXITOSO");
-      console.log("USER ID:", userId);
-      console.log("ROL:", rol);
-
-      // Redirigir
-      navigate(
-        roleRoutes[rol] || "/"
+      localStorage.setItem(
+        "rol",
+        rol
       );
+
+      navigate(roleRoutes[rol] || "/");
 
     } catch (error) {
-      console.error(
-        "ERROR LOGIN:",
-        error
-      );
-
-      setError(
-        "Error de conexión con el servidor"
-      );
-
+      console.error(error);
+      setError("Error de conexión");
     } finally {
       setLoading(false);
     }
@@ -137,14 +99,11 @@ function Login() {
   return (
     <div style={styles.container}>
       <div style={styles.card}>
-
-        <h2 style={styles.title}>
-          Iniciar Sesión
-        </h2>
+        <h2 style={styles.title}>Iniciar Sesión</h2>
 
         <input
           type="email"
-          placeholder="Correo electrónico"
+          placeholder="Correo"
           value={form.email}
           onChange={(e) =>
             setForm({
@@ -169,9 +128,7 @@ function Login() {
         />
 
         {error && (
-          <p style={styles.error}>
-            {error}
-          </p>
+          <p style={styles.error}>{error}</p>
         )}
 
         <button
@@ -179,9 +136,7 @@ function Login() {
           disabled={loading}
           style={styles.button}
         >
-          {loading
-            ? "Ingresando..."
-            : "Entrar"}
+          {loading ? "Entrando..." : "Entrar"}
         </button>
 
         <p style={styles.footer}>
@@ -195,7 +150,6 @@ function Login() {
             Crear usuario
           </span>
         </p>
-
       </div>
     </div>
   );
@@ -208,9 +162,7 @@ const styles = {
     alignItems: "center",
     minHeight: "100vh",
     background:
-      "linear-gradient(135deg, #1e3a8a, #f97316)",
-    padding: "20px",
-    fontFamily: "Arial, sans-serif",
+      "linear-gradient(135deg,#1e3a8a,#f97316)",
   },
 
   card: {
@@ -218,13 +170,10 @@ const styles = {
     padding: "40px",
     borderRadius: "15px",
     width: "320px",
-    boxShadow:
-      "0 10px 30px rgba(0,0,0,0.2)",
     textAlign: "center",
   },
 
   title: {
-    marginBottom: "20px",
     color: "#1e3a8a",
   },
 
@@ -232,9 +181,6 @@ const styles = {
     width: "100%",
     padding: "12px",
     marginTop: "10px",
-    borderRadius: "8px",
-    border: "1px solid #ccc",
-    outline: "none",
     boxSizing: "border-box",
   },
 
@@ -245,21 +191,15 @@ const styles = {
     background: "#f97316",
     color: "white",
     border: "none",
-    borderRadius: "8px",
-    cursor: "pointer",
-    fontSize: "15px",
   },
 
   error: {
     color: "red",
     marginTop: "10px",
-    fontSize: "14px",
   },
 
   footer: {
     marginTop: "15px",
-    fontSize: "14px",
-    color: "#555",
   },
 
   link: {
