@@ -18,6 +18,7 @@ function Register() {
     setError("");
     setSuccess("");
 
+    // Validación
     if (!form.nombre || !form.email || !form.password) {
       setError("Todos los campos son obligatorios");
       return;
@@ -40,23 +41,47 @@ function Register() {
         }
       );
 
-      const data = await res.json();
+      // 🔥 Evita error si backend responde vacío o texto
+      const text = await res.text();
+
+      let data = {};
+
+      try {
+        data = text ? JSON.parse(text) : {};
+      } catch {
+        data = {};
+      }
 
       console.log("REGISTER RESPONSE:", data);
 
+      // Manejar errores del backend
       if (!res.ok) {
-        throw new Error(data.detail || "Error al registrar");
+        throw new Error(
+          data.detail || data.mensaje || "Error al registrar"
+        );
       }
 
+      // Registro exitoso
       setSuccess("Usuario creado correctamente 🎉");
 
+      // Limpiar formulario
+      setForm({
+        nombre: "",
+        email: "",
+        password: "",
+      });
+
+      // Redirigir al login
       setTimeout(() => {
         navigate("/login");
       }, 1500);
 
     } catch (error) {
       console.error("REGISTER ERROR:", error);
-      setError(error.message || "Error de conexión");
+
+      setError(
+        error.message || "Error de conexión con el servidor"
+      );
     } finally {
       setLoading(false);
     }
@@ -72,17 +97,23 @@ function Register() {
           placeholder="Nombre"
           value={form.nombre}
           onChange={(e) =>
-            setForm({ ...form, nombre: e.target.value })
+            setForm({
+              ...form,
+              nombre: e.target.value,
+            })
           }
           style={styles.input}
         />
 
         <input
           type="email"
-          placeholder="Correo"
+          placeholder="Correo electrónico"
           value={form.email}
           onChange={(e) =>
-            setForm({ ...form, email: e.target.value })
+            setForm({
+              ...form,
+              email: e.target.value,
+            })
           }
           style={styles.input}
         />
@@ -92,18 +123,30 @@ function Register() {
           placeholder="Contraseña"
           value={form.password}
           onChange={(e) =>
-            setForm({ ...form, password: e.target.value })
+            setForm({
+              ...form,
+              password: e.target.value,
+            })
           }
           style={styles.input}
         />
 
-        {error && <p style={styles.error}>{error}</p>}
-        {success && <p style={styles.success}>{success}</p>}
+        {error && (
+          <p style={styles.error}>
+            {error}
+          </p>
+        )}
+
+        {success && (
+          <p style={styles.success}>
+            {success}
+          </p>
+        )}
 
         <button
           onClick={handleRegister}
-          style={styles.button}
           disabled={loading}
+          style={styles.button}
         >
           {loading ? "Creando..." : "Crear Cuenta"}
         </button>
@@ -112,7 +155,7 @@ function Register() {
           ¿Ya tienes cuenta?{" "}
           <span
             onClick={() => navigate("/login")}
-            style={{ color: "#1e3a8a", cursor: "pointer" }}
+            style={styles.link}
           >
             Iniciar sesión
           </span>
@@ -127,26 +170,37 @@ const styles = {
     display: "flex",
     justifyContent: "center",
     alignItems: "center",
-    height: "100vh",
-    background: "linear-gradient(135deg, #1e3a8a, #f97316)",
+    minHeight: "100vh",
+    background:
+      "linear-gradient(135deg, #1e3a8a, #f97316)",
+    padding: "20px",
   },
+
   card: {
     background: "white",
     padding: "40px",
     borderRadius: "15px",
     width: "320px",
+    boxShadow:
+      "0 10px 30px rgba(0,0,0,0.2)",
     textAlign: "center",
   },
+
   title: {
     marginBottom: "20px",
+    color: "#1e3a8a",
   },
+
   input: {
     width: "100%",
     padding: "12px",
     marginTop: "10px",
     borderRadius: "8px",
     border: "1px solid #ccc",
+    outline: "none",
+    boxSizing: "border-box",
   },
+
   button: {
     width: "100%",
     marginTop: "20px",
@@ -156,17 +210,31 @@ const styles = {
     border: "none",
     borderRadius: "8px",
     cursor: "pointer",
+    fontSize: "15px",
   },
+
   error: {
     color: "red",
     marginTop: "10px",
+    fontSize: "14px",
   },
+
   success: {
     color: "green",
     marginTop: "10px",
+    fontSize: "14px",
   },
+
   footer: {
     marginTop: "15px",
+    fontSize: "14px",
+    color: "#555",
+  },
+
+  link: {
+    color: "#1e3a8a",
+    cursor: "pointer",
+    fontWeight: "bold",
   },
 };
 

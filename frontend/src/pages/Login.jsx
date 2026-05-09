@@ -12,7 +12,7 @@ function Login() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
-  // 🔥 MAPA DE ROLES → RUTAS
+  // 🔥 Rutas según rol
   const roleRoutes = {
     admin: "/admin",
     cliente: "/cliente",
@@ -23,6 +23,7 @@ function Login() {
   const handleLogin = async () => {
     setError("");
 
+    // Validación
     if (!form.email || !form.password) {
       setError("Todos los campos son obligatorios");
       return;
@@ -42,68 +43,92 @@ function Login() {
         }
       );
 
-      if (!res.ok) {
-        setError("Correo o contraseña incorrectos");
-        setLoading(false);
-        return;
-      }
+      // 🔥 Evita errores si backend responde vacío o texto
+      const text = await res.text();
 
-      const data = await res.json();
+      let data = {};
+
+      try {
+        data = text ? JSON.parse(text) : {};
+      } catch {
+        data = {};
+      }
 
       console.log("LOGIN RESPONSE:", data);
 
+      // Si backend devuelve error
+      if (!res.ok) {
+        setError(
+          data.detail ||
+          data.mensaje ||
+          "Correo o contraseña incorrectos"
+        );
+        return;
+      }
+
       // 🔥 Acepta ambos formatos:
-      // { usuario: {...} } o {...}
+      // { usuario: {...} } o directamente {...}
       const usuario = data.usuario || data;
 
       if (!usuario) {
-        setError("Credenciales incorrectas");
-        setLoading(false);
+        setError("Usuario inválido");
         return;
       }
 
-      // 🔥 SOPORTE PARA id o id_usuarios
-      const userId = usuario.id || usuario.id_usuarios;
+      // Obtener ID
+      const userId =
+        usuario.id ||
+        usuario.id_usuarios;
 
       if (!userId) {
-        console.error("Usuario sin ID:", usuario);
-        setError("Error: usuario sin ID válido");
-        setLoading(false);
+        setError("Usuario sin ID válido");
         return;
       }
 
-      // 🔥 Normalizar rol
-      const rol = (usuario.rol || "").toLowerCase();
+      // Obtener rol
+      const rol =
+        (usuario.rol || "").toLowerCase();
 
       if (!rol) {
-        setError("Error: usuario sin rol");
-        setLoading(false);
+        setError("Usuario sin rol válido");
         return;
       }
 
-      // 🔐 Guardar sesión
+      // Guardar sesión
       localStorage.setItem(
         "usuario",
         JSON.stringify(usuario)
       );
 
-      localStorage.setItem("rol", rol);
+      localStorage.setItem(
+        "rol",
+        rol
+      );
 
       localStorage.setItem(
         "user_id",
         userId.toString()
       );
 
+      console.log("LOGIN EXITOSO");
       console.log("USER ID:", userId);
       console.log("ROL:", rol);
 
-      // 🔥 Redirigir según rol
-      const ruta = roleRoutes[rol] || "/";
-      navigate(ruta);
+      // Redirigir
+      navigate(
+        roleRoutes[rol] || "/"
+      );
 
-    } catch (err) {
-      console.error("ERROR LOGIN:", err);
-      setError("Error de conexión con el servidor");
+    } catch (error) {
+      console.error(
+        "ERROR LOGIN:",
+        error
+      );
+
+      setError(
+        "Error de conexión con el servidor"
+      );
+
     } finally {
       setLoading(false);
     }
@@ -112,7 +137,10 @@ function Login() {
   return (
     <div style={styles.container}>
       <div style={styles.card}>
-        <h2 style={styles.title}>Iniciar Sesión</h2>
+
+        <h2 style={styles.title}>
+          Iniciar Sesión
+        </h2>
 
         <input
           type="email"
@@ -148,8 +176,8 @@ function Login() {
 
         <button
           onClick={handleLogin}
-          style={styles.button}
           disabled={loading}
+          style={styles.button}
         >
           {loading
             ? "Ingresando..."
@@ -162,14 +190,12 @@ function Login() {
             onClick={() =>
               navigate("/register")
             }
-            style={{
-              color: "#f97316",
-              cursor: "pointer",
-            }}
+            style={styles.link}
           >
             Crear usuario
           </span>
         </p>
+
       </div>
     </div>
   );
@@ -180,9 +206,10 @@ const styles = {
     display: "flex",
     justifyContent: "center",
     alignItems: "center",
-    height: "100vh",
+    minHeight: "100vh",
     background:
       "linear-gradient(135deg, #1e3a8a, #f97316)",
+    padding: "20px",
     fontFamily: "Arial, sans-serif",
   },
 
@@ -208,7 +235,6 @@ const styles = {
     borderRadius: "8px",
     border: "1px solid #ccc",
     outline: "none",
-    fontSize: "14px",
     boxSizing: "border-box",
   },
 
@@ -220,8 +246,8 @@ const styles = {
     color: "white",
     border: "none",
     borderRadius: "8px",
-    fontSize: "16px",
     cursor: "pointer",
+    fontSize: "15px",
   },
 
   error: {
@@ -232,8 +258,14 @@ const styles = {
 
   footer: {
     marginTop: "15px",
-    fontSize: "13px",
+    fontSize: "14px",
     color: "#555",
+  },
+
+  link: {
+    color: "#f97316",
+    cursor: "pointer",
+    fontWeight: "bold",
   },
 };
 
