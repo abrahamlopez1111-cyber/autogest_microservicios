@@ -1,51 +1,143 @@
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import PerfilUsuario from "./PerfilUsuario";
 
+const API_URL =
+  "https://autogest-gateway.onrender.com";
+
 function PerfilGuard({ children }) {
-  const usuario = JSON.parse(localStorage.getItem("usuario") || "null");
-  const usuarioId = usuario?.id || usuario?.id_usuarios;
 
-  const [loading, setLoading] = useState(true);
-  const [tienePerfil, setTienePerfil] = useState(false);
+  const navigate = useNavigate();
 
+  const usuario = JSON.parse(
+    localStorage.getItem("usuario") || "null"
+  );
+
+  const usuarioId =
+    usuario?.id ||
+    usuario?.id_usuarios;
+
+  const rol = (
+    localStorage.getItem("rol") ||
+    usuario?.rol ||
+    ""
+  ).toLowerCase();
+
+  const [loading, setLoading] =
+    useState(true);
+
+  const [tienePerfil, setTienePerfil] =
+    useState(false);
+
+  // =========================
+  // RUTAS POR ROL
+  // =========================
+  const roleRoutes = {
+    admin: "/admin",
+    cliente: "/cliente",
+    mecanico: "/mecanico",
+    recepcionista:
+      "/recepcionista",
+  };
+
+  const irDashboard = () => {
+    const ruta =
+      roleRoutes[rol] || "/";
+    navigate(ruta);
+  };
+
+  // =========================
+  // VALIDAR PERFIL
+  // =========================
   useEffect(() => {
-    const verificarPerfil = async () => {
+
+    const verificarPerfil =
+      async () => {
+
+      if (!usuarioId) {
+        navigate("/login");
+        return;
+      }
+
       try {
-        const res = await fetch(
-          `http://localhost:8012/perfil/${usuarioId}`
-        );
+
+        const res =
+          await fetch(
+            `${API_URL}/perfil/${usuarioId}`
+          );
 
         if (res.ok) {
-          setTienePerfil(true);
+          setTienePerfil(
+            true
+          );
+
         } else {
-          setTienePerfil(false);
+          setTienePerfil(
+            false
+          );
         }
 
       } catch (error) {
-        console.error(error);
-        setTienePerfil(false);
+
+        console.error(
+          "Error validando perfil:",
+          error
+        );
+
+        setTienePerfil(
+          false
+        );
+
       } finally {
-        setLoading(false);
+
+        setLoading(
+          false
+        );
       }
     };
 
-    if (usuarioId) verificarPerfil();
-  }, [usuarioId]);
+    verificarPerfil();
 
-  if (loading) return <p style={{ color: "white" }}>Cargando...</p>;
+  }, [usuarioId, navigate]);
 
-  // 🔥 SI NO TIENE PERFIL → SOLO muestra perfil (SIN BLOQUEAR NAVIGACIÓN)
-  if (!tienePerfil) {
+  if (loading) {
+
     return (
-      <div style={{ padding: "20px", color: "white" }}>
-        <h2>⚠️ Completa tu perfil antes de continuar</h2>
+      <p style={{ color: "white" }}>
+        Cargando perfil...
+      </p>
+    );
+  }
 
-        <PerfilUsuario />
+  // =========================
+  // SI NO TIENE PERFIL
+  // =========================
+  if (!tienePerfil) {
+
+    return (
+      <div
+        style={{
+          padding: "20px",
+          color: "white",
+        }}
+      >
+
+        <h2>
+          ⚠️ Completa tu perfil
+          antes de continuar
+        </h2>
+
+        <PerfilUsuario
+          volver={irDashboard}
+        />
+
       </div>
     );
   }
 
-  // ✅ SI TIENE PERFIL → deja pasar
+  // =========================
+  // SI YA TIENE PERFIL
+  // =========================
   return children;
 }
 
