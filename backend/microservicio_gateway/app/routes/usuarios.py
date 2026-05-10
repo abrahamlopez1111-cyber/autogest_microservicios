@@ -16,20 +16,52 @@ async def login(request: Request):
     try:
         body = await request.json()
 
-        async with httpx.AsyncClient() as client:
+        async with httpx.AsyncClient(
+            timeout=30.0
+        ) as client:
+
             response = await client.post(
                 f"{SERVICIOS['usuarios']}/login",
                 json=body
             )
 
-        return response.json()
+        # Si usuarios respondió error
+        if response.status_code >= 400:
+            raise HTTPException(
+                status_code=response.status_code,
+                detail=response.text
+            )
+
+        # Validar JSON
+        content_type = response.headers.get(
+            "content-type", ""
+        )
+
+        if "application/json" in content_type:
+            return response.json()
+
+        raise HTTPException(
+            status_code=502,
+            detail="Usuarios respondió con formato inválido"
+        )
+
+    except httpx.ConnectError:
+        raise HTTPException(
+            status_code=503,
+            detail="Microservicio usuarios no disponible"
+        )
+
+    except httpx.ReadTimeout:
+        raise HTTPException(
+            status_code=504,
+            detail="Tiempo de espera agotado en usuarios"
+        )
 
     except Exception as e:
         raise HTTPException(
             status_code=500,
-            detail=str(e)
+            detail=f"Gateway error: {str(e)}"
         )
-
 
 # =========================
 # PERFIL
