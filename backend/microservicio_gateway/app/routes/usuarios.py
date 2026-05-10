@@ -29,7 +29,7 @@ async def login(request: Request):
         if response.status_code >= 400:
             raise HTTPException(
                 status_code=response.status_code,
-                detail=response.text
+                detail="Microservicio usuarios temporalmente no disponible"
             )
 
         # Validar JSON
