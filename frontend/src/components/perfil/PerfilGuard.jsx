@@ -13,6 +13,11 @@ function PerfilGuard({ children }) {
     localStorage.getItem("usuario") || "null"
   );
 
+  console.log("USUARIO LOCAL:", usuario);
+  console.log("ROL LOCAL:", rol);
+  console.log("USER ID:", usuarioId);
+
+
   const usuarioId =
     usuario?.id ||
     usuario?.id_usuarios;
