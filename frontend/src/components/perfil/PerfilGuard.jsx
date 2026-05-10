@@ -41,8 +41,10 @@ function PerfilGuard({ children }) {
   };
 
   const irDashboard = () => {
+
     const ruta =
       roleRoutes[rol] || "/";
+
     navigate(ruta);
   };
 
@@ -61,17 +63,42 @@ function PerfilGuard({ children }) {
 
       try {
 
+        console.log(
+          "Validando perfil:",
+          usuarioId
+        );
+
         const res =
           await fetch(
             `${API_URL}/perfil/${usuarioId}`
           );
 
-        if (res.ok) {
+        console.log(
+          "Status perfil:",
+          res.status
+        );
+
+        // Perfil existe
+        if (res.status === 200) {
+
           setTienePerfil(
             true
           );
 
-        } else {
+        }
+        // Perfil no existe
+        else if (
+          res.status === 404
+        ) {
+
+          setTienePerfil(
+            false
+          );
+
+        }
+        // Otros errores
+        else {
+
           setTienePerfil(
             false
           );
@@ -100,6 +127,9 @@ function PerfilGuard({ children }) {
 
   }, [usuarioId, navigate]);
 
+  // =========================
+  // LOADING
+  // =========================
   if (loading) {
 
     return (
@@ -110,7 +140,7 @@ function PerfilGuard({ children }) {
   }
 
   // =========================
-  // SI NO TIENE PERFIL
+  // NO TIENE PERFIL
   // =========================
   if (!tienePerfil) {
 
@@ -136,7 +166,7 @@ function PerfilGuard({ children }) {
   }
 
   // =========================
-  // SI YA TIENE PERFIL
+  // TIENE PERFIL
   // =========================
   return children;
 }
