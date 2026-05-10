@@ -13,11 +13,6 @@ function PerfilGuard({ children }) {
     localStorage.getItem("usuario") || "null"
   );
 
-  console.log("USUARIO LOCAL:", usuario);
-  console.log("ROL LOCAL:", rol);
-  console.log("USER ID:", usuarioId);
-
-
   const usuarioId =
     usuario?.id ||
     usuario?.id_usuarios;
@@ -27,6 +22,22 @@ function PerfilGuard({ children }) {
     usuario?.rol ||
     ""
   ).toLowerCase();
+
+  // DEBUG
+  console.log(
+    "USUARIO LOCAL:",
+    usuario
+  );
+
+  console.log(
+    "ROL LOCAL:",
+    rol
+  );
+
+  console.log(
+    "USER ID:",
+    usuarioId
+  );
 
   const [loading, setLoading] =
     useState(true);
@@ -62,7 +73,9 @@ function PerfilGuard({ children }) {
       async () => {
 
       if (!usuarioId) {
+
         navigate("/login");
+
         return;
       }
 
@@ -79,30 +92,19 @@ function PerfilGuard({ children }) {
           );
 
         console.log(
-          "Status perfil:",
+          "STATUS PERFIL:",
           res.status
         );
 
-        // Perfil existe
-        if (res.status === 200) {
+        if (
+          res.status === 200
+        ) {
 
           setTienePerfil(
             true
           );
 
-        }
-        // Perfil no existe
-        else if (
-          res.status === 404
-        ) {
-
-          setTienePerfil(
-            false
-          );
-
-        }
-        // Otros errores
-        else {
+        } else {
 
           setTienePerfil(
             false
@@ -144,10 +146,20 @@ function PerfilGuard({ children }) {
     );
   }
 
+  // DEBUG
+  console.log(
+    "TIENE PERFIL:",
+    tienePerfil
+  );
+
   // =========================
   // NO TIENE PERFIL
   // =========================
   if (!tienePerfil) {
+
+    console.log(
+      "MOSTRANDO PERFIL"
+    );
 
     return (
       <div
@@ -173,6 +185,10 @@ function PerfilGuard({ children }) {
   // =========================
   // TIENE PERFIL
   // =========================
+  console.log(
+    "ENTRANDO DASHBOARD"
+  );
+
   return children;
 }
 
