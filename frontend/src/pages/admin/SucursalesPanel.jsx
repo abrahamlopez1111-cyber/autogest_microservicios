@@ -6,6 +6,7 @@ import {
 
 function SucursalesPanel({ volver }) {
   const [sucursales, setSucursales] = useState([]);
+  const [loading, setLoading] = useState(false);
 
   const [nueva, setNueva] = useState({
     nombre: "",
@@ -13,38 +14,81 @@ function SucursalesPanel({ volver }) {
     capacidad_elevadores: "",
   });
 
+  // =========================
+  // CARGAR
+  // =========================
   const cargarSucursales = async () => {
-    const data = await getSucursales();
-    setSucursales(Array.isArray(data) ? data : []);
+    setLoading(true);
+
+    try {
+      const data = await getSucursales();
+
+      setSucursales(
+        Array.isArray(data) ? data : []
+      );
+
+    } catch (error) {
+      alert(
+        "Error cargando sucursales"
+      );
+    } finally {
+      setLoading(false);
+    }
   };
 
   useEffect(() => {
     cargarSucursales();
   }, []);
 
+  // =========================
+  // CREAR
+  // =========================
   const handleCrear = async () => {
-    if (!nueva.nombre || !nueva.pais) {
-      alert("Completa los campos");
+    if (
+      !nueva.nombre ||
+      !nueva.pais ||
+      !nueva.capacidad_elevadores
+    ) {
+      alert(
+        "Completa todos los campos"
+      );
       return;
     }
 
-    await crearSucursal({
-      ...nueva,
-      capacidad_elevadores: Number(nueva.capacidad_elevadores),
-    });
+    try {
+      await crearSucursal({
+        ...nueva,
+        capacidad_elevadores:
+          Number(
+            nueva.capacidad_elevadores
+          ),
+      });
 
-    setNueva({
-      nombre: "",
-      pais: "",
-      capacidad_elevadores: "",
-    });
+      alert(
+        "Sucursal creada correctamente"
+      );
 
-    cargarSucursales();
+      setNueva({
+        nombre: "",
+        pais: "",
+        capacidad_elevadores:
+          "",
+      });
+
+      cargarSucursales();
+
+    } catch (error) {
+      alert(
+        "Error creando sucursal"
+      );
+    }
   };
 
   return (
     <div style={styles.container}>
-      <h2 style={styles.title}>🏢 Gestión de Sucursales</h2>
+      <h2 style={styles.title}>
+        🏢 Gestión de Sucursales
+      </h2>
 
       {/* FORM */}
       <div style={styles.card}>
@@ -56,7 +100,11 @@ function SucursalesPanel({ volver }) {
             placeholder="Nombre"
             value={nueva.nombre}
             onChange={(e) =>
-              setNueva({ ...nueva, nombre: e.target.value })
+              setNueva({
+                ...nueva,
+                nombre:
+                  e.target.value,
+              })
             }
           />
 
@@ -65,51 +113,101 @@ function SucursalesPanel({ volver }) {
             placeholder="País"
             value={nueva.pais}
             onChange={(e) =>
-              setNueva({ ...nueva, pais: e.target.value })
+              setNueva({
+                ...nueva,
+                pais:
+                  e.target.value,
+              })
             }
           />
 
           <input
             style={styles.input}
-            placeholder="Capacidad"
             type="number"
-            value={nueva.capacidad_elevadores}
+            placeholder="Capacidad"
+            value={
+              nueva.capacidad_elevadores
+            }
             onChange={(e) =>
               setNueva({
                 ...nueva,
-                capacidad_elevadores: e.target.value,
+                capacidad_elevadores:
+                  e.target.value,
               })
             }
           />
 
-          <button style={styles.btnCrear} onClick={handleCrear}>
-            ➕ Crear Sucursal
+          <button
+            style={styles.btnCrear}
+            onClick={handleCrear}
+          >
+            ➕ Crear
           </button>
         </div>
       </div>
 
       {/* LISTA */}
       <div style={styles.card}>
-        <h3>Lista de Sucursales</h3>
+        <h3>
+          Lista de Sucursales
+        </h3>
 
-        {sucursales.length === 0 ? (
-          <p>No hay sucursales</p>
+        {loading ? (
+          <p>Cargando...</p>
+        ) : sucursales.length ===
+          0 ? (
+          <p>
+            No hay sucursales
+          </p>
         ) : (
-          sucursales.map((s) => (
-            <div key={s.id} style={styles.item}>
-              <div>
-                <strong>{s.nombre}</strong>
-                <p style={styles.sub}>{s.pais}</p>
-                <span style={styles.badge}>
-                  Elevadores: {s.capacidad_elevadores}
-                </span>
+          sucursales.map(
+            (sucursal) => (
+              <div
+                key={
+                  sucursal.id
+                }
+                style={
+                  styles.item
+                }
+              >
+                <div>
+                  <strong>
+                    {
+                      sucursal.nombre
+                    }
+                  </strong>
+
+                  <p
+                    style={
+                      styles.sub
+                    }
+                  >
+                    {
+                      sucursal.pais
+                    }
+                  </p>
+
+                  <span
+                    style={
+                      styles.badge
+                    }
+                  >
+                    Elevadores:{" "}
+                    {
+                      sucursal.capacidad_elevadores
+                    }
+                  </span>
+                </div>
               </div>
-            </div>
-          ))
+            )
+          )
         )}
       </div>
 
-      <button style={styles.btnVolver} onClick={volver}>
+      <button
+        style={styles.btnVolver}
+        onClick={volver}
+      >
         ⬅ Volver
       </button>
     </div>
@@ -118,7 +216,7 @@ function SucursalesPanel({ volver }) {
 
 const styles = {
   container: {
-    padding: "30px",
+    padding: "20px",
     maxWidth: "900px",
     margin: "auto",
     color: "white",
@@ -134,7 +232,8 @@ const styles = {
     padding: "20px",
     borderRadius: "12px",
     marginBottom: "20px",
-    boxShadow: "0 4px 12px rgba(0,0,0,0.4)",
+    boxShadow:
+      "0 4px 12px rgba(0,0,0,0.4)",
   },
 
   form: {
@@ -144,27 +243,29 @@ const styles = {
   },
 
   input: {
-    padding: "10px",
+    flex: "1",
+    minWidth: "180px",
+    padding: "12px",
     borderRadius: "8px",
-    border: "1px solid #374151",
+    border:
+      "1px solid #374151",
     background: "#111827",
     color: "white",
-    flex: "1",
-    minWidth: "150px",
   },
 
   btnCrear: {
     background: "#2563eb",
     color: "white",
     border: "none",
-    padding: "10px 15px",
     borderRadius: "8px",
+    padding: "12px 18px",
     cursor: "pointer",
   },
 
   item: {
-    padding: "12px",
-    borderBottom: "1px solid #374151",
+    padding: "12px 0",
+    borderBottom:
+      "1px solid #374151",
   },
 
   sub: {
@@ -183,12 +284,11 @@ const styles = {
   },
 
   btnVolver: {
-    marginTop: "10px",
     background: "#374151",
     color: "white",
     border: "none",
-    padding: "10px",
     borderRadius: "8px",
+    padding: "12px 18px",
     cursor: "pointer",
   },
 };

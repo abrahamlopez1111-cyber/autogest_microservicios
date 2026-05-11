@@ -8,6 +8,12 @@ import {
 function UsuariosPanel({ volver }) {
   const [usuarios, setUsuarios] = useState([]);
 
+  const [loading, setLoading] =
+    useState(false);
+
+  const [loadingLista, setLoadingLista] =
+    useState(false);
+
   const [nuevo, setNuevo] = useState({
     nombre: "",
     email: "",
@@ -15,124 +21,170 @@ function UsuariosPanel({ volver }) {
     rol: "cliente",
   });
 
-  const [loading, setLoading] =
-    useState(false);
+  // =========================
+  // VALIDAR EMAIL
+  // =========================
+  const emailValido = (email) => {
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(
+      email
+    );
+  };
 
   // =========================
   // CARGAR USUARIOS
   // =========================
-  const cargarUsuarios = async () => {
-    try {
-      const data = await getUsuarios();
+  const cargarUsuarios =
+    async () => {
+      try {
+        setLoadingLista(true);
 
-      setUsuarios(
-        Array.isArray(data)
-          ? data
-          : []
-      );
+        const data =
+          await getUsuarios();
 
-    } catch (error) {
-      console.error(
-        "Error cargando usuarios:",
-        error
-      );
-    }
-  };
+        setUsuarios(
+          Array.isArray(
+            data
+          )
+            ? data
+            : []
+        );
+
+      } catch (error) {
+        console.error(
+          error
+        );
+
+        alert(
+          "Error cargando usuarios"
+        );
+
+      } finally {
+        setLoadingLista(
+          false
+        );
+      }
+    };
 
   useEffect(() => {
     cargarUsuarios();
   }, []);
 
   // =========================
-  // CREAR USUARIO
+  // CREAR
   // =========================
-  const handleCrear = async () => {
+  const handleCrear =
+    async () => {
+      if (
+        !nuevo.nombre ||
+        !nuevo.email ||
+        !nuevo.password
+      ) {
+        alert(
+          "Completa todos los campos"
+        );
 
-    if (
-      !nuevo.nombre ||
-      !nuevo.email ||
-      !nuevo.password
-    ) {
-      alert(
-        "Completa todos los campos"
-      );
-      return;
-    }
+        return;
+      }
 
-    try {
-      setLoading(true);
+      if (
+        !emailValido(
+          nuevo.email
+        )
+      ) {
+        alert(
+          "Correo inválido"
+        );
 
-      await crearUsuario(
-        nuevo
-      );
+        return;
+      }
 
-      setNuevo({
-        nombre: "",
-        email: "",
-        password: "",
-        rol: "cliente",
-      });
+      try {
+        setLoading(true);
 
-      await cargarUsuarios();
+        await crearUsuario(
+          nuevo
+        );
 
-    } catch (error) {
-      console.error(
-        "Error creando usuario:",
-        error
-      );
+        alert(
+          "Usuario creado correctamente"
+        );
 
-      alert(
-        "No se pudo crear el usuario"
-      );
+        setNuevo({
+          nombre: "",
+          email: "",
+          password: "",
+          rol: "cliente",
+        });
 
-    } finally {
-      setLoading(false);
-    }
-  };
+        await cargarUsuarios();
+
+      } catch (error) {
+        console.error(
+          error
+        );
+
+        alert(
+          "No se pudo crear el usuario"
+        );
+
+      } finally {
+        setLoading(
+          false
+        );
+      }
+    };
 
   // =========================
   // ELIMINAR
   // =========================
-  const handleEliminar = async (
-    id
-  ) => {
+  const handleEliminar =
+    async (id) => {
+      if (
+        !window.confirm(
+          "¿Eliminar usuario?"
+        )
+      ) {
+        return;
+      }
 
-    if (
-      !window.confirm(
-        "¿Eliminar usuario?"
-      )
-    ) {
-      return;
-    }
+      try {
+        setLoading(true);
 
-    try {
-      await eliminarUsuario(id);
-      await cargarUsuarios();
+        await eliminarUsuario(
+          id
+        );
 
-    } catch (error) {
-      console.error(
-        "Error eliminando:",
-        error
-      );
-    }
-  };
+        await cargarUsuarios();
+
+      } catch (error) {
+        console.error(
+          error
+        );
+
+        alert(
+          "No se pudo eliminar"
+        );
+
+      } finally {
+        setLoading(
+          false
+        );
+      }
+    };
 
   return (
     <div style={styles.container}>
-
       <h2 style={styles.title}>
         👤 Gestión de Usuarios
       </h2>
 
       {/* FORM */}
       <div style={styles.card}>
-
         <h3 style={styles.subtitle}>
           Crear Usuario
         </h3>
 
         <div style={styles.form}>
-
           <input
             style={styles.input}
             placeholder="Nombre"
@@ -199,7 +251,6 @@ function UsuariosPanel({ volver }) {
             <option value="recepcionista">
               Recepcionista
             </option>
-
           </select>
 
           <button
@@ -212,36 +263,28 @@ function UsuariosPanel({ volver }) {
             }
           >
             {loading
-              ? "Creando..."
+              ? "Procesando..."
               : "➕ Crear Usuario"}
           </button>
-
         </div>
       </div>
 
       {/* LISTA */}
       <div style={styles.card}>
-
         <h3 style={styles.subtitle}>
           Usuarios Registrados
         </h3>
 
-        {usuarios.length ===
-        0 ? (
-
-          <p
-            style={
-              styles.empty
-            }
-          >
-            No hay usuarios
+        {loadingLista ? (
+          <p>Cargando...</p>
+        ) : usuarios.length ===
+          0 ? (
+          <p style={styles.empty}>
+            No hay usuarios registrados
           </p>
-
         ) : (
-
           usuarios.map(
             (u) => (
-
               <div
                 key={
                   u.id_usuarios
@@ -250,13 +293,11 @@ function UsuariosPanel({ volver }) {
                   styles.userCard
                 }
               >
-
                 <div
                   style={
                     styles.userInfo
                   }
                 >
-
                   <strong>
                     {u.nombre}
                   </strong>
@@ -276,7 +317,6 @@ function UsuariosPanel({ volver }) {
                   >
                     {u.rol}
                   </span>
-
                 </div>
 
                 <button
@@ -288,10 +328,12 @@ function UsuariosPanel({ volver }) {
                       u.id_usuarios
                     )
                   }
+                  disabled={
+                    loading
+                  }
                 >
                   🗑
                 </button>
-
               </div>
             )
           )
@@ -306,13 +348,11 @@ function UsuariosPanel({ volver }) {
       >
         ⬅ Volver
       </button>
-
     </div>
   );
 }
 
 const styles = {
-
   container: {
     width: "100%",
     maxWidth: "1000px",
@@ -326,12 +366,12 @@ const styles = {
   title: {
     textAlign: "center",
     marginBottom: "20px",
-    fontSize: "clamp(22px, 4vw, 32px)",
+    fontSize:
+      "clamp(22px, 4vw, 32px)",
   },
 
   subtitle: {
     marginBottom: "15px",
-    fontSize: "18px",
   },
 
   card: {
@@ -342,8 +382,6 @@ const styles = {
       "16px",
     marginBottom:
       "20px",
-    boxShadow:
-      "0 4px 14px rgba(0,0,0,0.35)",
   },
 
   form: {
@@ -363,7 +401,6 @@ const styles = {
     background:
       "#111827",
     color: "white",
-    fontSize: "14px",
     boxSizing:
       "border-box",
   },
@@ -373,11 +410,9 @@ const styles = {
       "#2563eb",
     color: "white",
     border: "none",
-    padding: "12px",
     borderRadius:
       "10px",
     cursor: "pointer",
-    fontWeight: "bold",
     minHeight: "46px",
   },
 
@@ -395,11 +430,9 @@ const styles = {
 
   userInfo: {
     flex: 1,
-    minWidth: "180px",
   },
 
   email: {
-    margin: "5px 0",
     color: "#9ca3af",
     fontSize: "13px",
     wordBreak:
@@ -423,17 +456,11 @@ const styles = {
         : "#10b981",
 
     color: "white",
-
     padding:
       "5px 10px",
-
     borderRadius:
       "8px",
-
     fontSize: "12px",
-
-    display:
-      "inline-block",
   }),
 
   btnDelete: {
@@ -446,7 +473,6 @@ const styles = {
     borderRadius:
       "8px",
     cursor: "pointer",
-    minWidth: "50px",
   },
 
   btnVolver: {
@@ -459,7 +485,6 @@ const styles = {
     borderRadius:
       "10px",
     cursor: "pointer",
-    fontWeight: "bold",
   },
 };
 

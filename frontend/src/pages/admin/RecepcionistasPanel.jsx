@@ -1,11 +1,15 @@
 import { useEffect, useState } from "react";
 
-function RecepcionistasPanel({ volver }) {
+const API_URL =
+  import.meta.env.VITE_API_URL || "http://localhost:8012";
 
+function RecepcionistasPanel({ volver }) {
   const [usuarios, setUsuarios] = useState([]);
   const [recepcionistasDB, setRecepcionistasDB] = useState([]);
   const [sucursales, setSucursales] = useState([]);
   const [disponibles, setDisponibles] = useState([]);
+
+  const [loading, setLoading] = useState(false);
 
   const [nuevo, setNuevo] = useState({
     usuario_id: "",
@@ -13,40 +17,48 @@ function RecepcionistasPanel({ volver }) {
   });
 
   // =========================
-  // 🔥 CARGAR DATOS
+  // CARGAR DATOS
   // =========================
   const cargarDatos = async () => {
+    setLoading(true);
+
     try {
       const [resUsuarios, resRecep, resSuc] = await Promise.all([
-        fetch("http://localhost:8012/usuarios"),
-        fetch("http://localhost:8012/recepcionistas"),
-        fetch("http://localhost:8012/sucursales"),
+        fetch(`${API_URL}/usuarios`),
+        fetch(`${API_URL}/recepcionistas`),
+        fetch(`${API_URL}/sucursales`),
       ]);
+
+      if (!resUsuarios.ok || !resRecep.ok || !resSuc.ok) {
+        throw new Error("Error cargando datos");
+      }
 
       const usuariosData = await resUsuarios.json();
       const recepcionistasData = await resRecep.json();
       const sucursalesData = await resSuc.json();
 
-      // 🔥 SOLO USUARIOS RECEPCIONISTAS
       const usuariosRecep = usuariosData.filter(
         (u) => u.rol === "recepcionista"
       );
 
-      // 🔥 YA ASIGNADOS
-      const idsAsignados = recepcionistasData.map((r) => r.usuario_id);
+      const idsAsignados = recepcionistasData.map(
+        (r) => r.usuario_id
+      );
 
-      // 🔥 DISPONIBLES
-      const disponibles = usuariosRecep.filter(
+      const usuariosDisponibles = usuariosRecep.filter(
         (u) => !idsAsignados.includes(u.id_usuarios)
       );
 
       setUsuarios(usuariosData);
       setRecepcionistasDB(recepcionistasData);
       setSucursales(sucursalesData);
-      setDisponibles(disponibles);
+      setDisponibles(usuariosDisponibles);
 
     } catch (error) {
-      console.error("Error cargando datos:", error);
+      console.error(error);
+      alert("Error cargando información");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -55,28 +67,38 @@ function RecepcionistasPanel({ volver }) {
   }, []);
 
   // =========================
-  // ➕ CREAR RECEPCIONISTA
+  // CREAR
   // =========================
   const handleCrear = async () => {
-
     if (!nuevo.usuario_id || !nuevo.sucursal_id) {
-      alert("Selecciona datos");
+      alert("Selecciona los datos");
       return;
     }
 
     try {
-      await fetch("http://localhost:8012/recepcionistas", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          usuario_id: Number(nuevo.usuario_id),
-          sucursal_id: Number(nuevo.sucursal_id),
-        }),
+      const res = await fetch(
+        `${API_URL}/recepcionistas`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            usuario_id: Number(nuevo.usuario_id),
+            sucursal_id: Number(nuevo.sucursal_id),
+          }),
+        }
+      );
+
+      if (!res.ok) {
+        throw new Error();
+      }
+
+      setNuevo({
+        usuario_id: "",
+        sucursal_id: "",
       });
 
-      setNuevo({ usuario_id: "", sucursal_id: "" });
       cargarDatos();
 
     } catch (error) {
@@ -85,49 +107,58 @@ function RecepcionistasPanel({ volver }) {
   };
 
   // =========================
-  // ❌ ELIMINAR
+  // ELIMINAR
   // =========================
   const eliminar = async (id) => {
-    if (!confirm("¿Eliminar asignación?")) return;
+    if (!window.confirm("¿Eliminar asignación?")) return;
 
     try {
-      const res = await fetch(`http://localhost:8012/recepcionistas/${id}`, {
-        method: "DELETE",
-      });
+      const res = await fetch(
+        `${API_URL}/recepcionistas/${id}`,
+        {
+          method: "DELETE",
+        }
+      );
 
       if (!res.ok) {
-        alert("Error eliminando");
-        return;
+        throw new Error();
       }
 
       cargarDatos();
 
     } catch (error) {
-      console.error(error);
+      alert("Error eliminando");
     }
   };
 
   // =========================
-  // 🧠 HELPERS
+  // HELPERS
   // =========================
   const getNombreUsuario = (id) => {
-    const user = usuarios.find((u) => u.id_usuarios === id);
-    return user ? user.nombre : "Desconocido";
+    const user = usuarios.find(
+      (u) => u.id_usuarios === id
+    );
+
+    return user?.nombre || "Desconocido";
   };
 
   const getNombreSucursal = (id) => {
-    const suc = sucursales.find((s) => s.id === id);
-    return suc ? suc.nombre : "Desconocida";
+    const sucursal = sucursales.find(
+      (s) => s.id === id
+    );
+
+    return sucursal?.nombre || "Desconocida";
   };
 
   // =========================
-  // 🎨 UI
+  // UI
   // =========================
   return (
     <div style={styles.container}>
-      <h2 style={styles.title}>🧑‍💼 Gestión de Recepcionistas</h2>
+      <h2 style={styles.title}>
+        🧑‍💼 Gestión de Recepcionistas
+      </h2>
 
-      {/* FORM */}
       <div style={styles.card}>
         <h3>Asignar Recepcionista</h3>
 
@@ -136,13 +167,21 @@ function RecepcionistasPanel({ volver }) {
             style={styles.input}
             value={nuevo.usuario_id}
             onChange={(e) =>
-              setNuevo({ ...nuevo, usuario_id: e.target.value })
+              setNuevo({
+                ...nuevo,
+                usuario_id: e.target.value,
+              })
             }
           >
-            <option value="">Seleccione recepcionista</option>
+            <option value="">
+              Seleccione recepcionista
+            </option>
 
             {disponibles.map((u) => (
-              <option key={u.id_usuarios} value={u.id_usuarios}>
+              <option
+                key={u.id_usuarios}
+                value={u.id_usuarios}
+              >
                 {u.nombre}
               </option>
             ))}
@@ -152,10 +191,15 @@ function RecepcionistasPanel({ volver }) {
             style={styles.input}
             value={nuevo.sucursal_id}
             onChange={(e) =>
-              setNuevo({ ...nuevo, sucursal_id: e.target.value })
+              setNuevo({
+                ...nuevo,
+                sucursal_id: e.target.value,
+              })
             }
           >
-            <option value="">Seleccione sucursal</option>
+            <option value="">
+              Seleccione sucursal
+            </option>
 
             {sucursales.map((s) => (
               <option key={s.id} value={s.id}>
@@ -164,31 +208,42 @@ function RecepcionistasPanel({ volver }) {
             ))}
           </select>
 
-          <button style={styles.btnCrear} onClick={handleCrear}>
+          <button
+            style={styles.btnCrear}
+            onClick={handleCrear}
+          >
             ➕ Asignar
           </button>
         </div>
       </div>
 
-      {/* LISTA */}
       <div style={styles.card}>
         <h3>Recepcionistas Asignados</h3>
 
-        {recepcionistasDB.length === 0 ? (
+        {loading ? (
+          <p>Cargando...</p>
+        ) : recepcionistasDB.length === 0 ? (
           <p>No hay recepcionistas asignados</p>
         ) : (
           recepcionistasDB.map((r) => (
             <div key={r.id} style={styles.item}>
               <div>
-                <strong>{getNombreUsuario(r.usuario_id)}</strong>
+                <strong>
+                  {getNombreUsuario(r.usuario_id)}
+                </strong>
+
                 <p style={styles.sub}>
-                  {getNombreSucursal(r.sucursal_id)}
+                  {getNombreSucursal(
+                    r.sucursal_id
+                  )}
                 </p>
               </div>
 
               <button
                 style={styles.btnEliminar}
-                onClick={() => eliminar(r.id)}
+                onClick={() =>
+                  eliminar(r.id)
+                }
               >
                 ❌
               </button>
@@ -197,17 +252,19 @@ function RecepcionistasPanel({ volver }) {
         )}
       </div>
 
-      <button style={styles.btnVolver} onClick={volver}>
+      <button
+        style={styles.btnVolver}
+        onClick={volver}
+      >
         ⬅ Volver
       </button>
     </div>
   );
 }
 
-// 🎨 estilos
 const styles = {
   container: {
-    padding: "30px",
+    padding: "20px",
     maxWidth: "900px",
     margin: "auto",
     color: "white",
@@ -232,20 +289,21 @@ const styles = {
   },
 
   input: {
-    padding: "10px",
+    flex: "1",
+    minWidth: "220px",
+    padding: "12px",
     borderRadius: "8px",
     border: "1px solid #374151",
     background: "#111827",
     color: "white",
-    flex: "1",
   },
 
   btnCrear: {
+    padding: "12px 18px",
+    borderRadius: "8px",
+    border: "none",
     background: "#2563eb",
     color: "white",
-    border: "none",
-    padding: "10px 15px",
-    borderRadius: "8px",
     cursor: "pointer",
   },
 
@@ -253,7 +311,8 @@ const styles = {
     display: "flex",
     justifyContent: "space-between",
     alignItems: "center",
-    padding: "12px",
+    gap: "10px",
+    padding: "12px 0",
     borderBottom: "1px solid #374151",
   },
 
@@ -265,19 +324,18 @@ const styles = {
 
   btnEliminar: {
     background: "#ef4444",
-    border: "none",
-    padding: "6px 10px",
-    borderRadius: "6px",
     color: "white",
+    border: "none",
+    borderRadius: "8px",
+    padding: "8px 12px",
     cursor: "pointer",
   },
 
   btnVolver: {
-    marginTop: "10px",
     background: "#374151",
     color: "white",
     border: "none",
-    padding: "10px",
+    padding: "12px 18px",
     borderRadius: "8px",
     cursor: "pointer",
   },
