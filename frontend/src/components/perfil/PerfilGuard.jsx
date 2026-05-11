@@ -9,6 +9,9 @@ function PerfilGuard({ children }) {
 
   const navigate = useNavigate();
 
+  // =========================
+  // USUARIO LOCAL
+  // =========================
   const usuario = JSON.parse(
     localStorage.getItem("usuario") || "null"
   );
@@ -23,22 +26,9 @@ function PerfilGuard({ children }) {
     ""
   ).toLowerCase();
 
-  // DEBUG
-  console.log(
-    "USUARIO LOCAL:",
-    usuario
-  );
-
-  console.log(
-    "ROL LOCAL:",
-    rol
-  );
-
-  console.log(
-    "USER ID:",
-    usuarioId
-  );
-
+  // =========================
+  // ESTADOS
+  // =========================
   const [loading, setLoading] =
     useState(true);
 
@@ -69,9 +59,12 @@ function PerfilGuard({ children }) {
   // =========================
   useEffect(() => {
 
+    let activo = true;
+
     const verificarPerfil =
       async () => {
 
+      // No hay sesión
       if (!usuarioId) {
 
         navigate("/login");
@@ -81,21 +74,16 @@ function PerfilGuard({ children }) {
 
       try {
 
-        console.log(
-          "Validando perfil:",
-          usuarioId
-        );
-
         const res =
           await fetch(
             `${API_URL}/perfil/${usuarioId}`
           );
 
-        console.log(
-          "STATUS PERFIL:",
-          res.status
-        );
+        if (!activo) {
+          return;
+        }
 
+        // Perfil existe
         if (
           res.status === 200
         ) {
@@ -104,7 +92,19 @@ function PerfilGuard({ children }) {
             true
           );
 
-        } else {
+        }
+        // Perfil no existe
+        else if (
+          res.status === 404
+        ) {
+
+          setTienePerfil(
+            false
+          );
+
+        }
+        // Otros errores
+        else {
 
           setTienePerfil(
             false
@@ -118,19 +118,29 @@ function PerfilGuard({ children }) {
           error
         );
 
-        setTienePerfil(
-          false
-        );
+        if (activo) {
+
+          setTienePerfil(
+            false
+          );
+        }
 
       } finally {
 
-        setLoading(
-          false
-        );
+        if (activo) {
+
+          setLoading(
+            false
+          );
+        }
       }
     };
 
     verificarPerfil();
+
+    return () => {
+      activo = false;
+    };
 
   }, [usuarioId, navigate]);
 
@@ -146,22 +156,13 @@ function PerfilGuard({ children }) {
     );
   }
 
-  // DEBUG
-  console.log(
-    "TIENE PERFIL:",
-    tienePerfil
-  );
-
   // =========================
   // NO TIENE PERFIL
   // =========================
   if (!tienePerfil) {
 
-    console.log(
-      "MOSTRANDO PERFIL"
-    );
-
     return (
+
       <div
         style={{
           padding: "20px",
@@ -185,10 +186,6 @@ function PerfilGuard({ children }) {
   // =========================
   // TIENE PERFIL
   // =========================
-  console.log(
-    "ENTRANDO DASHBOARD"
-  );
-
   return children;
 }
 
