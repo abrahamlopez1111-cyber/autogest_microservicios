@@ -1,11 +1,16 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
-const API_URL = "https://autogest-gateway.onrender.com";
+const API_URL =
+  "https://autogest-gateway.onrender.com";
 
 function PerfilUsuario({ volver }) {
+
   const navigate = useNavigate();
 
+  // =========================
+  // SESIÓN
+  // =========================
   const usuario = JSON.parse(
     localStorage.getItem("usuario") || "null"
   );
@@ -20,7 +25,12 @@ function PerfilUsuario({ volver }) {
     ""
   ).toLowerCase();
 
-  const [perfil, setPerfil] = useState(null);
+  // =========================
+  // ESTADOS
+  // =========================
+  const [perfil, setPerfil] =
+    useState(null);
+
   const [modoEdicion, setModoEdicion] =
     useState(false);
 
@@ -33,16 +43,17 @@ function PerfilUsuario({ volver }) {
   const [error, setError] =
     useState("");
 
-  const [form, setForm] = useState({
-    telefono: "",
-    direccion: "",
-    ciudad: "",
-    documento: "",
-    fecha_nacimiento: "",
-  });
+  const [form, setForm] =
+    useState({
+      telefono: "",
+      direccion: "",
+      ciudad: "",
+      documento: "",
+      fecha_nacimiento: "",
+    });
 
   // =========================
-  // RUTAS POR ROL
+  // RUTAS
   // =========================
   const roleRoutes = {
     admin: "/admin",
@@ -52,46 +63,49 @@ function PerfilUsuario({ volver }) {
   };
 
   const irDashboard = () => {
-    const ruta = roleRoutes[rol] || "/";
-    navigate(ruta);
+    navigate(
+      roleRoutes[rol] || "/"
+    );
   };
 
   // =========================
   // CARGAR PERFIL
   // =========================
   useEffect(() => {
-    const cargarPerfil = async () => {
+
+    const cargarPerfil =
+      async () => {
+
       if (!usuarioId) {
         navigate("/login");
         return;
       }
 
       try {
-        const res = await fetch(
-          `${API_URL}/perfil/${usuarioId}`
-        );
+
+        const res =
+          await fetch(
+            `${API_URL}/perfil/${usuarioId}`
+          );
+
+        // No existe perfil
+        if (res.status === 404) {
+          setPerfil(null);
+          return;
+        }
 
         if (!res.ok) {
-          setLoading(false);
           return;
         }
 
-        const contentType =
-          res.headers.get("content-type");
+        const data =
+          await res.json();
 
-        if (
-          !contentType?.includes(
-            "application/json"
-          )
-        ) {
-          setLoading(false);
-          return;
-        }
+        // 🔥 AQUÍ ESTABA EL ERROR
+        // No validar data.id
+        // Solo validar que exista data
+        if (data) {
 
-        const data = await res.json();
-
-        // Si existe perfil
-        if (data && data.id) {
           setPerfil(data);
 
           setForm({
@@ -108,32 +122,40 @@ function PerfilUsuario({ volver }) {
           });
         }
 
-      } catch (err) {
+      } catch (error) {
+
         console.error(
           "Error cargando perfil:",
-          err
+          error
         );
+
       } finally {
+
         setLoading(false);
       }
     };
 
     cargarPerfil();
+
   }, [usuarioId, navigate]);
 
   // =========================
   // VALIDAR FORM
   // =========================
-  const validarFormulario = () => {
+  const validarFormulario =
+    () => {
+
     if (
       !form.telefono ||
       !form.direccion ||
       !form.ciudad ||
       !form.documento
     ) {
+
       setError(
         "Todos los campos son obligatorios"
       );
+
       return false;
     }
 
@@ -141,74 +163,71 @@ function PerfilUsuario({ volver }) {
   };
 
   // =========================
-  // GUARDAR PERFIL
+  // GUARDAR
   // =========================
-  const guardarPerfil = async () => {
+  const guardarPerfil =
+    async () => {
+
     setError("");
 
-    if (!validarFormulario()) {
+    if (
+      !validarFormulario()
+    ) {
       return;
     }
 
     setGuardando(true);
 
     try {
+
       const metodo =
         perfil ? "PUT" : "POST";
 
-      const res = await fetch(
-        `${API_URL}/perfil/${usuarioId}`,
-        {
-          method: metodo,
-          headers: {
-            "Content-Type":
-              "application/json",
-          },
-          body: JSON.stringify(
-            form
-          ),
-        }
-      );
+      const res =
+        await fetch(
+          `${API_URL}/perfil/${usuarioId}`,
+          {
+            method: metodo,
+
+            headers: {
+              "Content-Type":
+                "application/json",
+            },
+
+            body:
+              JSON.stringify(form),
+          }
+        );
 
       if (!res.ok) {
+
         setError(
           "No se pudo guardar el perfil"
         );
+
         return;
       }
 
-      const contentType =
-        res.headers.get(
-          "content-type"
-        );
-
-      let data = form;
-
-      if (
-        contentType?.includes(
-          "application/json"
-        )
-      ) {
-        data = await res.json();
-      }
+      const data =
+        await res.json();
 
       setPerfil(data);
+
       setModoEdicion(false);
 
-      // Redirigir al dashboard correcto
+      // Ir al dashboard
       irDashboard();
 
-    } catch (err) {
-      console.error(
-        "Error guardando:",
-        err
-      );
+    } catch (error) {
+
+      console.error(error);
 
       setError(
         "Error de conexión"
       );
 
     } finally {
+
       setGuardando(false);
     }
   };
@@ -216,24 +235,29 @@ function PerfilUsuario({ volver }) {
   // =========================
   // VOLVER
   // =========================
-  const handleVolver = () => {
+  const handleVolver =
+    () => {
+
     if (volver) {
       volver();
-      return;
+    } else {
+      irDashboard();
     }
-
-    irDashboard();
   };
 
   // =========================
   // LOGOUT
   // =========================
-  const cerrarSesion = () => {
+  const cerrarSesion =
+    () => {
+
     localStorage.clear();
+
     navigate("/login");
   };
 
   if (loading) {
+
     return (
       <p style={{ color: "white" }}>
         Cargando perfil...
@@ -242,9 +266,11 @@ function PerfilUsuario({ volver }) {
   }
 
   return (
+
     <div style={styles.container}>
 
       <div style={styles.topBar}>
+
         <button
           style={styles.backBtn}
           onClick={handleVolver}
@@ -253,13 +279,16 @@ function PerfilUsuario({ volver }) {
         </button>
 
         {!volver && (
+
           <button
             style={styles.logoutBtn}
             onClick={cerrarSesion}
           >
             🚪 Salir
           </button>
+
         )}
+
       </div>
 
       <h2 style={styles.title}>
@@ -267,187 +296,94 @@ function PerfilUsuario({ volver }) {
       </h2>
 
       {error && (
+
         <p style={styles.error}>
           {error}
         </p>
+
       )}
 
+      {/* VER PERFIL */}
       {!modoEdicion &&
         perfil && (
-          <div style={styles.card}>
-            <p>
-              <strong>
-                📞 Teléfono:
-              </strong>{" "}
-              {perfil.telefono}
-            </p>
 
-            <p>
-              <strong>
-                🏠 Dirección:
-              </strong>{" "}
-              {perfil.direccion}
-            </p>
-
-            <p>
-              <strong>
-                🌆 Ciudad:
-              </strong>{" "}
-              {perfil.ciudad}
-            </p>
-
-            <p>
-              <strong>
-                🪪 Documento:
-              </strong>{" "}
-              {perfil.documento}
-            </p>
-
-            <p>
-              <strong>
-                🎂 Nacimiento:
-              </strong>{" "}
-              {
-                perfil.fecha_nacimiento
-              }
-            </p>
-
-            <button
-              style={
-                styles.edit
-              }
-              onClick={() =>
-                setModoEdicion(
-                  true
-                )
-              }
-            >
-              ✏️ Editar Perfil
-            </button>
-          </div>
-        )}
-
-      {(modoEdicion ||
-        !perfil) && (
         <div style={styles.card}>
 
-          <input
-            placeholder="Teléfono"
-            value={
-              form.telefono
-            }
-            onChange={(
-              e
-            ) =>
-              setForm({
-                ...form,
-                telefono:
-                  e.target
-                    .value,
-              })
-            }
-            style={
-              styles.input
-            }
-          />
+          <p>
+            <strong>📞 Teléfono:</strong>{" "}
+            {perfil.telefono}
+          </p>
 
-          <input
-            placeholder="Dirección"
-            value={
-              form.direccion
-            }
-            onChange={(
-              e
-            ) =>
-              setForm({
-                ...form,
-                direccion:
-                  e.target
-                    .value,
-              })
-            }
-            style={
-              styles.input
-            }
-          />
+          <p>
+            <strong>🏠 Dirección:</strong>{" "}
+            {perfil.direccion}
+          </p>
 
-          <input
-            placeholder="Ciudad"
-            value={
-              form.ciudad
-            }
-            onChange={(
-              e
-            ) =>
-              setForm({
-                ...form,
-                ciudad:
-                  e.target
-                    .value,
-              })
-            }
-            style={
-              styles.input
-            }
-          />
+          <p>
+            <strong>🌆 Ciudad:</strong>{" "}
+            {perfil.ciudad}
+          </p>
 
-          <input
-            placeholder="Documento"
-            value={
-              form.documento
-            }
-            onChange={(
-              e
-            ) =>
-              setForm({
-                ...form,
-                documento:
-                  e.target
-                    .value,
-              })
-            }
-            style={
-              styles.input
-            }
-          />
-
-          <input
-            type="date"
-            value={
-              form.fecha_nacimiento
-            }
-            onChange={(
-              e
-            ) =>
-              setForm({
-                ...form,
-                fecha_nacimiento:
-                  e.target
-                    .value,
-              })
-            }
-            style={
-              styles.input
-            }
-          />
+          <p>
+            <strong>🪪 Documento:</strong>{" "}
+            {perfil.documento}
+          </p>
 
           <button
-            onClick={
-              guardarPerfil
+            style={styles.edit}
+            onClick={() =>
+              setModoEdicion(true)
             }
-            style={
-              styles.save
-            }
-            disabled={
-              guardando
-            }
+          >
+            ✏️ Editar Perfil
+          </button>
+
+        </div>
+      )}
+
+      {/* FORMULARIO */}
+      {(modoEdicion ||
+        !perfil) && (
+
+        <div style={styles.card}>
+
+          {Object.keys(form).map((campo) => (
+
+            <input
+              key={campo}
+              type={
+                campo ===
+                "fecha_nacimiento"
+                  ? "date"
+                  : "text"
+              }
+              placeholder={campo}
+              value={form[campo]}
+              onChange={(e) =>
+                setForm({
+                  ...form,
+                  [campo]:
+                    e.target.value,
+                })
+              }
+              style={styles.input}
+            />
+
+          ))}
+
+          <button
+            onClick={guardarPerfil}
+            style={styles.save}
+            disabled={guardando}
           >
             {guardando
               ? "Guardando..."
-              : "💾 Guardar Cambios"}
+              : "💾 Guardar"}
           </button>
+
         </div>
       )}
+
     </div>
   );
 }
@@ -466,40 +402,27 @@ const styles = {
 
   error: {
     color: "#ef4444",
-    textAlign: "center",
     marginBottom: "10px",
   },
 
   topBar: {
     display: "flex",
-    justifyContent:
-      "space-between",
-    marginBottom: "15px",
+    justifyContent: "space-between",
+    marginBottom: "20px",
   },
 
   backBtn: {
     padding: "10px",
-    background:
-      "#2563eb",
-    border: "none",
-    borderRadius: "8px",
-    color: "white",
     cursor: "pointer",
   },
 
   logoutBtn: {
     padding: "10px",
-    background:
-      "#ef4444",
-    border: "none",
-    borderRadius: "8px",
-    color: "white",
     cursor: "pointer",
   },
 
   card: {
-    background:
-      "#1e293b",
+    background: "#1e293b",
     padding: "20px",
     borderRadius: "12px",
   },
@@ -507,43 +430,19 @@ const styles = {
   input: {
     width: "100%",
     padding: "10px",
-    marginBottom:
-      "10px",
-    borderRadius:
-      "8px",
-    border:
-      "1px solid #334155",
-    background:
-      "#0f172a",
-    color: "white",
-    boxSizing:
-      "border-box",
+    marginBottom: "10px",
   },
 
   save: {
     width: "100%",
     padding: "12px",
-    background:
-      "#10b981",
-    border: "none",
-    borderRadius:
-      "8px",
-    color: "white",
-    fontWeight:
-      "bold",
     cursor: "pointer",
   },
 
   edit: {
-    marginTop: "15px",
-    padding: "12px",
-    background:
-      "#2563eb",
-    border: "none",
-    borderRadius:
-      "8px",
-    color: "white",
     width: "100%",
+    padding: "12px",
+    marginTop: "10px",
     cursor: "pointer",
   },
 };
