@@ -6,7 +6,8 @@ const API_URL =
 
 function Login() {
 
-  const navigate = useNavigate();
+  const navigate =
+    useNavigate();
 
   const [form, setForm] =
     useState({
@@ -20,6 +21,9 @@ function Login() {
   const [loading, setLoading] =
     useState(false);
 
+  // =========================
+  // DASHBOARD POR ROL
+  // =========================
   const roleRoutes = {
     admin: "/admin",
     cliente: "/cliente",
@@ -28,6 +32,9 @@ function Login() {
       "/recepcionista",
   };
 
+  // =========================
+  // INPUTS
+  // =========================
   const handleChange = (
     field,
     value
@@ -39,6 +46,9 @@ function Login() {
     }));
   };
 
+  // =========================
+  // LOGIN
+  // =========================
   const handleLogin =
     async () => {
 
@@ -68,9 +78,7 @@ function Login() {
 
     try {
 
-      // =========================
       // LOGIN
-      // =========================
       const loginRes =
         await fetch(
           `${API_URL}/login`,
@@ -94,6 +102,7 @@ function Login() {
       const loginData =
         await loginRes.json();
 
+      // Error credenciales
       if (
         !loginRes.ok
       ) {
@@ -106,6 +115,7 @@ function Login() {
         return;
       }
 
+      // Usuario
       const usuario =
         loginData.usuario;
 
@@ -125,6 +135,18 @@ function Login() {
 
       const rol =
         usuario.rol?.toLowerCase();
+
+      if (
+        !userId ||
+        !rol
+      ) {
+
+        setError(
+          "Datos del usuario inválidos"
+        );
+
+        return;
+      }
 
       // =========================
       // GUARDAR SESIÓN
@@ -163,15 +185,13 @@ function Login() {
       ) {
 
         navigate(
-          roleRoutes[
-            rol
-          ] || "/"
+          "/perfil"
         );
 
         return;
       }
 
-      // TIENE PERFIL
+      // SÍ TIENE PERFIL
       if (
         perfilRes.status ===
         200
@@ -186,7 +206,7 @@ function Login() {
         return;
       }
 
-      // ERROR RARO
+      // Respuesta inesperada
       setError(
         "No se pudo validar el perfil"
       );
@@ -194,11 +214,12 @@ function Login() {
     } catch (error) {
 
       console.error(
+        "Error login:",
         error
       );
 
       setError(
-        "Error de conexión"
+        "Error de conexión con el servidor"
       );
 
     } finally {
@@ -209,6 +230,9 @@ function Login() {
     }
   };
 
+  // =========================
+  // ENTER
+  // =========================
   const handleKeyPress =
     (e) => {
 
