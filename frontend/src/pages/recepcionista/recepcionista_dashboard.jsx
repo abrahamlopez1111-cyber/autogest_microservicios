@@ -25,7 +25,7 @@ function RecepcionistaDashboard() {
 
         // obtener recepcionista
         const resRecep = await fetch(
-          "http://localhost:8012/recepcionistas"
+          "https://autogest-gateway.onrender.com/recepcionistas"
         );
 
         const recepcionistas = await resRecep.json();
@@ -39,7 +39,7 @@ function RecepcionistaDashboard() {
 
         // citas de la sucursal
         const resCitas = await fetch(
-          `http://localhost:8012/citas/sucursal/${recepcionista.sucursal_id}`
+          `https://autogest-gateway.onrender.com/citas/sucursal/${recepcionista.sucursal_id}`
         );
 
         const citas = await resCitas.json();

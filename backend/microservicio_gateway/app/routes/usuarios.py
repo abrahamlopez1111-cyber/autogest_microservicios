@@ -74,7 +74,80 @@ async def obtener_perfil(usuario_id: int):
                 f"{SERVICIOS['usuarios']}/perfil/{usuario_id}"
             )
 
+        if response.status_code >= 400:
+            raise HTTPException(
+                status_code=response.status_code,
+                detail=response.json().get("detail", "Error obteniendo perfil")
+            )
+
         return response.json()
+
+    except HTTPException:
+        raise
+
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail=str(e)
+        )
+
+
+# =========================
+# CREAR PERFIL
+# =========================
+@router.post("/perfil/{usuario_id}")
+async def crear_perfil(usuario_id: int, request: Request):
+    try:
+        body = await request.json()
+
+        async with httpx.AsyncClient() as client:
+            response = await client.post(
+                f"{SERVICIOS['usuarios']}/perfil/{usuario_id}",
+                json=body
+            )
+
+        if response.status_code >= 400:
+            raise HTTPException(
+                status_code=response.status_code,
+                detail=response.text
+            )
+
+        return response.json()
+
+    except HTTPException:
+        raise
+
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail=str(e)
+        )
+
+
+# =========================
+# ACTUALIZAR PERFIL
+# =========================
+@router.put("/perfil/{usuario_id}")
+async def actualizar_perfil(usuario_id: int, request: Request):
+    try:
+        body = await request.json()
+
+        async with httpx.AsyncClient() as client:
+            response = await client.put(
+                f"{SERVICIOS['usuarios']}/perfil/{usuario_id}",
+                json=body
+            )
+
+        if response.status_code >= 400:
+            raise HTTPException(
+                status_code=response.status_code,
+                detail=response.text
+            )
+
+        return response.json()
+
+    except HTTPException:
+        raise
 
     except Exception as e:
         raise HTTPException(

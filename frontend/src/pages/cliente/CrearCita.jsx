@@ -19,7 +19,6 @@ const FESTIVOS = [
 
 function CrearCita() {
   const usuario = JSON.parse(localStorage.getItem("usuario") || "null");
-  const token = localStorage.getItem("token");
   const usuarioId = usuario?.id || usuario?.id_usuarios;
 
   const [loading, setLoading] = useState(true);
@@ -49,13 +48,12 @@ function CrearCita() {
     anio_fabricacion: "",
   });
 
-  // 🔐 fetch con token
+  // fetch base
   const fetchAuth = (url, options = {}) => {
     return fetch(url, {
       ...options,
       headers: {
         "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
         ...(options.headers || {}),
       },
     });
@@ -81,8 +79,8 @@ function CrearCita() {
   // 📥 datos generales
   const cargarDatos = async () => {
     const [sucRes, mecRes, usuariosRes] = await Promise.all([
-      fetchAuth("http://localhost:8012/sucursales"),
-      fetchAuth("http://localhost:8012/mecanicos"),
+      fetchAuth("https://autogest-gateway.onrender.com/sucursales"),
+      fetchAuth("https://autogest-gateway.onrender.com/mecanicos"),
       getUsuarios(),
     ]);
 
@@ -94,7 +92,7 @@ function CrearCita() {
   // 🚗 vehículos
   const cargarVehiculos = async () => {
     const res = await fetchAuth(
-      `http://localhost:8012/historial/vehiculos/usuario/${usuarioId}`
+      `https://autogest-gateway.onrender.com/historial/vehiculos/usuario/${usuarioId}`
     );
     if (res.ok) setVehiculos(await res.json());
   };
@@ -129,7 +127,7 @@ function CrearCita() {
     const fechaStr = fecha.toISOString().split("T")[0];
 
     fetchAuth(
-      `http://localhost:8012/citas/disponibilidad/${form.mecanico_id}/${fechaStr}`
+      `https://autogest-gateway.onrender.com/citas/disponibilidad/${form.mecanico_id}/${fechaStr}`
     )
       .then((res) => res.json())
       .then((data) => {
@@ -219,7 +217,7 @@ const esHoraPasada = (hora) => {
       return;
     }
 
-    const res = await fetchAuth("http://localhost:8012/historial/vehiculos", {
+    const res = await fetchAuth("https://autogest-gateway.onrender.com/historial/vehiculos", {
       method: "POST",
       body: JSON.stringify({
         ...nuevoVehiculo,
@@ -252,7 +250,7 @@ const esHoraPasada = (hora) => {
     const fin = new Date(inicio);
     fin.setHours(fin.getHours() + 1);
 
-    const res = await fetchAuth("http://localhost:8012/citas", {
+    const res = await fetchAuth("https://autogest-gateway.onrender.com/citas", {
       method: "POST",
       body: JSON.stringify({
         ...form,

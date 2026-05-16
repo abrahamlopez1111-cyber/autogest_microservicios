@@ -53,6 +53,17 @@ function PerfilUsuario({ volver }) {
     });
 
   // =========================
+  // LABELS LEGIBLES
+  // =========================
+  const labels = {
+    telefono: "📞 Teléfono",
+    direccion: "🏠 Dirección",
+    ciudad: "🌆 Ciudad",
+    documento: "🪪 Número de documento",
+    fecha_nacimiento: "🎂 Fecha de nacimiento",
+  };
+
+  // =========================
   // RUTAS
   // =========================
   const roleRoutes = {
@@ -309,25 +320,46 @@ function PerfilUsuario({ volver }) {
 
         <div style={styles.card}>
 
+          {usuario?.nombre && (
+            <p>
+              <strong>👤 Nombre:</strong>{" "}
+              {usuario.nombre}
+            </p>
+          )}
+
+          {usuario?.email && (
+            <p>
+              <strong>✉️ Correo:</strong>{" "}
+              {usuario.email}
+            </p>
+          )}
+
           <p>
             <strong>📞 Teléfono:</strong>{" "}
-            {perfil.telefono}
+            {perfil.telefono || "—"}
           </p>
 
           <p>
             <strong>🏠 Dirección:</strong>{" "}
-            {perfil.direccion}
+            {perfil.direccion || "—"}
           </p>
 
           <p>
             <strong>🌆 Ciudad:</strong>{" "}
-            {perfil.ciudad}
+            {perfil.ciudad || "—"}
           </p>
 
           <p>
             <strong>🪪 Documento:</strong>{" "}
-            {perfil.documento}
+            {perfil.documento || "—"}
           </p>
+
+          {perfil.fecha_nacimiento && (
+            <p>
+              <strong>🎂 Fecha de nacimiento:</strong>{" "}
+              {perfil.fecha_nacimiento}
+            </p>
+          )}
 
           <button
             style={styles.edit}
@@ -347,27 +379,44 @@ function PerfilUsuario({ volver }) {
 
         <div style={styles.card}>
 
+          {usuario?.nombre && (
+            <div style={{ marginBottom: "16px", paddingBottom: "12px", borderBottom: "1px solid #334155" }}>
+              <p style={{ margin: 0, color: "#94a3b8", fontSize: "13px" }}>👤 Nombre</p>
+              <p style={{ margin: "2px 0 0", fontWeight: "bold" }}>{usuario.nombre}</p>
+              {usuario.email && (
+                <>
+                  <p style={{ margin: "8px 0 0", color: "#94a3b8", fontSize: "13px" }}>✉️ Correo</p>
+                  <p style={{ margin: "2px 0 0" }}>{usuario.email}</p>
+                </>
+              )}
+            </div>
+          )}
+
           {Object.keys(form).map((campo) => (
 
-            <input
-              key={campo}
-              type={
-                campo ===
-                "fecha_nacimiento"
-                  ? "date"
-                  : "text"
-              }
-              placeholder={campo}
-              value={form[campo]}
-              onChange={(e) =>
-                setForm({
-                  ...form,
-                  [campo]:
-                    e.target.value,
-                })
-              }
-              style={styles.input}
-            />
+            <div key={campo} style={{ marginBottom: "10px" }}>
+              <label style={{ display: "block", color: "#94a3b8", fontSize: "13px", marginBottom: "4px" }}>
+                {labels[campo] || campo}
+              </label>
+              <input
+                type={
+                  campo ===
+                  "fecha_nacimiento"
+                    ? "date"
+                    : "text"
+                }
+                placeholder={labels[campo] || campo}
+                value={form[campo]}
+                onChange={(e) =>
+                  setForm({
+                    ...form,
+                    [campo]:
+                      e.target.value,
+                  })
+                }
+                style={styles.input}
+              />
+            </div>
 
           ))}
 

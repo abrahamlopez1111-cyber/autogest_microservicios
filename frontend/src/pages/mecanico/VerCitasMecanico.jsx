@@ -18,7 +18,7 @@ function VerCitasMecanico() {
         console.log("🚀 Cargando citas...");
 
         // 🔥 1. obtener mecánicos
-        const resMecanicos = await fetch("http://localhost:8012/mecanicos");
+        const resMecanicos = await fetch("https://autogest-gateway.onrender.com/mecanicos");
         const mecanicos = await resMecanicos.json();
 
         const mecanico = mecanicos.find(
@@ -33,15 +33,15 @@ function VerCitasMecanico() {
 
         // 🔥 2. traer citas
         const resCitas = await fetch(
-          `http://localhost:8012/citas/mecanico/${mecanico.id}`
+          `https://autogest-gateway.onrender.com/citas/mecanico/${mecanico.id}`
         );
 
         const citasData = await resCitas.json();
 
         // 🔥 3. datos extra
         const [resSuc, resUsuarios] = await Promise.all([
-          fetch("http://localhost:8012/sucursales"),
-          fetch("http://localhost:8012/usuarios"),
+          fetch("https://autogest-gateway.onrender.com/sucursales"),
+          fetch("https://autogest-gateway.onrender.com/usuarios"),
         ]);
 
         const sucursales = await resSuc.json();

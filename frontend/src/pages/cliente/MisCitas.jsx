@@ -17,10 +17,10 @@ function MisCitas() {
         setLoading(true);
 
         const [resCitas, resSuc, resUsuarios, resMec] = await Promise.all([
-          fetch("http://localhost:8012/citas"),
-          fetch("http://localhost:8012/sucursales"),
-          fetch("http://localhost:8012/usuarios"),
-          fetch("http://localhost:8012/mecanicos"),
+          fetch("https://autogest-gateway.onrender.com/citas"),
+          fetch("https://autogest-gateway.onrender.com/sucursales"),
+          fetch("https://autogest-gateway.onrender.com/usuarios"),
+          fetch("https://autogest-gateway.onrender.com/mecanicos"),
         ]);
 
         const citasData = await resCitas.json();
@@ -77,7 +77,7 @@ function MisCitas() {
     if (!confirmar) return;
 
     try {
-      const res = await fetch(`http://localhost:8000/citas/${id}`, {
+      const res = await fetch(`https://autogest-gateway.onrender.com/citas/${id}`, {
         method: "DELETE",
       });
 

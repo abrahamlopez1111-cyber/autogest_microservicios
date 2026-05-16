@@ -20,7 +20,7 @@ function CitasHoyMecanico() {
         setLoading(true);
 
         // 🔥 1. obtener mecánico
-        const resMecanicos = await fetch("http://localhost:8012/mecanicos");
+        const resMecanicos = await fetch("https://autogest-gateway.onrender.com/mecanicos");
         const mecanicos = await resMecanicos.json();
 
         const mecanico = mecanicos.find(
@@ -34,14 +34,14 @@ function CitasHoyMecanico() {
 
         // 🔥 2. citas del día
         const resCitas = await fetch(
-          `http://localhost:8012/citas/mecanico/${mecanico.id}/hoy`
+          `https://autogest-gateway.onrender.com/citas/mecanico/${mecanico.id}/hoy`
         );
         const citasData = await resCitas.json();
 
         // 🔥 3. traer datos base
         const [resUsuarios, resVehiculos] = await Promise.all([
-          fetch("http://localhost:8012/usuarios"),
-          fetch("http://localhost:8012/historial/vehiculos"),
+          fetch("https://autogest-gateway.onrender.com/usuarios"),
+          fetch("https://autogest-gateway.onrender.com/historial/vehiculos"),
         ]);
 
         const usuariosData = await resUsuarios.json();
@@ -58,7 +58,7 @@ function CitasHoyMecanico() {
           citasData.map(async (c) => {
             try {
               const resPerfil = await fetch(
-                `http://localhost:8012/perfil/${c.usuario_id}`
+                `https://autogest-gateway.onrender.com/perfil/${c.usuario_id}`
               );
 
               if (resPerfil.ok) {
