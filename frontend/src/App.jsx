@@ -14,6 +14,9 @@ import Admin from "./pages/admin/AdminDashboard";
 import ClienteDashboard from "./pages/cliente/ClienteDashboard";
 import DashboardMecanico from "./pages/mecanico/DashboardMecanico";
 import RecepcionistaDashboard from "./pages/recepcionista/recepcionista_dashboard";
+import CitasHoyRecepcionista from "./pages/recepcionista/CitasHoyRecepcionista";
+import FacturacionRecepcionista from "./pages/recepcionista/FacturacionRecepcionista";
+import MisFacturas from "./pages/recepcionista/MisFacturas";
 
 import PerfilGuard from "./components/perfil/PerfilGuard";
 import ProtectedRoute from "./components/ProtectedRoute";
@@ -280,6 +283,40 @@ function AppContent() {
         }
       />
 
+
+      {/* FALLBACK */}
+      <Route
+        path="/recepcionista/citas-hoy"
+        element={
+          <ProtectedRoute rolesPermitidos={["recepcionista"]}>
+            <PrivateLayout>
+              <CitasHoyRecepcionista />
+            </PrivateLayout>
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/recepcionista/facturacion"
+        element={
+          <ProtectedRoute rolesPermitidos={["recepcionista"]}>
+            <PrivateLayout>
+              <FacturacionRecepcionista />
+            </PrivateLayout>
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/recepcionista/facturas"
+        element={
+          <ProtectedRoute rolesPermitidos={["recepcionista"]}>
+            <PrivateLayout>
+              <MisFacturas />
+            </PrivateLayout>
+          </ProtectedRoute>
+        }
+      />
 
       {/* FALLBACK */}
       <Route

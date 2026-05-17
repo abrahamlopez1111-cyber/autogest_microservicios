@@ -7,6 +7,14 @@ router = APIRouter(
     tags=["Gateway Inventario"]
 )
 
+# El microservicio de inventario tiene prefix /inventario en main.py
+# y el router tiene prefix /repuestos
+# Ruta real del microservicio: /inventario/repuestos/<endpoint>
+# INVENTARIO_URL = raiz del microservicio (ej: https://autogest-inventario.onrender.com)
+
+def inv_url(path: str) -> str:
+    return f"{SERVICIOS['inventario']}/inventario/repuestos{path}"
+
 
 # =========================
 # LISTAR INVENTARIO COMPLETO
@@ -14,18 +22,18 @@ router = APIRouter(
 @router.get("/inventario/repuestos/inventario-completo")
 async def inventario_completo():
     try:
-        async with httpx.AsyncClient() as client:
-            response = await client.get(
-                f"{SERVICIOS['inventario']}/inventario/repuestos/inventario-completo"
-            )
+        async with httpx.AsyncClient(timeout=15.0) as client:
+            response = await client.get(inv_url("/inventario-completo"))
+
+        if response.status_code >= 400:
+            raise HTTPException(status_code=response.status_code, detail=response.text)
 
         return response.json()
 
+    except HTTPException:
+        raise
     except Exception as e:
-        raise HTTPException(
-            status_code=500,
-            detail=str(e)
-        )
+        raise HTTPException(status_code=500, detail=f"Error conectando con inventario: {str(e)}")
 
 
 # =========================
@@ -34,18 +42,18 @@ async def inventario_completo():
 @router.get("/inventario/repuestos")
 async def listar_repuestos():
     try:
-        async with httpx.AsyncClient() as client:
-            response = await client.get(
-                f"{SERVICIOS['inventario']}/inventario/repuestos/"
-            )
+        async with httpx.AsyncClient(timeout=15.0) as client:
+            response = await client.get(inv_url("/"))
+
+        if response.status_code >= 400:
+            raise HTTPException(status_code=response.status_code, detail=response.text)
 
         return response.json()
 
+    except HTTPException:
+        raise
     except Exception as e:
-        raise HTTPException(
-            status_code=500,
-            detail=str(e)
-        )
+        raise HTTPException(status_code=500, detail=str(e))
 
 
 # =========================
@@ -56,28 +64,18 @@ async def crear_repuesto(request: Request):
     try:
         body = await request.json()
 
-        async with httpx.AsyncClient() as client:
-            response = await client.post(
-                f"{SERVICIOS['inventario']}/inventario/repuestos/",
-                json=body
-            )
+        async with httpx.AsyncClient(timeout=15.0) as client:
+            response = await client.post(inv_url("/"), json=body)
 
         if response.status_code >= 400:
-            raise HTTPException(
-                status_code=response.status_code,
-                detail=response.text
-            )
+            raise HTTPException(status_code=response.status_code, detail=response.text)
 
         return response.json()
 
     except HTTPException:
         raise
-
     except Exception as e:
-        raise HTTPException(
-            status_code=500,
-            detail=str(e)
-        )
+        raise HTTPException(status_code=500, detail=str(e))
 
 
 # =========================
@@ -88,45 +86,35 @@ async def crear_stock(request: Request):
     try:
         body = await request.json()
 
-        async with httpx.AsyncClient() as client:
-            response = await client.post(
-                f"{SERVICIOS['inventario']}/inventario/repuestos/stock",
-                json=body
-            )
+        async with httpx.AsyncClient(timeout=15.0) as client:
+            response = await client.post(inv_url("/stock"), json=body)
 
         if response.status_code >= 400:
-            raise HTTPException(
-                status_code=response.status_code,
-                detail=response.text
-            )
+            raise HTTPException(status_code=response.status_code, detail=response.text)
 
         return response.json()
 
     except HTTPException:
         raise
-
     except Exception as e:
-        raise HTTPException(
-            status_code=500,
-            detail=str(e)
-        )
+        raise HTTPException(status_code=500, detail=str(e))
 
 
 # =========================
 # REPUESTO POR ID
 # =========================
-@router.get("/repuestos/{repuesto_id}")
+@router.get("/inventario/repuestos/{repuesto_id}")
 async def obtener_repuesto(repuesto_id: int):
     try:
-        async with httpx.AsyncClient() as client:
-            response = await client.get(
-                f"{SERVICIOS['inventario']}/inventario/repuestos/{repuesto_id}"
-            )
+        async with httpx.AsyncClient(timeout=15.0) as client:
+            response = await client.get(inv_url(f"/{repuesto_id}"))
+
+        if response.status_code >= 400:
+            raise HTTPException(status_code=response.status_code, detail=response.text)
 
         return response.json()
 
+    except HTTPException:
+        raise
     except Exception as e:
-        raise HTTPException(
-            status_code=500,
-            detail=str(e)
-        )
+        raise HTTPException(status_code=500, detail=str(e))

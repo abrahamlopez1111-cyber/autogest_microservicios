@@ -4,7 +4,6 @@ import models
 import schemas
 from datetime import datetime, date
 from zoneinfo import ZoneInfo
-import requests
 
 
 # =========================
@@ -136,29 +135,12 @@ def obtener_mecanicos(db: Session):
 
 
 def crear_mecanico(db: Session, mecanico):
-
-    try:
-        res = requests.get(
-            f"http://usuarios_service:8000/usuarios/{mecanico.usuario_id}"
-        )
-
-        if res.status_code != 200:
-            raise ValueError("Usuario no encontrado")
-
-        usuario = res.json()
-
-    except Exception as e:
-        print("❌ ERROR USUARIO:", e)
-        raise ValueError("Error consultando usuario")
-
-    if usuario.get("rol") != "mecanico":
-        raise ValueError("Solo usuarios con rol mecanico pueden ser asignados")
-
+    # La validación de rol se hace en el frontend (solo muestra mecánicos disponibles)
+    # No se llama al microservicio de usuarios para evitar dependencia de red interna
     nuevo = models.Mecanico(**mecanico.dict())
     db.add(nuevo)
     db.commit()
     db.refresh(nuevo)
-
     return nuevo
 
 

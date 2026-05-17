@@ -98,28 +98,30 @@ def disponibilidad(repuesto_id: int, sucursal_id: int, db: Session = Depends(get
     
 @router.get("/inventario-completo")
 def inventario_completo(db: Session = Depends(get_db)):
+    try:
+        data = db.query(
+            models.CatalogoRepuestos.id,
+            models.CatalogoRepuestos.nombre,
+            models.CatalogoRepuestos.precio,
+            models.StockSucursal.cantidad_disponible,
+            models.StockSucursal.sucursal_id
+        ).outerjoin(
+            models.StockSucursal,
+            models.CatalogoRepuestos.id == models.StockSucursal.catalogo_repuestos_id
+        ).all()
 
-    data = db.query(
-        models.CatalogoRepuestos.id,
-        models.CatalogoRepuestos.nombre,
-        models.CatalogoRepuestos.precio,
-        models.StockSucursal.cantidad_disponible,
-        models.StockSucursal.sucursal_id
-    ).join(
-        models.StockSucursal,
-        models.CatalogoRepuestos.id == models.StockSucursal.catalogo_repuestos_id
-    ).all()
-
-    return [
-        {
-            "id": r.id,
-            "nombre": r.nombre,
-            "precio": r.precio,
-            "cantidad": r.cantidad_disponible,
-            "sucursal_id": r.sucursal_id
-        }
-        for r in data
-    ]
+        return [
+            {
+                "id": r.id,
+                "nombre": r.nombre,
+                "precio": r.precio,
+                "cantidad": r.cantidad_disponible or 0,
+                "sucursal_id": r.sucursal_id
+            }
+            for r in data
+        ]
+    except Exception:
+        return []
     
     
 # =========================

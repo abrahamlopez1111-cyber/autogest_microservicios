@@ -278,3 +278,42 @@ async def crear_usuario(request: Request):
             status_code=500,
             detail=str(e)
         )
+
+# =========================
+# EDITAR USUARIO
+# =========================
+@router.put("/usuarios/{usuario_id}")
+async def actualizar_usuario(usuario_id: int, request: Request):
+    try:
+        body = await request.json()
+        async with httpx.AsyncClient(timeout=15.0) as client:
+            response = await client.put(
+                f"{SERVICIOS['usuarios']}/usuarios/{usuario_id}",
+                json=body
+            )
+        if response.status_code >= 400:
+            raise HTTPException(status_code=response.status_code, detail=response.text)
+        return response.json()
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+# =========================
+# ELIMINAR USUARIO
+# =========================
+@router.delete("/usuarios/{usuario_id}")
+async def eliminar_usuario(usuario_id: int):
+    try:
+        async with httpx.AsyncClient(timeout=15.0) as client:
+            response = await client.delete(
+                f"{SERVICIOS['usuarios']}/usuarios/{usuario_id}"
+            )
+        if response.status_code >= 400:
+            raise HTTPException(status_code=response.status_code, detail=response.text)
+        return response.json()
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))

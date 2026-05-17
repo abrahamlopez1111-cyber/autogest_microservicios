@@ -1,6 +1,6 @@
 import { API_URLS } from "../config/apiUrls";
 
-const API_URL = API_URLS.citas;
+const API_URL = API_URLS.gateway;
 
 // =========================
 // 🔧 FUNCIÓN BASE

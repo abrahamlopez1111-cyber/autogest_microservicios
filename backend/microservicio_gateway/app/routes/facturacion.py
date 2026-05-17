@@ -133,3 +133,21 @@ async def descargar_pdf(factura_id: int):
             status_code=500,
             detail=str(e)
         )
+
+# =========================
+# FACTURA POR ID
+# =========================
+@router.get("/facturas/{factura_id}")
+async def obtener_factura(factura_id: int):
+    try:
+        async with httpx.AsyncClient(timeout=15.0) as client:
+            response = await client.get(
+                f"{SERVICIOS['facturacion']}/facturas/{factura_id}"
+            )
+        if response.status_code >= 400:
+            raise HTTPException(status_code=response.status_code, detail=response.text)
+        return response.json()
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
