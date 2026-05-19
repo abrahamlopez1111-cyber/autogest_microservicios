@@ -18,6 +18,13 @@ function DetalleCita() {
   const [cantidadSeleccionada, setCantidadSeleccionada] =
     useState(1);
 
+  const [msg, setMsg] = useState({ texto: "", tipo: "" });
+
+  const mostrar = (texto, tipo = "success") => {
+    setMsg({ texto, tipo });
+    setTimeout(() => setMsg({ texto: "", tipo: "" }), 3000);
+  };
+
   const [form, setForm] = useState({
     descripcion_falla: "",
     reparacion_realizada: "",
@@ -106,7 +113,7 @@ function DetalleCita() {
   const agregarRepuesto = () => {
 
     if (!repuestoSeleccionado) {
-      alert("Seleccione un repuesto");
+      mostrar("Seleccione un repuesto", "error");
       return;
     }
 
@@ -121,7 +128,7 @@ function DetalleCita() {
     );
 
     if (existe) {
-      alert("Ese repuesto ya fue agregado");
+      mostrar("Ese repuesto ya fue agregado", "error");
       return;
     }
 
@@ -187,7 +194,7 @@ const guardarDiagnostico = async () => {
     !form.reparacion_realizada ||
     !form.mano_obra
   ) {
-    alert("Complete todos los campos");
+    mostrar("Complete todos los campos", "error");
     return;
   }
 
@@ -231,7 +238,7 @@ const guardarDiagnostico = async () => {
     );
 
     if (!resDiagnostico.ok) {
-      alert("Error guardando diagnóstico");
+      mostrar("Error guardando diagnóstico", "error");
       return;
     }
 
@@ -246,18 +253,14 @@ const guardarDiagnostico = async () => {
     );
 
     if (!resEstado.ok) {
-      alert(
-        "Diagnóstico guardado, pero no se actualizó la cita"
-      );
+      mostrar("Diagnóstico guardado, pero no se actualizó la cita", "error");
       return;
     }
 
     // =========================
     // 3. FINAL
     // =========================
-    alert(
-      "Diagnóstico guardado correctamente ✅"
-    );
+    mostrar("Diagnóstico guardado correctamente ✅");
 
     navigate("/mecanico");
 
@@ -265,9 +268,7 @@ const guardarDiagnostico = async () => {
 
     console.error(error);
 
-    alert(
-      "Error de conexión"
-    );
+    mostrar("Error de conexión", "error");
 
   }
 
@@ -285,6 +286,12 @@ const guardarDiagnostico = async () => {
 
   return (
     <div style={styles.container}>
+
+      {msg.texto && (
+        <div style={{ position: "fixed", top: "20px", right: "20px", padding: "12px 20px", borderRadius: "10px", color: "white", fontWeight: "bold", zIndex: 9999, background: msg.tipo === "error" ? "#dc2626" : "#16a34a" }}>
+          {msg.texto}
+        </div>
+      )}
 
       <button
         style={styles.back}

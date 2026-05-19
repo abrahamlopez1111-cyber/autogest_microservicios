@@ -214,3 +214,58 @@ export const getAgendaHoy =
       `${API_URL}/agenda/hoy`
     );
   };
+
+// =========================
+// CITAS HOY
+// =========================
+export const getCitasHoyMecanico = (mecanico_id) => {
+  return fetchAPI(`${API_URL}/citas/mecanico/${mecanico_id}/hoy`);
+};
+
+export const getCitasHoySucursal = (sucursal_id) => {
+  return fetchAPI(`${API_URL}/citas/sucursal/${sucursal_id}/hoy`);
+};
+
+export const getCitasPorSucursal = (sucursal_id) => {
+  return fetchAPI(`${API_URL}/citas/sucursal/${sucursal_id}`);
+};
+
+// =========================
+// RECIBIR Y ESTADO
+// =========================
+export const recibirCita = (id, data) => {
+  return fetchAPI(`${API_URL}/citas/${id}/recibir`, {
+    method: "PUT",
+    body: JSON.stringify(data),
+  });
+};
+
+export const cambiarEstadoCita = (id, estado) => {
+  return fetchAPI(`${API_URL}/citas/${id}/estado/${estado}`, {
+    method: "PUT",
+  });
+};
+
+export const getRecepcionCita = (id) => {
+  return fetchAPI(`${API_URL}/citas/${id}/recepcion`);
+};
+
+// =========================
+// RECEPCIONISTAS
+// =========================
+export const getRecepcionistas = () => {
+  return fetchAPI(`${API_URL}/recepcionistas`);
+};
+
+export const crearRecepcionista = (data) => {
+  return fetchAPI(`${API_URL}/recepcionistas`, {
+    method: "POST",
+    body: JSON.stringify(data),
+  });
+};
+
+export const eliminarRecepcionista = (id) => {
+  return fetchAPI(`${API_URL}/recepcionistas/${id}`, {
+    method: "DELETE",
+  });
+};
