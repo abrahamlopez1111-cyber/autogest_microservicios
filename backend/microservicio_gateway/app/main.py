@@ -58,8 +58,8 @@ async def debug_inventario():
     return {
         "INVENTARIO_URL": inventario_url,
         "pruebas": resultados
-<<<<<<< HEAD
+
     }
-=======
-    }
->>>>>>> df580f8457edeceeaa276a8caa7381d30e2611ac
+
+    
+

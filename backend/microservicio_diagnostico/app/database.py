@@ -4,21 +4,35 @@ import time
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, declarative_base
 
+# =========================
+# PRIORIDAD:
+# 1. DATABASE_URL (Render)
+# 2. Docker/local
+# =========================
 
-DB_HOST = os.getenv("DB_HOST", "db_diagnostico")
-DB_PORT = os.getenv("DB_PORT", "5432")
-DB_NAME = os.getenv("DB_NAME", "diagnostico")
-DB_USER = os.getenv("DB_USER", "postgres")
-DB_PASSWORD = os.getenv("DB_PASSWORD", "postgres")
+DATABASE_URL = os.getenv("DATABASE_URL")
 
+if not DATABASE_URL:
 
-DATABASE_URL = (
-    f"postgresql://{DB_USER}:{DB_PASSWORD}"
-    f"@{DB_HOST}:{DB_PORT}/{DB_NAME}"
+    DB_HOST = os.getenv("DB_HOST", "localhost")
+    DB_PORT = os.getenv("DB_PORT", "5432")
+    DB_NAME = os.getenv("DB_NAME", "diagnostico")
+    DB_USER = os.getenv("DB_USER", "postgres")
+    DB_PASSWORD = os.getenv("DB_PASSWORD", "postgres")
+
+    DATABASE_URL = (
+        f"postgresql://{DB_USER}:{DB_PASSWORD}"
+        f"@{DB_HOST}:{DB_PORT}/{DB_NAME}"
+    )
+
+# =========================
+# ENGINE
+# =========================
+
+engine = create_engine(
+    DATABASE_URL,
+    pool_pre_ping=True
 )
-
-
-engine = create_engine(DATABASE_URL)
 
 SessionLocal = sessionmaker(
     autocommit=False,
@@ -28,9 +42,14 @@ SessionLocal = sessionmaker(
 
 Base = declarative_base()
 
+# =========================
+# ESPERAR DB
+# =========================
 
 def wait_for_db():
+
     for _ in range(10):
+
         try:
             conn = engine.connect()
             conn.close()
@@ -38,14 +57,18 @@ def wait_for_db():
             print("✅ DB diagnostico lista")
             return
 
-        except Exception:
-            print("⏳ Esperando DB diagnostico...")
+        except Exception as e:
+            print(f"⏳ Esperando DB diagnostico... {e}")
             time.sleep(3)
 
     raise Exception("❌ No conecta DB diagnostico")
 
+# =========================
+# SESION DB
+# =========================
 
 def get_db():
+
     db = SessionLocal()
 
     try:
