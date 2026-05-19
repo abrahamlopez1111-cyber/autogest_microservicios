@@ -1,7 +1,9 @@
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
+
 import httpx
 import os
-from fastapi.middleware.cors import CORSMiddleware
+
 from app.routes import (
     citas,
     usuarios,
@@ -11,9 +13,17 @@ from app.routes import (
     facturacion
 )
 
+# =========================
+# APP
+# =========================
+
 app = FastAPI(
     title="AUTOGEST Gateway"
 )
+
+# =========================
+# CORS
+# =========================
 
 app.add_middleware(
     CORSMiddleware,
@@ -23,6 +33,10 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# =========================
+# ROUTERS
+# =========================
+
 app.include_router(citas.router)
 app.include_router(usuarios.router)
 app.include_router(historial.router)
@@ -30,6 +44,9 @@ app.include_router(inventario.router)
 app.include_router(diagnostico.router)
 app.include_router(facturacion.router)
 
+# =========================
+# ROOT
+# =========================
 
 @app.get("/")
 def root():
@@ -37,29 +54,47 @@ def root():
         "mensaje": "Gateway AUTOGEST funcionando"
     }
 
+# =========================
+# DEBUG INVENTARIO
+# =========================
 
 @app.get("/debug/inventario")
 async def debug_inventario():
-    inventario_url = os.getenv("INVENTARIO_URL", "NO CONFIGURADO")
+
+    inventario_url = os.getenv(
+        "INVENTARIO_URL",
+        "NO CONFIGURADO"
+    )
+
     rutas_a_probar = [
         f"{inventario_url}/inventario/repuestos/inventario-completo",
         f"{inventario_url}/inventario/repuestos/",
         f"{inventario_url}/repuestos/inventario-completo",
         f"{inventario_url}/",
     ]
+
     resultados = {}
+
     async with httpx.AsyncClient(timeout=10.0) as client:
+
         for url in rutas_a_probar:
+
             try:
-                r = await client.get(url)
-                resultados[url] = {"status": r.status_code, "ok": r.status_code < 400}
+                response = await client.get(url)
+
+                resultados[url] = {
+                    "status": response.status_code,
+                    "ok": response.status_code < 400
+                }
+
             except Exception as e:
-                resultados[url] = {"status": "ERROR", "detalle": str(e)}
+
+                resultados[url] = {
+                    "status": "ERROR",
+                    "detalle": str(e)
+                }
+
     return {
         "INVENTARIO_URL": inventario_url,
         "pruebas": resultados
-
     }
-
-    
-
