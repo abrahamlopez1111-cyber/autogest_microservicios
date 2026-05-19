@@ -3,37 +3,71 @@ import time
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, declarative_base
 
-DB_HOST = os.getenv("DB_HOST", "db_inventario")
-DB_PORT = os.getenv("DB_PORT", "5432")
-DB_NAME = os.getenv("DB_NAME", "inventario")
-DB_USER = os.getenv("DB_USER", "postgres")
-DB_PASSWORD = os.getenv("DB_PASSWORD", "postgres")
+# =========================
+# PRIORIDAD:
+# 1. DATABASE_URL (Render)
+# 2. Variables Docker/local
+# =========================
 
-DATABASE_URL = f"postgresql://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}"
+DATABASE_URL = os.getenv("DATABASE_URL")
 
-engine = create_engine(DATABASE_URL)
+if not DATABASE_URL:
+    DB_HOST = os.getenv("DB_HOST", "localhost")
+    DB_PORT = os.getenv("DB_PORT", "5432")
+    DB_NAME = os.getenv("DB_NAME", "inventario")
+    DB_USER = os.getenv("DB_USER", "postgres")
+    DB_PASSWORD = os.getenv("DB_PASSWORD", "postgres")
 
-SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+    DATABASE_URL = (
+        f"postgresql://{DB_USER}:{DB_PASSWORD}"
+        f"@{DB_HOST}:{DB_PORT}/{DB_NAME}"
+    )
+
+# =========================
+# ENGINE
+# =========================
+
+engine = create_engine(
+    DATABASE_URL,
+    pool_pre_ping=True
+)
+
+SessionLocal = sessionmaker(
+    autocommit=False,
+    autoflush=False,
+    bind=engine
+)
+
 Base = declarative_base()
 
+# =========================
+# ESPERAR DB
+# =========================
 
 def wait_for_db():
     for i in range(10):
         try:
             conn = engine.connect()
             conn.close()
+
             print("✅ DB inventario lista")
             return
-        except Exception:
-            print("⏳ Esperando DB inventario...")
+
+        except Exception as e:
+            print(f"⏳ Esperando DB inventario... {e}")
             time.sleep(3)
 
     raise Exception("❌ No conecta DB inventario")
 
+# =========================
+# SESION DB
+# =========================
 
 def get_db():
     db = SessionLocal()
+
     try:
         yield db
+
     finally:
         db.close()
