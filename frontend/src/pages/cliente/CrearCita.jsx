@@ -188,7 +188,11 @@ const esHoraPasada = (hora) => {
 
       const fechaStr = `${year}-${month}-${day}`;
 
-      const fechaHora = new Date(`${fechaStr}T${h}:00:00`);
+      const horaFormateada = String(h).padStart(2, "0");
+
+      const fechaHora = new Date(
+        `${fechaStr}T${horaFormateada}:00:00`
+      );
 
       if (isNaN(fechaHora.getTime())) {
         console.error("FechaHora inválida:", fechaHora);
