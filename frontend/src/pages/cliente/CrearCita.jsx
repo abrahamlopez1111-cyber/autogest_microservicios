@@ -165,54 +165,57 @@ const esHoraPasada = (hora) => {
 
 
   // 🕐 seleccionar hora
-  const seleccionarHora = (h) => {
-    try {
-      if (!fecha) {
-        toast.warning("Selecciona una fecha primero");
-        return;
-      }
-
-      const fechaObj = new Date(fecha);
-
-      // 🔒 Validar fecha
-      if (isNaN(fechaObj.getTime())) {
-        console.error("Fecha inválida:", fecha);
-        toast.error("Fecha inválida");
-        return;
-      }
-
-      // 🔥 construir fecha manual (SIN toISOString directo)
-      const year = fechaObj.getFullYear();
-      const month = String(fechaObj.getMonth() + 1).padStart(2, "0");
-      const day = String(fechaObj.getDate()).padStart(2, "0");
-
-      const fechaStr = `${year}-${month}-${day}`;
-
-      const horaFormateada = String(h).padStart(2, "0");
-
-      const fechaHora = new Date(
-        `${fechaStr}T${horaFormateada}:00:00`
-      );
-
-      if (isNaN(fechaHora.getTime())) {
-        console.error("FechaHora inválida:", fechaHora);
-        toast.error("Error generando la hora");
-        return;
-      }
-
-      setHoraSeleccionada(h);
-
-      setForm((prev) => ({
-        ...prev,
-        fecha_hora_inicio: fechaHora.toISOString(),
-      }));
-
-      toast.info(`⏰ Hora seleccionada: ${h}:00`);
-    } catch (error) {
-      console.error("ERROR seleccionarHora:", error);
-      toast.error("Error inesperado");
+const seleccionarHora = (h) => {
+  try {
+    if (!fecha) {
+      toast.warning("Selecciona una fecha primero");
+      return;
     }
-  };
+
+    const fechaObj = new Date(fecha);
+
+    // 🔒 Validar fecha
+    if (isNaN(fechaObj.getTime())) {
+      console.error("Fecha inválida:", fecha);
+      toast.error("Fecha inválida");
+      return;
+    }
+
+    // 📅 Formato fecha
+    const year = fechaObj.getFullYear();
+    const month = String(fechaObj.getMonth() + 1).padStart(2, "0");
+    const day = String(fechaObj.getDate()).padStart(2, "0");
+
+    const fechaStr = `${year}-${month}-${day}`;
+
+    // ⏰ Formatear hora correctamente
+    const horaFormateada = String(h).padStart(2, "0");
+
+    const fechaHora = new Date(
+      `${fechaStr}T${horaFormateada}:00:00`
+    );
+
+    if (isNaN(fechaHora.getTime())) {
+      console.error("FechaHora inválida:", fechaHora);
+      toast.error("Error generando la hora");
+      return;
+    }
+
+    setHoraSeleccionada(h);
+
+    // ✅ SIN toISOString()
+    setForm((prev) => ({
+      ...prev,
+      fecha_hora_inicio: `${fechaStr}T${horaFormateada}:00:00`,
+    }));
+
+    toast.info(`⏰ Hora seleccionada: ${horaFormateada}:00`);
+
+  } catch (error) {
+    console.error("ERROR seleccionarHora:", error);
+    toast.error("Error inesperado");
+  }
+};
 
   // 🚗 crear vehículo
   const crearVehiculo = async () => {
