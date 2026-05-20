@@ -272,3 +272,75 @@ async def eliminar_recepcionista(recepcionista_id: int):
             status_code=500,
             detail=str(e)
         )
+        
+        
+# =========================
+# CREAR CITA
+# =========================
+@router.post("/citas")
+async def crear_cita(request: Request):
+
+    try:
+        body = await request.json()
+
+        async with httpx.AsyncClient(timeout=TIMEOUT) as client:
+
+            response = await client.post(
+                f"{SERVICIOS['citas']}/citas",
+                json=body
+            )
+
+        if response.status_code >= 400:
+
+            raise HTTPException(
+                status_code=response.status_code,
+                detail=response.text
+            )
+
+        return response.json()
+
+    except HTTPException:
+        raise
+
+    except Exception as e:
+
+        raise HTTPException(
+            status_code=500,
+            detail=str(e)
+        )
+
+
+# =========================
+# DISPONIBILIDAD
+# =========================
+@router.get("/citas/disponibilidad/{mecanico_id}/{fecha}")
+async def disponibilidad(
+    mecanico_id: int,
+    fecha: str
+):
+
+    try:
+        async with httpx.AsyncClient(timeout=TIMEOUT) as client:
+
+            response = await client.get(
+                f"{SERVICIOS['citas']}/citas/disponibilidad/{mecanico_id}/{fecha}"
+            )
+
+        if response.status_code >= 400:
+
+            raise HTTPException(
+                status_code=response.status_code,
+                detail=response.text
+            )
+
+        return response.json()
+
+    except HTTPException:
+        raise
+
+    except Exception as e:
+
+        raise HTTPException(
+            status_code=500,
+            detail=str(e)
+        )
