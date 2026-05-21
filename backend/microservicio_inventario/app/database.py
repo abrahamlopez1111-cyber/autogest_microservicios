@@ -1,36 +1,63 @@
 import os
 import time
+
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, declarative_base
 
 # =========================
-# PRIORIDAD:
-# 1. DATABASE_URL (Render)
-# 2. Variables Docker/local
+# 🧪 TESTING SQLITE
 # =========================
 
-DATABASE_URL = os.getenv("DATABASE_URL")
+TESTING = os.getenv("TESTING")
 
-if not DATABASE_URL:
-    DB_HOST = os.getenv("DB_HOST", "localhost")
-    DB_PORT = os.getenv("DB_PORT", "5432")
-    DB_NAME = os.getenv("DB_NAME", "inventario")
-    DB_USER = os.getenv("DB_USER", "postgres")
-    DB_PASSWORD = os.getenv("DB_PASSWORD", "postgres")
+if TESTING == "1":
 
-    DATABASE_URL = (
-        f"postgresql://{DB_USER}:{DB_PASSWORD}"
-        f"@{DB_HOST}:{DB_PORT}/{DB_NAME}"
+    print("🧪 Testing mode SQLite")
+
+    DATABASE_URL = "sqlite:///./test.db"
+
+    engine = create_engine(
+        DATABASE_URL,
+        connect_args={"check_same_thread": False},
+        pool_pre_ping=True
+    )
+
+else:
+
+    # =========================
+    # PRIORIDAD:
+    # 1. DATABASE_URL (Render)
+    # 2. Docker/local
+    # =========================
+
+    DATABASE_URL = os.getenv("DATABASE_URL")
+
+    if not DATABASE_URL:
+
+        # 🔥 Docker usa db_inventario
+        # 🔥 Local usa localhost
+        DB_HOST = os.getenv("DB_HOST", "db_inventario")
+
+        DB_PORT = os.getenv("DB_PORT", "5432")
+        DB_NAME = os.getenv("DB_NAME", "inventario")
+        DB_USER = os.getenv("DB_USER", "postgres")
+        DB_PASSWORD = os.getenv("DB_PASSWORD", "postgres")
+
+        DATABASE_URL = (
+            f"postgresql+psycopg2://{DB_USER}:{DB_PASSWORD}"
+            f"@{DB_HOST}:{DB_PORT}/{DB_NAME}"
+        )
+
+    print(f"📦 Conectando a DB: {DATABASE_URL}")
+
+    engine = create_engine(
+        DATABASE_URL,
+        pool_pre_ping=True
     )
 
 # =========================
-# ENGINE
+# SESSION
 # =========================
-
-engine = create_engine(
-    DATABASE_URL,
-    pool_pre_ping=True
-)
 
 SessionLocal = sessionmaker(
     autocommit=False,
@@ -41,12 +68,21 @@ SessionLocal = sessionmaker(
 Base = declarative_base()
 
 # =========================
-# ESPERAR DB
+# WAIT DB
 # =========================
 
 def wait_for_db():
-    for i in range(10):
+
+    # 🔥 En testing NO esperar PostgreSQL
+    if TESTING == "1":
+
+        print("🧪 SQLite listo")
+        return
+
+    for i in range(20):
+
         try:
+
             conn = engine.connect()
             conn.close()
 
@@ -54,16 +90,18 @@ def wait_for_db():
             return
 
         except Exception as e:
-            print(f"⏳ Esperando DB inventario... {e}")
-            time.sleep(3)
+
+            print(f"⏳ Esperando DB inventario... intento {i+1}: {e}")
+            time.sleep(2)
 
     raise Exception("❌ No conecta DB inventario")
 
 # =========================
-# SESION DB
+# DB SESSION
 # =========================
 
 def get_db():
+
     db = SessionLocal()
 
     try:
