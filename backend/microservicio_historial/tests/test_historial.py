@@ -44,7 +44,7 @@ def test_crear_vehiculo():
         "/historial/vehiculos",
         json={
             "usuario_id": 1,
-            "placa": "ABC123",
+            "placa": f"ABC{int(time.time())}",
             "marca": "Toyota",
             "modelo": "Corolla",
             "anio_fabricacion": 2020
@@ -52,7 +52,6 @@ def test_crear_vehiculo():
     )
 
     assert response.status_code == 200
-
 
 # =========================
 # LISTAR VEHICULOS
