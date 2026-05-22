@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
@@ -14,132 +15,130 @@ function CitasHoyMecanico() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    const cargarCitasHoy = async () => {
-      try {
-        setLoading(true);
-
-        // =========================
-        // 🔥 USUARIO LOGUEADO
-        // =========================
-        const usuario = JSON.parse(
-          localStorage.getItem("usuario") || "null"
-        );
-
-        console.log("👤 Usuario logueado:", usuario);
-
-        if (!usuario) {
-          setLoading(false);
-          return;
-        }
-
-        // =========================
-        // 🔥 OBTENER MECÁNICOS
-        // =========================
-        const resMecanicos = await fetch(
-          `${GATEWAY}/mecanicos`
-        );
-
-        const mecanicos = await resMecanicos.json();
-
-        console.log("🔧 Mecánicos:", mecanicos);
-
-        // 🔥 BUSCAR MECÁNICO DEL USUARIO
-        let mecanico = mecanicos.find(
-          (m) =>
-            Number(m.usuario_id) ===
-            Number(usuario.id_usuarios)
-        );
-
-        // 🔥 FALLBACK TEMPORAL
-        // Si no encuentra el mecánico por usuario,
-        // usa el primero para evitar pantalla vacía
-        if (!mecanico && mecanicos.length > 0) {
-          console.warn(
-            "⚠️ No se encontró mecánico relacionado al usuario. Usando fallback."
-          );
-
-          mecanico = mecanicos[0];
-        }
-
-        console.log("✅ Mecánico encontrado:", mecanico);
-
-        if (!mecanico) {
-          setCitas([]);
-          return;
-        }
-
-        // =========================
-        // 🔥 OBTENER CITAS DEL DÍA
-        // =========================
-        const resCitas = await fetch(
-          `${GATEWAY}/citas/mecanico/${mecanico.id}/hoy`
-        );
-
-        const citasData = await resCitas.json();
-
-        console.log("📅 Citas hoy:", citasData);
-
-        // =========================
-        // 🔥 TRAER USUARIOS Y VEHÍCULOS
-        // =========================
-        const [resUsuarios, resVehiculos] =
-          await Promise.all([
-            fetch(`${GATEWAY}/usuarios`),
-            fetch(`${GATEWAY}/historial/vehiculos`),
-          ]);
-
-        const usuariosData = await resUsuarios.json();
-        const vehiculosData = await resVehiculos.json();
-
-        setUsuarios(usuariosData);
-        setVehiculos(vehiculosData);
-
-        // 🔥 FILTRAR SOLO RECIBIDAS Y PROGRAMADAS
-        const citasFiltradas = citasData.filter(
-          (c) =>
-            c.estado === "programada" ||
-            c.estado === "recibida"
-        );
-
-        setCitas(citasFiltradas);
-
-        // =========================
-        // 🔥 CARGAR PERFILES
-        // =========================
-        const perfilesTemp = {};
-
-        await Promise.all(
-          citasFiltradas.map(async (c) => {
-            try {
-              const resPerfil = await fetch(
-                `${GATEWAY}/perfil/${c.usuario_id}`
-              );
-
-              if (resPerfil.ok) {
-                const perfil = await resPerfil.json();
-
-                perfilesTemp[c.usuario_id] = perfil;
-              }
-            } catch (error) {
-              console.log(
-                "❌ Error cargando perfil:",
-                error
-              );
-            }
-          })
-        );
-
-        setPerfiles(perfilesTemp);
-
-      } catch (error) {
-        console.error("❌ Error general:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    cargarCitasHoy();
+    cargarCitas();
   }, []);
+
+  const esHoy = (fecha) => {
+    const hoy = new Date().toDateString();
+    return new Date(fecha).toDateString() === hoy;
+  };
+
+  const cargarCitas = async () => {
+    try {
+      setLoading(true);
+
+      // =========================
+      // 🔥 USUARIO LOGUEADO
+      // =========================
+      const usuario = JSON.parse(
+        localStorage.getItem("usuario") || "null"
+      );
+
+      console.log("👤 Usuario:", usuario);
+
+      if (!usuario) return;
+
+      // =========================
+      // 🔥 OBTENER MECÁNICOS
+      // =========================
+      const resMecanicos = await fetch(
+        `${GATEWAY}/mecanicos`
+      );
+
+      const mecanicos = await resMecanicos.json();
+
+      console.log("🔧 Mecánicos:", mecanicos);
+
+      const mecanico = mecanicos.find(
+        (m) =>
+          Number(m.usuario_id) ===
+          Number(usuario.id_usuarios)
+      );
+
+      console.log("✅ Mecánico encontrado:", mecanico);
+
+      if (!mecanico) {
+        setCitas([]);
+        return;
+      }
+
+      // =========================
+      // 🔥 TRAER TODAS LAS CITAS
+      // =========================
+      const resCitas = await fetch(
+        `${GATEWAY}/citas/mecanico/${mecanico.id}`
+      );
+
+      const citasData = await resCitas.json();
+
+      console.log("📅 Todas las citas:", citasData);
+
+      // =========================
+      // 🔥 FILTRAR SOLO HOY
+      // =========================
+      const citasHoy = (Array.isArray(citasData)
+        ? citasData
+        : []
+      ).filter((c) => {
+        return (
+          esHoy(c.fecha_hora_inicio) &&
+          (
+            c.estado === "programada" ||
+            c.estado === "recibida" ||
+            c.estado === "en_proceso"
+          )
+        );
+      });
+
+      console.log("🔥 Citas filtradas:", citasHoy);
+
+      // =========================
+      // 🔥 DATOS EXTRA
+      // =========================
+      const [resUsuarios, resVehiculos] =
+        await Promise.all([
+          fetch(`${GATEWAY}/usuarios`),
+          fetch(`${GATEWAY}/historial/vehiculos`),
+        ]);
+
+      const usuariosData = await resUsuarios.json();
+      const vehiculosData = await resVehiculos.json();
+
+      setUsuarios(usuariosData);
+      setVehiculos(vehiculosData);
+
+      setCitas(citasHoy);
+
+      // =========================
+      // 🔥 CARGAR PERFILES
+      // =========================
+      const perfilesTemp = {};
+
+      await Promise.all(
+        citasHoy.map(async (c) => {
+          try {
+            const resPerfil = await fetch(
+              `${GATEWAY}/perfil/${c.usuario_id}`
+            );
+
+            if (resPerfil.ok) {
+              perfilesTemp[c.usuario_id] =
+                await resPerfil.json();
+            }
+          } catch (error) {
+            console.log("❌ Error perfil:", error);
+          }
+        })
+      );
+
+      setPerfiles(perfilesTemp);
+
+    } catch (error) {
+      console.error("❌ Error:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <div style={styles.container}>
@@ -149,7 +148,7 @@ function CitasHoyMecanico() {
 
       {loading ? (
         <p style={styles.empty}>
-          Cargando citas...
+          Cargando...
         </p>
       ) : citas.length === 0 ? (
         <p style={styles.empty}>
@@ -163,13 +162,13 @@ function CitasHoyMecanico() {
               Number(c.usuario_id)
           );
 
-          const perfil = perfiles[c.usuario_id];
-
           const vehiculo = vehiculos.find(
             (v) =>
               Number(v.id) ===
               Number(c.vehiculo_id)
           );
+
+          const perfil = perfiles[c.usuario_id];
 
           return (
             <button
@@ -253,7 +252,6 @@ const styles = {
     textAlign: "left",
     cursor: "pointer",
     color: "white",
-    transition: "0.2s",
   },
 };
 
