@@ -1,259 +1,167 @@
-from fastapi import FastAPI, Depends, HTTPException
-from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import HTMLResponse
+from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
+from app.database import SessionLocal
+from app import models, schemas
+import time
 
-import models
-import schemas
-import crud
-
-from database import SessionLocal, engine, wait_for_db, get_db
-
-from datetime import datetime, timedelta
-import pytz
-
-app = FastAPI(title="Microservicio de Citas")
+router = APIRouter(prefix="/repuestos", tags=["Repuestos"])
 
 
-@app.on_event("startup")
-def startup():
-    wait_for_db()
-    models.Base.metadata.create_all(bind=engine)
-    print("Microservicio de citas listo")
-
-
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
-
-
-@app.get("/", response_class=HTMLResponse)
-def inicio():
-    return """
-    <html>
-        <body style="font-family: Arial; text-align:center; margin-top:50px;">
-            <h1>AutoGest</h1>
-            <h2>Microservicio de Citas</h2>
-            <p>Backend funcionando correctamente</p>
-            <a href="/docs">Ir a Swagger</a>
-        </body>
-    </html>
-    """
-
-
-# =========================
-# CITAS
-# =========================
-@app.post("/citas", response_model=schemas.CitaOut)
-def crear_cita(cita: schemas.CitaCreate, db: Session = Depends(get_db)):
+def get_db():
+    db = SessionLocal()
     try:
-        return crud.crear_cita(db, cita)
-    except ValueError as e:
-        raise HTTPException(status_code=400, detail=str(e))
-
-
-@app.get("/citas")
-def listar_citas(db: Session = Depends(get_db)):
-    return crud.obtener_citas(db)
-
-
-@app.get("/citas/disponibilidad/{mecanico_id}/{fecha}")
-def disponibilidad(mecanico_id: int, fecha: str, db: Session = Depends(get_db)):
-    return crud.obtener_disponibilidad(db, mecanico_id, fecha)
-
-
-@app.get("/citas/mecanico/{mecanico_id}/hoy")
-def citas_hoy_mecanico(mecanico_id: int, db: Session = Depends(get_db)):
-    tz = pytz.timezone("America/Bogota")
-    hoy_inicio = datetime.now(tz).replace(hour=0, minute=0, second=0, microsecond=0)
-    hoy_fin = hoy_inicio + timedelta(days=1)
-
-    return db.query(models.Cita).filter(
-        models.Cita.mecanico_id == mecanico_id,
-        models.Cita.estado == "recibida",
-        models.Cita.fecha_hora_inicio >= hoy_inicio,
-        models.Cita.fecha_hora_inicio < hoy_fin
-    ).all()
-
-
-@app.get("/citas/mecanico/{mecanico_id}")
-def citas_por_mecanico(mecanico_id: int, db: Session = Depends(get_db)):
-    return crud.obtener_citas_por_mecanico(db, mecanico_id) or []
-
-
-@app.get("/citas/sucursal/{sucursal_id}/hoy", response_model=list[schemas.CitaOut])
-def citas_hoy_sucursal(sucursal_id: int, db: Session = Depends(get_db)):
-    tz = pytz.timezone("America/Bogota")
-    hoy_inicio = datetime.now(tz).replace(hour=0, minute=0, second=0, microsecond=0)
-    hoy_fin = hoy_inicio + timedelta(days=1)
-
-    return db.query(models.Cita).filter(
-        models.Cita.sucursal_id == sucursal_id,
-        models.Cita.fecha_hora_inicio >= hoy_inicio,
-        models.Cita.fecha_hora_inicio < hoy_fin
-    ).all()
-
-
-@app.get("/citas/sucursal/{sucursal_id}")
-def citas_por_sucursal(sucursal_id: int, db: Session = Depends(get_db)):
-    return db.query(models.Cita).filter(
-        models.Cita.sucursal_id == sucursal_id
-    ).all()
-
-
-@app.get("/citas/{cita_id}/recepcion")
-def obtener_recepcion(cita_id: int, db: Session = Depends(get_db)):
-    recepcion = db.query(models.RecepcionCita).filter(
-        models.RecepcionCita.cita_id == cita_id
-    ).first()
-
-    if not recepcion:
-        raise HTTPException(status_code=404, detail="Recepción no encontrada")
-
-    return recepcion
-
-
-@app.get("/citas/{id}")
-def obtener_cita(id: int, db: Session = Depends(get_db)):
-    cita = crud.obtener_cita_por_id(db, id)
-    if not cita:
-        raise HTTPException(status_code=404, detail="Cita no encontrada")
-    return cita
-
-
-@app.put("/citas/{id}/recibir", response_model=schemas.CitaOut)
-def recibir_cita(id: int, data: schemas.RecepcionCreate, db: Session = Depends(get_db)):
-    cita = db.query(models.Cita).filter(models.Cita.id == id).first()
-
-    if not cita:
-        raise HTTPException(status_code=404, detail="Cita no encontrada")
-
-    if cita.estado != "programada":
-        raise HTTPException(
-            status_code=400,
-            detail=f"La cita no se puede recibir (estado actual: {cita.estado})"
-        )
-
-    recepcion = models.RecepcionCita(
-        cita_id=id,
-        kilometraje=data.kilometraje,
-        observaciones=data.observaciones
-    )
-    db.add(recepcion)
-
-    cita.estado = "recibida"
-    db.commit()
-    db.refresh(cita)
-
-    return cita
-
-
-@app.put("/citas/{id}/estado/{estado}")
-def cambiar_estado_cita(id: int, estado: str, db: Session = Depends(get_db)):
-    cita = db.query(models.Cita).filter(models.Cita.id == id).first()
-
-    if not cita:
-        raise HTTPException(status_code=404, detail="Cita no encontrada")
-
-    cita.estado = estado
-    db.commit()
-    db.refresh(cita)
-
-    return {"mensaje": "Estado actualizado", "estado": cita.estado}
-
-
-@app.put("/citas/{id}/observacion")
-def guardar_observacion(id: int, observacion: str, db: Session = Depends(get_db)):
-    cita = db.query(models.Cita).filter(models.Cita.id == id).first()
-
-    if not cita:
-        raise HTTPException(status_code=404, detail="Cita no encontrada")
-
-    cita.observacion_cliente = observacion
-    db.commit()
-
-    return {"ok": True}
-
-
-@app.delete("/citas/{cita_id}")
-def eliminar_cita(cita_id: int, db: Session = Depends(get_db)):
-    cita = crud.eliminar_cita(db, cita_id)
-    if not cita:
-        raise HTTPException(status_code=404, detail="Cita no encontrada")
-    return {"mensaje": "Cita eliminada"}
+        yield db
+    finally:
+        db.close()
 
 
 # =========================
-# SUCURSALES
+# LISTAR REPUESTOS
 # =========================
-@app.post("/sucursales")
-def crear_sucursal(data: schemas.SucursalCreate, db: Session = Depends(get_db)):
-    return crud.crear_sucursal(db, data)
-
-
-@app.get("/sucursales")
-def listar_sucursales(db: Session = Depends(get_db)):
-    return crud.obtener_sucursales(db)
+@router.get("/", response_model=list[schemas.Repuesto])
+def listar_repuestos(db: Session = Depends(get_db)):
+    return db.query(models.CatalogoRepuestos).all()
 
 
 # =========================
-# MECANICOS
+# CREAR REPUESTO
 # =========================
-@app.post("/mecanicos")
-def crear_mecanico(data: schemas.MecanicoCreate, db: Session = Depends(get_db)):
-    return crud.crear_mecanico(db, data)
-
-
-@app.get("/mecanicos")
-def listar_mecanicos(db: Session = Depends(get_db)):
-    return crud.obtener_mecanicos(db)
-
-
-@app.delete("/mecanicos/{id}")
-def eliminar_mecanico(id: int, db: Session = Depends(get_db)):
-    mecanico = crud.eliminar_mecanico(db, id)
-    if not mecanico:
-        raise HTTPException(status_code=404, detail="Mecánico no encontrado")
-    return {"mensaje": "Mecánico eliminado"}
-
-
-# =========================
-# RECEPCIONISTAS
-# =========================
-@app.get("/recepcionistas", response_model=list[schemas.RecepcionistaOut])
-def listar_recepcionistas(db: Session = Depends(get_db)):
-    return db.query(models.Recepcionista).all()
-
-
-@app.post("/recepcionistas", response_model=schemas.RecepcionistaOut)
-def crear_recepcionista(data: schemas.RecepcionistaCreate, db: Session = Depends(get_db)):
-    existe = db.query(models.Recepcionista).filter(
-        models.Recepcionista.usuario_id == data.usuario_id
-    ).first()
-
-    if existe:
-        raise HTTPException(status_code=400, detail="El usuario ya es recepcionista")
-
-    nuevo = models.Recepcionista(
-        usuario_id=data.usuario_id,
-        sucursal_id=data.sucursal_id
+@router.post("/", response_model=schemas.Repuesto)
+def crear_repuesto(data: schemas.RepuestoCreate, db: Session = Depends(get_db)):
+    nuevo = models.CatalogoRepuestos(
+        codigo_inventario=f"REP-{int(time.time())}",
+        nombre=data.nombre,
+        precio=data.precio
     )
     db.add(nuevo)
     db.commit()
     db.refresh(nuevo)
-
     return nuevo
 
 
-@app.delete("/recepcionistas/{id}")
-def eliminar_recepcionista(id: int, db: Session = Depends(get_db)):
-    recep = db.query(models.Recepcionista).filter(models.Recepcionista.id == id).first()
-    if not recep:
-        raise HTTPException(status_code=404, detail="Recepcionista no encontrado")
-    db.delete(recep)
+# =========================
+# CREAR STOCK
+# =========================
+@router.post("/stock")
+def crear_stock(data: schemas.StockCreate, db: Session = Depends(get_db)):
+    stock = models.StockSucursal(
+        sucursal_id=data.sucursal_id,
+        catalogo_repuestos_id=data.catalogo_repuestos_id,
+        cantidad_disponible=data.cantidad_disponible
+    )
+    db.add(stock)
     db.commit()
-    return {"mensaje": "Recepcionista eliminado"}
+    db.refresh(stock)
+    return {"mensaje": "Stock creado", "id": stock.id}
+
+
+# =========================
+# STOCK POR SUCURSAL
+# =========================
+@router.get("/stock/{sucursal_id}")
+def stock_por_sucursal(sucursal_id: int, db: Session = Depends(get_db)):
+    return db.query(models.StockSucursal).filter(
+        models.StockSucursal.sucursal_id == sucursal_id
+    ).all()
+
+
+# =========================
+# DISPONIBILIDAD
+# =========================
+@router.get("/disponibilidad/{repuesto_id}/{sucursal_id}")
+def disponibilidad(repuesto_id: int, sucursal_id: int, db: Session = Depends(get_db)):
+    stock = db.query(models.StockSucursal).filter(
+        models.StockSucursal.catalogo_repuestos_id == repuesto_id,
+        models.StockSucursal.sucursal_id == sucursal_id
+    ).first()
+    return {"disponible": stock.cantidad_disponible if stock else 0}
+
+
+# =========================
+# INVENTARIO COMPLETO
+# =========================
+@router.get("/inventario-completo")
+def inventario_completo(db: Session = Depends(get_db)):
+    try:
+        data = db.query(
+            models.CatalogoRepuestos.id,
+            models.CatalogoRepuestos.nombre,
+            models.CatalogoRepuestos.precio,
+            models.StockSucursal.cantidad_disponible,
+            models.StockSucursal.sucursal_id
+        ).outerjoin(
+            models.StockSucursal,
+            models.CatalogoRepuestos.id == models.StockSucursal.catalogo_repuestos_id
+        ).all()
+
+        return [
+            {
+                "id": r.id,
+                "nombre": r.nombre,
+                "precio": r.precio,
+                "cantidad": r.cantidad_disponible or 0,
+                "sucursal_id": r.sucursal_id
+            }
+            for r in data
+        ]
+    except Exception:
+        return []
+
+
+# =========================
+# OBTENER REPUESTO POR ID
+# =========================
+@router.get("/{repuesto_id}", response_model=schemas.Repuesto)
+def obtener_repuesto(repuesto_id: int, db: Session = Depends(get_db)):
+    repuesto = db.query(models.CatalogoRepuestos).filter(
+        models.CatalogoRepuestos.id == repuesto_id
+    ).first()
+    if not repuesto:
+        raise HTTPException(status_code=404, detail="Repuesto no encontrado")
+    return repuesto
+
+
+# =========================
+# EDITAR REPUESTO
+# =========================
+@router.put("/{repuesto_id}")
+def actualizar_repuesto(repuesto_id: int, data: schemas.RepuestoBase, db: Session = Depends(get_db)):
+    repuesto = db.query(models.CatalogoRepuestos).filter(
+        models.CatalogoRepuestos.id == repuesto_id
+    ).first()
+    if not repuesto:
+        raise HTTPException(status_code=404, detail="Repuesto no encontrado")
+
+    repuesto.nombre = data.nombre
+    repuesto.precio = data.precio
+    db.commit()
+    db.refresh(repuesto)
+
+    return {
+        "id": repuesto.id,
+        "nombre": repuesto.nombre,
+        "precio": repuesto.precio,
+        "codigo_inventario": repuesto.codigo_inventario,
+    }
+
+
+# =========================
+# ELIMINAR REPUESTO
+# =========================
+@router.delete("/{repuesto_id}")
+def eliminar_repuesto(repuesto_id: int, db: Session = Depends(get_db)):
+    repuesto = db.query(models.CatalogoRepuestos).filter(
+        models.CatalogoRepuestos.id == repuesto_id
+    ).first()
+    if not repuesto:
+        raise HTTPException(status_code=404, detail="Repuesto no encontrado")
+
+    # Eliminar stock asociado primero para evitar FK constraint
+    db.query(models.StockSucursal).filter(
+        models.StockSucursal.catalogo_repuestos_id == repuesto_id
+    ).delete()
+
+    db.delete(repuesto)
+    db.commit()
+
+    return {"mensaje": "Repuesto eliminado"}
