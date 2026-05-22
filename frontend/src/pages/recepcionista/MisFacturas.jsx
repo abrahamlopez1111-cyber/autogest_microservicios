@@ -1,174 +1,115 @@
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 const GATEWAY = "https://autogest-gateway.onrender.com";
 
-function RecibirCita({ citaId, onVolver, onExito }) {
-  const [cita, setCita] = useState(null);
-  const [vehiculo, setVehiculo] = useState(null);
-  const [cliente, setCliente] = useState(null);
+function MisFacturas() {
+  const navigate = useNavigate();
+  const [facturas, setFacturas] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [guardando, setGuardando] = useState(false);
   const [error, setError] = useState("");
 
-  const [form, setForm] = useState({
-    kilometraje: "",
-    observaciones: "",
-  });
-
   useEffect(() => {
-    if (citaId) cargarDatos();
-  }, [citaId]);
+    cargarFacturas();
+  }, []);
 
-  const cargarDatos = async () => {
+  const cargarFacturas = async () => {
     try {
       setLoading(true);
+      const usuario = JSON.parse(localStorage.getItem("usuario") || "null");
+      if (!usuario) return;
 
-      const [resCita, resVehiculos, resUsuarios] = await Promise.all([
-        fetch(`${GATEWAY}/citas/${citaId}`),
-        fetch(`${GATEWAY}/historial/vehiculos`),
-        fetch(`${GATEWAY}/usuarios`),
-      ]);
-
-      const citaData = await resCita.json();
-      const vehiculos = await resVehiculos.json();
-      const usuarios = await resUsuarios.json();
-
-      const vehiculoEncontrado = vehiculos.find(
-        (v) => v.id === citaData.vehiculo_id
-      );
-      const clienteEncontrado = usuarios.find(
-        (u) => u.id_usuarios === citaData.usuario_id
+      const resRecep = await fetch(`${GATEWAY}/recepcionistas`);
+      const recepcionistas = await resRecep.json();
+      const recepcionista = recepcionistas.find(
+        (r) => r.usuario_id === usuario.id_usuarios
       );
 
-      setCita(citaData);
-      setVehiculo(vehiculoEncontrado || null);
-      setCliente(clienteEncontrado || null);
+      if (!recepcionista) {
+        setError("No se encontró tu perfil de recepcionista.");
+        return;
+      }
+
+      const resFacturas = await fetch(`${GATEWAY}/facturas`);
+      const todasFacturas = await resFacturas.json();
+
+      const resCitas = await fetch(
+        `${GATEWAY}/citas/sucursal/${recepcionista.sucursal_id}`
+      );
+      const citas = await resCitas.json();
+      const idsCitasSucursal = new Set(citas.map((c) => c.id));
+
+      const facturasFiltradas = todasFacturas.filter((f) =>
+        idsCitasSucursal.has(f.cita_id)
+      );
+
+      setFacturas(facturasFiltradas);
     } catch (err) {
-      console.error(err);
-      setError("Error cargando datos de la cita.");
+      setError("Error cargando facturas.");
     } finally {
       setLoading(false);
     }
   };
 
-  const handleRecibir = async () => {
-    if (!form.kilometraje) {
-      setError("El kilometraje es obligatorio.");
-      return;
-    }
-
-    setGuardando(true);
-    setError("");
-
-    try {
-      const res = await fetch(`${GATEWAY}/citas/${citaId}/recibir`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          cita_id: citaId,
-          kilometraje: Number(form.kilometraje),
-          observaciones: form.observaciones,
-        }),
-      });
-
-      if (!res.ok) {
-        const data = await res.json();
-        setError(data.detail || "Error al registrar la recepción.");
-        return;
-      }
-
-      if (onExito) onExito();
-    } catch (err) {
-      console.error(err);
-      setError("Error de conexión.");
-    } finally {
-      setGuardando(false);
-    }
+  const descargarFactura = (id) => {
+    window.open(`${GATEWAY}/facturas/${id}/pdf`, "_blank");
   };
 
-  if (loading) return <p style={{ color: "white", textAlign: "center" }}>Cargando...</p>;
+  const formatearFecha = (fecha) => {
+    if (!fecha) return "—";
+    return new Date(fecha).toLocaleDateString("es-CO", {
+      timeZone: "America/Bogota",
+      dateStyle: "medium",
+    });
+  };
 
   return (
     <div style={styles.container}>
-      <h2 style={styles.title}>📋 Recibir Vehículo</h2>
+      <button style={styles.btnVolver} onClick={() => navigate("/recepcionista")}>
+        ⬅ Volver
+      </button>
 
-      {error && <p style={styles.error}>{error}</p>}
+      <h2 style={styles.title}>💰 Facturas generadas</h2>
 
-      {/* Info de la cita */}
-      <div style={styles.card}>
-        <h3 style={styles.cardTitle}>Datos de la cita</h3>
-        <p style={styles.info}><strong>Cliente:</strong> {cliente?.nombre || "—"}</p>
-        <p style={styles.info}><strong>Vehículo:</strong> {vehiculo ? `${vehiculo.marca} ${vehiculo.modelo} (${vehiculo.placa})` : "—"}</p>
-        <p style={styles.info}><strong>Año:</strong> {vehiculo?.anio_fabricacion || "—"}</p>
-        <p style={styles.info}><strong>Observación del cliente:</strong> {cita?.observacion_cliente || "Ninguna"}</p>
-      </div>
+      {loading && <p style={styles.msg}>Cargando...</p>}
+      {error && <p style={{ ...styles.msg, color: "#ef4444" }}>{error}</p>}
 
-      {/* Formulario de recepción */}
-      <div style={styles.card}>
-        <h3 style={styles.cardTitle}>Registrar recepción</h3>
+      {!loading && !error && facturas.length === 0 && (
+        <p style={styles.msg}>No hay facturas generadas para tu sucursal.</p>
+      )}
 
-        <label style={styles.label}>Kilometraje actual *</label>
-        <input
-          type="number"
-          placeholder="Ej: 45000"
-          value={form.kilometraje}
-          onChange={(e) => setForm({ ...form, kilometraje: e.target.value })}
-          style={styles.input}
-        />
-
-        <label style={styles.label}>Observaciones adicionales</label>
-        <textarea
-          placeholder="Estado del vehículo al recibirlo..."
-          value={form.observaciones}
-          onChange={(e) => setForm({ ...form, observaciones: e.target.value })}
-          style={{ ...styles.input, height: "80px", resize: "vertical" }}
-        />
-
-        <div style={styles.botones}>
-          <button onClick={onVolver} style={styles.btnVolver}>
-            ⬅ Cancelar
-          </button>
-          <button onClick={handleRecibir} disabled={guardando} style={styles.btnGuardar}>
-            {guardando ? "Registrando..." : "✅ Confirmar recepción"}
+      {facturas.map((f) => (
+        <div key={f.id} style={styles.card}>
+          <div style={styles.cardHeader}>
+            <span style={styles.numero}>#{f.numero_factura || f.id}</span>
+            <span style={styles.total}>${Number(f.total).toLocaleString("es-CO")}</span>
+          </div>
+          {f.fecha_emision && (
+            <p style={styles.info}><strong>Fecha:</strong> {formatearFecha(f.fecha_emision)}</p>
+          )}
+          {f.cita_id && (
+            <p style={styles.info}><strong>Cita #:</strong> {f.cita_id}</p>
+          )}
+          <button onClick={() => descargarFactura(f.id)} style={styles.btn}>
+            ⬇ Descargar PDF
           </button>
         </div>
-      </div>
+      ))}
     </div>
   );
 }
 
 const styles = {
-  container: { maxWidth: "600px", margin: "auto", color: "white" },
+  container: { color: "white", padding: "24px", maxWidth: "700px", margin: "auto", minHeight: "100vh", background: "#0f172a" },
   title: { textAlign: "center", marginBottom: "20px" },
-  error: { color: "#ef4444", marginBottom: "12px", textAlign: "center" },
-  card: {
-    background: "#1e293b",
-    padding: "20px",
-    borderRadius: "12px",
-    marginBottom: "16px",
-  },
-  cardTitle: { margin: "0 0 12px", fontSize: "15px", color: "#94a3b8" },
-  info: { margin: "6px 0", fontSize: "14px", color: "#cbd5e1" },
-  label: { display: "block", fontSize: "13px", color: "#94a3b8", marginBottom: "4px", marginTop: "12px" },
-  input: {
-    width: "100%",
-    padding: "10px",
-    borderRadius: "8px",
-    border: "1px solid #334155",
-    background: "#0f172a",
-    color: "white",
-    fontSize: "14px",
-    boxSizing: "border-box",
-  },
-  botones: { display: "flex", gap: "10px", marginTop: "16px" },
-  btnVolver: {
-    flex: 1, padding: "10px", borderRadius: "8px",
-    background: "#334155", border: "none", color: "white", cursor: "pointer",
-  },
-  btnGuardar: {
-    flex: 2, padding: "10px", borderRadius: "8px",
-    background: "#16a34a", border: "none", color: "white", cursor: "pointer", fontWeight: "bold",
-  },
+  msg: { textAlign: "center", color: "#94a3b8" },
+  btnVolver: { background: "#334155", color: "white", border: "none", padding: "10px 18px", borderRadius: "8px", cursor: "pointer", marginBottom: "20px" },
+  card: { background: "#1e293b", padding: "16px 20px", marginBottom: "12px", borderRadius: "12px" },
+  cardHeader: { display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "8px" },
+  numero: { fontWeight: "bold", fontSize: "15px" },
+  total: { fontSize: "18px", fontWeight: "bold", color: "#22c55e" },
+  info: { margin: "4px 0", fontSize: "13px", color: "#94a3b8" },
+  btn: { marginTop: "10px", padding: "8px 16px", background: "#2563eb", border: "none", borderRadius: "8px", color: "white", cursor: "pointer", fontSize: "13px" },
 };
 
-export default RecibirCita;
+export default MisFacturas;

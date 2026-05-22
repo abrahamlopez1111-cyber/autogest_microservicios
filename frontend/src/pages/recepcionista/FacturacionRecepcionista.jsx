@@ -1,6 +1,9 @@
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 function FacturacionRecepcionista() {
+
+  const navigate = useNavigate();
 
   const [citas, setCitas] = useState([]);
   const [preview, setPreview] = useState(null);
@@ -150,14 +153,18 @@ function FacturacionRecepcionista() {
   return (
     <div style={styles.container}>
 
+      <button style={styles.btnVolver} onClick={() => navigate("/recepcionista")}>
+        ⬅ Volver
+      </button>
+
       <h2 style={styles.title}>💰 Facturación</h2>
 
       {/* LISTADO */}
       {!preview && (
         <>
           {citas.length === 0 ? (
-            <p style={styles.text}>
-              No hay vehículos pendientes
+            <p style={styles.textCenter}>
+              No hay vehículos pendientes de facturar
             </p>
           ) : (
             citas.map((cita) => (
@@ -233,12 +240,22 @@ const styles = {
     background: "#0f172a",
     minHeight: "100vh",
     color: "white",
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
   },
   title: {
     marginBottom: "20px",
+    textAlign: "center",
   },
   text: {
     color: "white",
+  },
+  textCenter: {
+    color: "#94a3b8",
+    textAlign: "center",
+    marginTop: "80px",
+    fontSize: "16px",
   },
   card: {
     width: "100%",
@@ -273,6 +290,16 @@ const styles = {
     cursor: "pointer",
     fontWeight: "bold",
   },
+  btnVolver: {
+    background: "#334155",
+    color: "white",
+    border: "none",
+    padding: "10px 18px",
+    borderRadius: "8px",
+    cursor: "pointer",
+    marginBottom: "20px",
+  },
+
   volver: {
     width: "100%",
     padding: "15px",
