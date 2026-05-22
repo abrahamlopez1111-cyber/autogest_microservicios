@@ -2,8 +2,6 @@ name: Backend Citas CI
 
 on:
   push:
-    paths:
-      - 'backend/microservicio_citas/**'
 
 jobs:
   test:
@@ -14,11 +12,9 @@ jobs:
 
       - uses: actions/setup-python@v5
         with:
-          python-version: '3.11'
+          python-version: '3.13'
 
-      - run: pip install -r requirements.txt
+      - run: pip install -r backend/microservicio_citas/requirements.txt
 
       - run: pytest
-
-
-# activar workflow
+        working-directory: backend/microservicio_citas
