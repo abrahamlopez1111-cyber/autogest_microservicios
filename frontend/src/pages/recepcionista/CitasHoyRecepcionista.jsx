@@ -10,7 +10,7 @@ function CitasHoyRecepcionista() {
   const [loading, setLoading] = useState(true);
   const [usuarios, setUsuarios] = useState([]);
   const [vehiculos, setVehiculos] = useState([]);
-  const [filtro, setFiltro] = useState("todas"); // "todas" | "hoy" | "programada"
+  const [filtro, setFiltro] = useState("todas"); // "todas" | "hoy"
   const [form, setForm] = useState({ cita_id: null, kilometraje: "", observaciones: "" });
   const [msg, setMsg] = useState({ texto: "", tipo: "" });
 
@@ -115,8 +115,7 @@ function CitasHoyRecepcionista() {
   // Filtrar citas según selección
   const citasFiltradas = citas.filter((c) => {
     if (filtro === "hoy") return esHoy(c.fecha_hora_inicio);
-    if (filtro === "programada") return c.estado === "programada";
-    return true; // todas
+    return true;
   });
 
   return (
@@ -136,13 +135,13 @@ function CitasHoyRecepcionista() {
 
       {/* FILTROS */}
       <div style={styles.filtros}>
-        {["todas", "hoy", "programada"].map((f) => (
+        {["todas", "hoy"].map((f) => (
           <button
             key={f}
             style={{ ...styles.filtroBtn, background: filtro === f ? "#2563eb" : "#1e293b" }}
             onClick={() => setFiltro(f)}
           >
-            {f === "todas" ? "Todas" : f === "hoy" ? "Hoy" : "Por recibir"}
+            {f === "todas" ? "Todas" : "Hoy"}
           </button>
         ))}
       </div>
@@ -150,7 +149,7 @@ function CitasHoyRecepcionista() {
       {loading ? (
         <p style={styles.estado}>Cargando...</p>
       ) : citasFiltradas.length === 0 ? (
-        <p style={styles.estado}>No hay citas {filtro === "hoy" ? "para hoy" : filtro === "programada" ? "por recibir" : ""}</p>
+        <p style={styles.estado}>No hay citas {filtro === "hoy" ? "para hoy" : ""}</p>
       ) : (
         citasFiltradas.map((c) => (
           <div key={c.id} style={styles.card}>
@@ -181,42 +180,7 @@ function CitasHoyRecepcionista() {
               <p style={styles.obs}>💬 {c.observacion_cliente}</p>
             )}
 
-            {/* Formulario recibir */}
-            {c.estado === "programada" && (
-              <>
-                {form.cita_id === c.id ? (
-                  <div style={styles.formRecibir}>
-                    <input
-                      style={styles.input}
-                      type="number"
-                      placeholder="Kilometraje actual *"
-                      value={form.kilometraje}
-                      onChange={(e) => setForm({ ...form, kilometraje: e.target.value })}
-                    />
-                    <textarea
-                      style={styles.textarea}
-                      placeholder="Observaciones al recibir (opcional)"
-                      value={form.observaciones}
-                      onChange={(e) => setForm({ ...form, observaciones: e.target.value })}
-                    />
-                    <div style={styles.formBotones}>
-                      <button style={styles.btnConfirmar} onClick={recibir}>
-                        ✅ Confirmar recepción
-                      </button>
-                      <button style={styles.btnCancelar}
-                        onClick={() => setForm({ cita_id: null, kilometraje: "", observaciones: "" })}>
-                        Cancelar
-                      </button>
-                    </div>
-                  </div>
-                ) : (
-                  <button style={styles.btnRecibir}
-                    onClick={() => setForm({ ...form, cita_id: c.id })}>
-                    🚗 Recibir vehículo
-                  </button>
-                )}
-              </>
-            )}
+
           </div>
         ))
       )}

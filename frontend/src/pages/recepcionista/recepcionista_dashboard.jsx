@@ -101,7 +101,7 @@ function RecepcionistaDashboard() {
             📅
           </span>
 
-          <h3>Citas de Hoy</h3>
+          <h3>Citas</h3>
 
           <p>
             Recibir vehículos
@@ -163,6 +163,16 @@ function RecepcionistaDashboard() {
 
         
 
+
+      {/* INVENTARIO */}
+        <button
+          style={styles.card}
+          onClick={() => navigate("/recepcionista/inventario")}
+        >
+          <span style={styles.icon}>📦</span>
+          <h3>Inventario</h3>
+          <p>Ver y editar productos</p>
+        </button>
 
       </div>
 
