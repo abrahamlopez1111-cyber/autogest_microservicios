@@ -164,16 +164,6 @@ function RecepcionistaDashboard() {
         
 
 
-      {/* INVENTARIO */}
-        <button
-          style={styles.card}
-          onClick={() => navigate("/recepcionista/inventario")}
-        >
-          <span style={styles.icon}>📦</span>
-          <h3>Inventario</h3>
-          <p>Ver y editar productos</p>
-        </button>
-
       </div>
 
     </div>

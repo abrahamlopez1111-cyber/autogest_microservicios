@@ -180,6 +180,41 @@ function CitasHoyRecepcionista() {
               <p style={styles.obs}>💬 {c.observacion_cliente}</p>
             )}
 
+            {filtro === "hoy" && c.estado === "programada" && (
+              <>
+                {form.cita_id === c.id ? (
+                  <div style={styles.formRecibir}>
+                    <input
+                      style={styles.input}
+                      type="number"
+                      placeholder="Kilometraje actual *"
+                      value={form.kilometraje}
+                      onChange={(e) => setForm({ ...form, kilometraje: e.target.value })}
+                    />
+                    <textarea
+                      style={styles.textarea}
+                      placeholder="Observaciones al recibir (opcional)"
+                      value={form.observaciones}
+                      onChange={(e) => setForm({ ...form, observaciones: e.target.value })}
+                    />
+                    <div style={styles.formBotones}>
+                      <button style={styles.btnConfirmar} onClick={recibir}>
+                        ✅ Confirmar recepción
+                      </button>
+                      <button style={styles.btnCancelar}
+                        onClick={() => setForm({ cita_id: null, kilometraje: "", observaciones: "" })}>
+                        Cancelar
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <button style={styles.btnRecibir}
+                    onClick={() => setForm({ ...form, cita_id: c.id })}>
+                    🚗 Recibir vehículo
+                  </button>
+                )}
+              </>
+            )}
 
           </div>
         ))
