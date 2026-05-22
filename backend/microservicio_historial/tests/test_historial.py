@@ -1,5 +1,7 @@
 from fastapi.testclient import TestClient
 
+import time
+
 from app.main import app
 from app.database import get_db
 from tests.test_database import (
