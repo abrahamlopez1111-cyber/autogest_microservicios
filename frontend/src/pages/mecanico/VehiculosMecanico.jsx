@@ -114,7 +114,7 @@ function VehiculosMecanico() {
 }
 
 const styles = {
-  container: { maxWidth: "700px", margin: "auto", color: "white" },
+  container: { maxWidth: "700px", margin: "auto", color: "white", background: "#0f172a", minHeight: "100vh", padding: "20px" },
   title: { textAlign: "center", marginBottom: "20px" },
   msg: { textAlign: "center", color: "#94a3b8" },
   card: {

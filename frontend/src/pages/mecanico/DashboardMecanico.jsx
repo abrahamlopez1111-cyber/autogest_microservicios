@@ -127,12 +127,13 @@ const styles = {
 
   backBtn: {
     marginBottom: "20px",
-    padding: "10px",
-    background: "#2563eb",
+    padding: "10px 20px",
+    background: "#374151",
     border: "none",
     borderRadius: "8px",
     color: "white",
     cursor: "pointer",
+    display: "inline-block",
   },
 };
 
