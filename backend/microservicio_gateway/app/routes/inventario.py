@@ -118,3 +118,40 @@ async def obtener_repuesto(repuesto_id: int):
         raise
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+# =========================
+# EDITAR REPUESTO
+# =========================
+@router.put("/inventario/repuestos/{repuesto_id}")
+async def actualizar_repuesto(repuesto_id: int, request: Request):
+    try:
+        body = await request.json()
+        async with httpx.AsyncClient(timeout=15.0) as client:
+            response = await client.put(
+                inv_url(f"/{repuesto_id}"),
+                json=body
+            )
+        if response.status_code >= 400:
+            raise HTTPException(status_code=response.status_code, detail=response.text)
+        return response.json()
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+# =========================
+# ELIMINAR REPUESTO
+# =========================
+@router.delete("/inventario/repuestos/{repuesto_id}")
+async def eliminar_repuesto(repuesto_id: int):
+    try:
+        async with httpx.AsyncClient(timeout=15.0) as client:
+            response = await client.delete(inv_url(f"/{repuesto_id}"))
+        if response.status_code >= 400:
+            raise HTTPException(status_code=response.status_code, detail=response.text)
+        return response.json()
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
