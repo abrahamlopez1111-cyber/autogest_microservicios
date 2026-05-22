@@ -12,8 +12,12 @@ from database import SessionLocal, engine, wait_for_db, get_db
 from datetime import datetime, timedelta
 import pytz
 
+from prometheus_fastapi_instrumentator import Instrumentator
+
+
 app = FastAPI(title="Microservicio de Citas")
 
+Instrumentator().instrument(app).expose(app)
 
 @app.on_event("startup")
 def startup():

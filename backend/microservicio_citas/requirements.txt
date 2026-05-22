@@ -9,3 +9,5 @@ pytz
 pytest
 pytest-asyncio
 httpx
+
+prometheus-fastapi-instrumentator
