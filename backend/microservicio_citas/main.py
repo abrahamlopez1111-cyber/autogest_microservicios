@@ -68,15 +68,22 @@ def disponibilidad(mecanico_id: int, fecha: str, db: Session = Depends(get_db)):
 
 @app.get("/citas/mecanico/{mecanico_id}/hoy")
 def citas_hoy_mecanico(mecanico_id: int, db: Session = Depends(get_db)):
-    tz = pytz.timezone("America/Bogota")
-    hoy_inicio = datetime.now(tz).replace(hour=0, minute=0, second=0, microsecond=0)
-    hoy_fin = hoy_inicio + timedelta(days=1)
 
-    return db.query(models.Cita).filter(
-        models.Cita.mecanico_id == mecanico_id,
-        models.Cita.fecha_hora_inicio >= hoy_inicio,
-        models.Cita.fecha_hora_inicio < hoy_fin
+    hoy = datetime.utcnow().date()
+
+    citas = db.query(models.Cita).filter(
+        models.Cita.mecanico_id == mecanico_id
     ).all()
+
+    citas_hoy = []
+
+    for cita in citas:
+        fecha_cita = cita.fecha_hora_inicio.date()
+
+        if fecha_cita == hoy:
+            citas_hoy.append(cita)
+
+    return citas_hoy
 
 
 @app.get("/citas/mecanico/{mecanico_id}")
