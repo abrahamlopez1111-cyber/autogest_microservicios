@@ -74,7 +74,6 @@ def citas_hoy_mecanico(mecanico_id: int, db: Session = Depends(get_db)):
 
     return db.query(models.Cita).filter(
         models.Cita.mecanico_id == mecanico_id,
-        models.Cita.estado == "recibida",
         models.Cita.fecha_hora_inicio >= hoy_inicio,
         models.Cita.fecha_hora_inicio < hoy_fin
     ).all()
