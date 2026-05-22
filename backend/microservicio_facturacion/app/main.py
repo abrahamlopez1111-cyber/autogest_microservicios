@@ -6,12 +6,14 @@ from app.database import engine, Base, wait_for_db
 # 🔥 IMPORTAMOS FACTURACION
 from app.routes import facturacion
 
+from prometheus_fastapi_instrumentator import Instrumentator
 
 app = FastAPI(
     title="Microservicio Facturación",
     version="1.0.0"
 )
 
+Instrumentator().instrument(app).expose(app)
 
 # =========================
 # CORS

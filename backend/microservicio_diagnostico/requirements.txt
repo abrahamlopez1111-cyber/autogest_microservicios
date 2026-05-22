@@ -6,3 +6,5 @@ pydantic
 
 pytest
 httpx
+
+prometheus-fastapi-instrumentator

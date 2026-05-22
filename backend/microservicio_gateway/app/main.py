@@ -13,6 +13,8 @@ from app.routes import (
     facturacion
 )
 
+from prometheus_fastapi_instrumentator import Instrumentator
+
 # =========================
 # APP
 # =========================
@@ -20,6 +22,8 @@ from app.routes import (
 app = FastAPI(
     title="AUTOGEST Gateway"
 )
+
+Instrumentator().instrument(app).expose(app)
 
 # =========================
 # CORS

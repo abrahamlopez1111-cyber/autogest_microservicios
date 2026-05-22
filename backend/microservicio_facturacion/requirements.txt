@@ -8,3 +8,5 @@ reportlab
 
 pytest
 httpx
+
+prometheus-fastapi-instrumentator

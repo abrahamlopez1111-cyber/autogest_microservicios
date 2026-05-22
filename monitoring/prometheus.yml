@@ -3,10 +3,79 @@ global:
 
 scrape_configs:
 
+  # ======================
+  # MICROSERVICIO CITAS
+  # ======================
   - job_name: "microservicio_citas"
 
     metrics_path: /metrics
 
     static_configs:
       - targets:
-          - host.docker.internal:8000
+          - "host.docker.internal:8000"
+
+  # ======================
+  # MICROSERVICIO USUARIOS
+  # ======================
+  - job_name: "microservicio_usuarios"
+
+    metrics_path: /metrics
+
+    static_configs:
+      - targets:
+          - "host.docker.internal:8002"
+
+  # ======================
+  # MICROSERVICIO HISTORIAL
+  # ======================
+  - job_name: "microservicio_historial"
+
+    metrics_path: /metrics
+
+    static_configs:
+      - targets:
+          - "host.docker.internal:8003"
+
+  # ======================
+  # MICROSERVICIO INVENTARIO
+  # ======================
+  - job_name: "microservicio_inventario"
+
+    metrics_path: /metrics
+
+    static_configs:
+      - targets:
+          - "host.docker.internal:8004"
+
+  # ======================
+  # MICROSERVICIO DIAGNOSTICO
+  # ======================
+  - job_name: "microservicio_diagnostico"
+
+    metrics_path: /metrics
+
+    static_configs:
+      - targets:
+          - "host.docker.internal:8005"
+
+  # ======================
+  # MICROSERVICIO FACTURACION
+  # ======================
+  - job_name: "microservicio_facturacion"
+
+    metrics_path: /metrics
+
+    static_configs:
+      - targets:
+          - "host.docker.internal:8006"
+
+  # ======================
+  # MICROSERVICIO GATEWAY
+  # ======================
+  - job_name: "microservicio_gateway"
+
+    metrics_path: /metrics
+
+    static_configs:
+      - targets:
+          - "host.docker.internal:8001"

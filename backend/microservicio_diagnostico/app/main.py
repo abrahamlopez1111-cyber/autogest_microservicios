@@ -4,11 +4,14 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.database import Base, engine, wait_for_db
 from app.routes import diagnostico
 
+from prometheus_fastapi_instrumentator import Instrumentator
 
 app = FastAPI(
     title="Microservicio Diagnóstico",
     version="1.0.0"
 )
+
+Instrumentator().instrument(app).expose(app)
 
 # =========================
 # CORS (ESTO FALTABA)

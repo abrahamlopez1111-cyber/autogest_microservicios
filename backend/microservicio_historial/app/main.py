@@ -4,10 +4,14 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.routes import historial
 from app.database import engine, Base, wait_for_db
 
+from prometheus_fastapi_instrumentator import Instrumentator
+
 app = FastAPI(
     title="Microservicio de Historial",
     version="1.0.0"
 )
+
+Instrumentator().instrument(app).expose(app)
 
 # ======================
 # 🌐 CORS

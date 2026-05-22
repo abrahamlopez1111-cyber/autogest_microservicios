@@ -3,6 +3,8 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import HTMLResponse
 from sqlalchemy.orm import Session
 
+from prometheus_fastapi_instrumentator import Instrumentator
+
 import models
 import schemas
 import crud
@@ -14,6 +16,7 @@ import pytz
 
 app = FastAPI(title="Microservicio de Citas")
 
+Instrumentator().instrument(app).expose(app)
 
 @app.on_event("startup")
 def startup():

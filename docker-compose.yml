@@ -252,6 +252,12 @@ services:
 
     depends_on:
       - citas_service
+      - usuarios_service
+      - historial_service
+      - inventario_service
+      - diagnostico_service
+      - facturacion_service
+      - gateway_service
 
   # ======================
   # GRAFANA

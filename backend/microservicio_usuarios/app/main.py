@@ -7,9 +7,11 @@ from . import models, crud
 from .routes import usuarios
 from .routes import perfil
 
+from prometheus_fastapi_instrumentator import Instrumentator
 
 app = FastAPI(title="Microservicio de Usuarios")
 
+Instrumentator().instrument(app).expose(app)
 
 # ======================
 # 🌐 CORS
