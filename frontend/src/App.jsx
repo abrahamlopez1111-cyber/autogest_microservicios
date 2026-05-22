@@ -13,6 +13,7 @@ import Register from "./pages/Register";
 import Admin from "./pages/admin/AdminDashboard";
 import ClienteDashboard from "./pages/cliente/ClienteDashboard";
 import DashboardMecanico from "./pages/mecanico/DashboardMecanico";
+import DetalleCita from "./pages/mecanico/DetalleCita";
 import RecepcionistaDashboard from "./pages/recepcionista/recepcionista_dashboard";
 import CitasHoyRecepcionista from "./pages/recepcionista/CitasHoyRecepcionista";
 import FacturacionRecepcionista from "./pages/recepcionista/FacturacionRecepcionista";
@@ -313,6 +314,19 @@ function AppContent() {
           <ProtectedRoute rolesPermitidos={["recepcionista"]}>
             <PrivateLayout>
               <MisFacturas />
+            </PrivateLayout>
+          </ProtectedRoute>
+        }
+      />
+
+
+
+      <Route
+        path="/detalle-cita/:id"
+        element={
+          <ProtectedRoute rolesPermitidos={["mecanico"]}>
+            <PrivateLayout>
+              <DetalleCita />
             </PrivateLayout>
           </ProtectedRoute>
         }
