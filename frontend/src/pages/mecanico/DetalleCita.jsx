@@ -49,7 +49,7 @@ function DetalleCita() {
 
       // buscar mecánico
       const resMecanicos = await fetch(
-        "https://autogest-gateway.onrender.com/mecanicos"
+        "https://autogest-gateway.onrender.com/mecanicos-citas"
       );
 
       const mecanicos = await resMecanicos.json();
@@ -225,7 +225,7 @@ const guardarDiagnostico = async () => {
     };
 
     const resDiagnostico = await fetch(
-      "https://autogest-gateway.onrender.com/diagnosticos/",
+      "https://autogest-gateway.onrender.com/diagnosticos",
       {
         method: "POST",
         headers: {

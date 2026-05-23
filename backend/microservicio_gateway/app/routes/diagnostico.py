@@ -16,13 +16,22 @@ async def crear_diagnostico(request: Request):
     try:
         body = await request.json()
 
-        async with httpx.AsyncClient() as client:
+        async with httpx.AsyncClient(timeout=30.0) as client:
             response = await client.post(
                 f"{SERVICIOS['diagnostico']}/diagnosticos/",
                 json=body
             )
 
+        if response.status_code >= 400:
+            raise HTTPException(
+                status_code=response.status_code,
+                detail=response.text
+            )
+
         return response.json()
+
+    except HTTPException:
+        raise
 
     except Exception as e:
         raise HTTPException(
