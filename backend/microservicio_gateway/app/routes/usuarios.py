@@ -9,6 +9,24 @@ router = APIRouter(
 
 
 # =========================
+# FUNCIÓN AUXILIAR
+# =========================
+def manejar_error_response(response):
+    try:
+        detail = response.json().get(
+            "detail",
+            response.text
+        )
+    except:
+        detail = response.text
+
+    raise HTTPException(
+        status_code=response.status_code,
+        detail=detail
+    )
+
+
+# =========================
 # LOGIN
 # =========================
 @router.post("/login")
@@ -27,14 +45,12 @@ async def login(request: Request):
 
         # Si usuarios respondió error
         if response.status_code >= 400:
-            raise HTTPException(
-                status_code=response.status_code,
-                detail="Microservicio usuarios temporalmente no disponible"
-            )
+            manejar_error_response(response)
 
         # Validar JSON
         content_type = response.headers.get(
-            "content-type", ""
+            "content-type",
+            ""
         )
 
         if "application/json" in content_type:
@@ -57,11 +73,15 @@ async def login(request: Request):
             detail="Tiempo de espera agotado en usuarios"
         )
 
+    except HTTPException:
+        raise
+
     except Exception as e:
         raise HTTPException(
             status_code=500,
             detail=f"Gateway error: {str(e)}"
         )
+
 
 # =========================
 # PERFIL
@@ -69,16 +89,14 @@ async def login(request: Request):
 @router.get("/perfil/{usuario_id}")
 async def obtener_perfil(usuario_id: int):
     try:
+
         async with httpx.AsyncClient() as client:
             response = await client.get(
                 f"{SERVICIOS['usuarios']}/perfil/{usuario_id}"
             )
 
         if response.status_code >= 400:
-            raise HTTPException(
-                status_code=response.status_code,
-                detail=response.json().get("detail", "Error obteniendo perfil")
-            )
+            manejar_error_response(response)
 
         return response.json()
 
@@ -98,6 +116,7 @@ async def obtener_perfil(usuario_id: int):
 @router.post("/perfil/{usuario_id}")
 async def crear_perfil(usuario_id: int, request: Request):
     try:
+
         body = await request.json()
 
         async with httpx.AsyncClient() as client:
@@ -107,10 +126,7 @@ async def crear_perfil(usuario_id: int, request: Request):
             )
 
         if response.status_code >= 400:
-            raise HTTPException(
-                status_code=response.status_code,
-                detail=response.text
-            )
+            manejar_error_response(response)
 
         return response.json()
 
@@ -130,6 +146,7 @@ async def crear_perfil(usuario_id: int, request: Request):
 @router.put("/perfil/{usuario_id}")
 async def actualizar_perfil(usuario_id: int, request: Request):
     try:
+
         body = await request.json()
 
         async with httpx.AsyncClient() as client:
@@ -139,10 +156,7 @@ async def actualizar_perfil(usuario_id: int, request: Request):
             )
 
         if response.status_code >= 400:
-            raise HTTPException(
-                status_code=response.status_code,
-                detail=response.text
-            )
+            manejar_error_response(response)
 
         return response.json()
 
@@ -162,12 +176,19 @@ async def actualizar_perfil(usuario_id: int, request: Request):
 @router.get("/usuarios")
 async def listar_usuarios():
     try:
+
         async with httpx.AsyncClient() as client:
             response = await client.get(
                 f"{SERVICIOS['usuarios']}/usuarios"
             )
 
+        if response.status_code >= 400:
+            manejar_error_response(response)
+
         return response.json()
+
+    except HTTPException:
+        raise
 
     except Exception as e:
         raise HTTPException(
@@ -182,12 +203,19 @@ async def listar_usuarios():
 @router.get("/usuarios/{usuario_id}")
 async def obtener_usuario(usuario_id: int):
     try:
+
         async with httpx.AsyncClient() as client:
             response = await client.get(
                 f"{SERVICIOS['usuarios']}/usuarios/{usuario_id}"
             )
 
+        if response.status_code >= 400:
+            manejar_error_response(response)
+
         return response.json()
+
+    except HTTPException:
+        raise
 
     except Exception as e:
         raise HTTPException(
@@ -202,12 +230,19 @@ async def obtener_usuario(usuario_id: int):
 @router.get("/recepcionistas")
 async def listar_recepcionistas():
     try:
+
         async with httpx.AsyncClient() as client:
             response = await client.get(
                 f"{SERVICIOS['usuarios']}/recepcionistas"
             )
 
+        if response.status_code >= 400:
+            manejar_error_response(response)
+
         return response.json()
+
+    except HTTPException:
+        raise
 
     except Exception as e:
         raise HTTPException(
@@ -222,47 +257,61 @@ async def listar_recepcionistas():
 @router.get("/mecanicos/{usuario_id}")
 async def validar_mecanico(usuario_id: int):
     try:
+
         async with httpx.AsyncClient() as client:
             response = await client.get(
                 f"{SERVICIOS['usuarios']}/usuarios/{usuario_id}/es-mecanico"
             )
 
+        if response.status_code >= 400:
+            manejar_error_response(response)
+
         return response.json()
+
+    except HTTPException:
+        raise
 
     except Exception as e:
         raise HTTPException(
             status_code=500,
             detail=str(e)
         )
-        
-        
-        
+
+
 # =========================
 # MECÁNICOS
 # =========================
 @router.get("/mecanicos")
 async def listar_mecanicos():
     try:
+
         async with httpx.AsyncClient() as client:
             response = await client.get(
                 f"{SERVICIOS['usuarios']}/mecanicos"
             )
 
+        if response.status_code >= 400:
+            manejar_error_response(response)
+
         return response.json()
+
+    except HTTPException:
+        raise
 
     except Exception as e:
         raise HTTPException(
             status_code=500,
             detail=str(e)
         )
-        
-        
+
+
 # =========================
 # CREAR USUARIO
 # =========================
 @router.post("/usuarios")
 async def crear_usuario(request: Request):
     try:
+
         body = await request.json()
 
         async with httpx.AsyncClient() as client:
@@ -271,7 +320,13 @@ async def crear_usuario(request: Request):
                 json=body
             )
 
+        if response.status_code >= 400:
+            manejar_error_response(response)
+
         return response.json()
+
+    except HTTPException:
+        raise
 
     except Exception as e:
         raise HTTPException(
@@ -279,25 +334,41 @@ async def crear_usuario(request: Request):
             detail=str(e)
         )
 
+
 # =========================
 # EDITAR USUARIO
 # =========================
 @router.put("/usuarios/{usuario_id}")
-async def actualizar_usuario(usuario_id: int, request: Request):
+async def actualizar_usuario(
+    usuario_id: int,
+    request: Request
+):
     try:
+
         body = await request.json()
-        async with httpx.AsyncClient(timeout=15.0) as client:
+
+        async with httpx.AsyncClient(
+            timeout=15.0
+        ) as client:
+
             response = await client.put(
                 f"{SERVICIOS['usuarios']}/usuarios/{usuario_id}",
                 json=body
             )
+
         if response.status_code >= 400:
-            raise HTTPException(status_code=response.status_code, detail=response.text)
+            manejar_error_response(response)
+
         return response.json()
+
     except HTTPException:
         raise
+
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(
+            status_code=500,
+            detail=str(e)
+        )
 
 
 # =========================
@@ -306,14 +377,25 @@ async def actualizar_usuario(usuario_id: int, request: Request):
 @router.delete("/usuarios/{usuario_id}")
 async def eliminar_usuario(usuario_id: int):
     try:
-        async with httpx.AsyncClient(timeout=15.0) as client:
+
+        async with httpx.AsyncClient(
+            timeout=15.0
+        ) as client:
+
             response = await client.delete(
                 f"{SERVICIOS['usuarios']}/usuarios/{usuario_id}"
             )
+
         if response.status_code >= 400:
-            raise HTTPException(status_code=response.status_code, detail=response.text)
+            manejar_error_response(response)
+
         return response.json()
+
     except HTTPException:
         raise
+
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(
+            status_code=500,
+            detail=str(e)
+        )
