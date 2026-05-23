@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 const GATEWAY = "https://autogest-gateway.onrender.com";
 
 function CitasHoyMecanico() {
+
   const [citas, setCitas] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -13,6 +14,9 @@ function CitasHoyMecanico() {
 
   const navigate = useNavigate();
 
+  // =========================
+  // INICIO
+  // =========================
   useEffect(() => {
     cargarCitas();
   }, []);
@@ -21,12 +25,20 @@ function CitasHoyMecanico() {
   // VALIDAR SI ES HOY
   // =========================
   const esHoy = (fecha) => {
+
     if (!fecha) return false;
 
-    const hoy = new Date().toDateString();
+    const hoy = new Date();
+
+    const fechaCita = new Date(fecha);
 
     return (
-      new Date(fecha).toDateString() === hoy
+      hoy.getDate() ===
+        fechaCita.getDate() &&
+      hoy.getMonth() ===
+        fechaCita.getMonth() &&
+      hoy.getFullYear() ===
+        fechaCita.getFullYear()
     );
   };
 
@@ -34,7 +46,9 @@ function CitasHoyMecanico() {
   // CARGAR CITAS
   // =========================
   const cargarCitas = async () => {
+
     try {
+
       setLoading(true);
 
       // =========================
@@ -44,19 +58,25 @@ function CitasHoyMecanico() {
         localStorage.getItem("usuario") || "null"
       );
 
-      console.log("👤 Usuario:", usuario);
+      console.log(
+        "👤 Usuario:",
+        usuario
+      );
 
       if (!usuario) {
+
         setLoading(false);
+
         return;
       }
 
       // =========================
-      // OBTENER MECÁNICOS
+      // TRAER MECÁNICOS
       // =========================
-      const resMecanicos = await fetch(
-        `${GATEWAY}/mecanicos`
-      );
+      const resMecanicos =
+        await fetch(
+          `${GATEWAY}/mecanicos`
+        );
 
       if (!resMecanicos.ok) {
         throw new Error(
@@ -72,11 +92,12 @@ function CitasHoyMecanico() {
         mecanicos
       );
 
-      const mecanico = mecanicos.find(
-        (m) =>
-          Number(m.usuario_id) ===
-          Number(usuario.id_usuarios)
-      );
+      const mecanico =
+        mecanicos.find(
+          (m) =>
+            Number(m.usuario_id) ===
+            Number(usuario.id_usuarios)
+        );
 
       console.log(
         "✅ Mecánico encontrado:",
@@ -84,17 +105,20 @@ function CitasHoyMecanico() {
       );
 
       if (!mecanico) {
+
         setCitas([]);
         setLoading(false);
+
         return;
       }
 
       // =========================
-      // TRAER CITAS DEL MECÁNICO
+      // TRAER CITAS
       // =========================
-      const resCitas = await fetch(
-        `${GATEWAY}/citas/mecanico/${mecanico.id}`
-      );
+      const resCitas =
+        await fetch(
+          `${GATEWAY}/citas/mecanico/${mecanico.id}`
+        );
 
       if (!resCitas.ok) {
         throw new Error(
@@ -111,11 +135,9 @@ function CitasHoyMecanico() {
       );
 
       // =========================
-      // FILTRAR SOLO:
-      // - CITAS DE HOY
-      // - ESTADO RECIBIDA
-      // - CON KILOMETRAJE
-      // - CON OBSERVACIONES
+      // FILTRAR:
+      // - SOLO HOY
+      // - SOLO RECIBIDAS
       // =========================
       const citasHoy = (
         Array.isArray(citasData)
@@ -131,9 +153,7 @@ function CitasHoyMecanico() {
 
         return (
           esHoy(c.fecha_hora_inicio) &&
-          estado === "recibida" &&
-          c.kilometraje &&
-          c.observaciones
+          estado === "recibida"
         );
       });
 
@@ -191,6 +211,7 @@ function CitasHoyMecanico() {
 
       await Promise.all(
         citasHoy.map(async (c) => {
+
           try {
 
             const resPerfil =
@@ -199,6 +220,7 @@ function CitasHoyMecanico() {
               );
 
             if (resPerfil.ok) {
+
               perfilesTemp[
                 c.usuario_id
               ] =
@@ -206,6 +228,7 @@ function CitasHoyMecanico() {
             }
 
           } catch (error) {
+
             console.log(
               "❌ Error perfil:",
               error
@@ -226,15 +249,20 @@ function CitasHoyMecanico() {
       setCitas([]);
 
     } finally {
+
       setLoading(false);
+
     }
   };
 
+  // =========================
+  // RENDER
+  // =========================
   return (
     <div style={styles.container}>
 
       <h2 style={styles.title}>
-        📅 Citas de Hoy
+        📅 Citas Recibidas Hoy
       </h2>
 
       {loading ? (
@@ -253,13 +281,14 @@ function CitasHoyMecanico() {
 
         citas.map((c) => {
 
-          const cliente = usuarios.find(
-            (u) =>
-              Number(
-                u.id_usuarios
-              ) ===
-              Number(c.usuario_id)
-          );
+          const cliente =
+            usuarios.find(
+              (u) =>
+                Number(
+                  u.id_usuarios
+                ) ===
+                Number(c.usuario_id)
+            );
 
           const vehiculo =
             vehiculos.find(
@@ -286,16 +315,14 @@ function CitasHoyMecanico() {
                 <strong>
                   👤 Cliente:
                 </strong>{" "}
-                {cliente?.nombre ||
-                  "N/A"}
+                {cliente?.nombre || "N/A"}
               </p>
 
               <p>
                 <strong>
                   📱 Teléfono:
                 </strong>{" "}
-                {perfil?.telefono ||
-                  "N/A"}
+                {perfil?.telefono || "N/A"}
               </p>
 
               <p>
@@ -311,8 +338,7 @@ function CitasHoyMecanico() {
                 <strong>
                   🔢 Placa:
                 </strong>{" "}
-                {vehiculo?.placa ||
-                  "N/A"}
+                {vehiculo?.placa || "N/A"}
               </p>
 
               <p>
@@ -320,20 +346,6 @@ function CitasHoyMecanico() {
                   📌 Estado:
                 </strong>{" "}
                 {c.estado}
-              </p>
-
-              <p>
-                <strong>
-                  🛣️ Kilometraje:
-                </strong>{" "}
-                {c.kilometraje}
-              </p>
-
-              <p>
-                <strong>
-                  📝 Observaciones:
-                </strong>{" "}
-                {c.observaciones}
               </p>
 
               <p>
