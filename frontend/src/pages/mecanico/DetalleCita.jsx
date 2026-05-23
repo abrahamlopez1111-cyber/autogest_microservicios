@@ -123,6 +123,21 @@ function DetalleCita() {
 
     if (!repuesto) return;
 
+    // ✅ Verificar si el producto está agotado
+    if (repuesto.cantidad === 0) {
+      mostrar(`❌ "${repuesto.nombre}" está agotado`, "error");
+      return;
+    }
+
+    // ✅ Verificar si la cantidad solicitada supera el stock
+    if (cantidadSeleccionada > repuesto.cantidad) {
+      mostrar(
+        `⚠️ Solo hay ${repuesto.cantidad} unidad(es) de "${repuesto.nombre}" disponibles`,
+        "error"
+      );
+      return;
+    }
+
     const existe = form.repuestos.find(
       r => r.repuesto_id === repuesto.id
     );
