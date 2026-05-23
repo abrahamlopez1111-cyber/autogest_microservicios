@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
@@ -18,17 +17,28 @@ function CitasHoyMecanico() {
     cargarCitas();
   }, []);
 
+  // =========================
+  // VALIDAR SI ES HOY
+  // =========================
   const esHoy = (fecha) => {
+    if (!fecha) return false;
+
     const hoy = new Date().toDateString();
-    return new Date(fecha).toDateString() === hoy;
+
+    return (
+      new Date(fecha).toDateString() === hoy
+    );
   };
 
+  // =========================
+  // CARGAR CITAS
+  // =========================
   const cargarCitas = async () => {
     try {
       setLoading(true);
 
       // =========================
-      // 🔥 USUARIO LOGUEADO
+      // USUARIO LOGUEADO
       // =========================
       const usuario = JSON.parse(
         localStorage.getItem("usuario") || "null"
@@ -36,18 +46,31 @@ function CitasHoyMecanico() {
 
       console.log("👤 Usuario:", usuario);
 
-      if (!usuario) return;
+      if (!usuario) {
+        setLoading(false);
+        return;
+      }
 
       // =========================
-      // 🔥 OBTENER MECÁNICOS
+      // OBTENER MECÁNICOS
       // =========================
       const resMecanicos = await fetch(
         `${GATEWAY}/mecanicos`
       );
 
-      const mecanicos = await resMecanicos.json();
+      if (!resMecanicos.ok) {
+        throw new Error(
+          "Error obteniendo mecánicos"
+        );
+      }
 
-      console.log("🔧 Mecánicos:", mecanicos);
+      const mecanicos =
+        await resMecanicos.json();
+
+      console.log(
+        "🔧 Mecánicos:",
+        mecanicos
+      );
 
       const mecanico = mecanicos.find(
         (m) =>
@@ -55,78 +78,138 @@ function CitasHoyMecanico() {
           Number(usuario.id_usuarios)
       );
 
-      console.log("✅ Mecánico encontrado:", mecanico);
+      console.log(
+        "✅ Mecánico encontrado:",
+        mecanico
+      );
 
       if (!mecanico) {
         setCitas([]);
+        setLoading(false);
         return;
       }
 
       // =========================
-      // 🔥 TRAER TODAS LAS CITAS
+      // TRAER CITAS DEL MECÁNICO
       // =========================
       const resCitas = await fetch(
         `${GATEWAY}/citas/mecanico/${mecanico.id}`
       );
 
-      const citasData = await resCitas.json();
+      if (!resCitas.ok) {
+        throw new Error(
+          "Error obteniendo citas"
+        );
+      }
 
-      console.log("📅 Todas las citas:", citasData);
+      const citasData =
+        await resCitas.json();
+
+      console.log(
+        "📅 Todas las citas:",
+        citasData
+      );
 
       // =========================
-      // 🔥 FILTRAR SOLO HOY
+      // FILTRAR SOLO:
+      // - CITAS DE HOY
+      // - ESTADO RECIBIDA
+      // - CON KILOMETRAJE
+      // - CON OBSERVACIONES
       // =========================
-      const citasHoy = (Array.isArray(citasData)
-        ? citasData
-        : []
+      const citasHoy = (
+        Array.isArray(citasData)
+          ? citasData
+          : []
       ).filter((c) => {
+
+        const estado = (
+          c.estado || ""
+        )
+          .toLowerCase()
+          .trim();
+
         return (
           esHoy(c.fecha_hora_inicio) &&
-          (
-            c.estado === "programada" ||
-            c.estado === "recibida" ||
-            c.estado === "en_proceso"
-          )
+          estado === "recibida" &&
+          c.kilometraje &&
+          c.observaciones
         );
       });
 
-      console.log("🔥 Citas filtradas:", citasHoy);
+      console.log(
+        "🔥 Citas filtradas:",
+        citasHoy
+      );
 
       // =========================
-      // 🔥 DATOS EXTRA
+      // DATOS EXTRA
       // =========================
-      const [resUsuarios, resVehiculos] =
-        await Promise.all([
-          fetch(`${GATEWAY}/usuarios`),
-          fetch(`${GATEWAY}/historial/vehiculos`),
-        ]);
+      const [
+        resUsuarios,
+        resVehiculos
+      ] = await Promise.all([
+        fetch(`${GATEWAY}/usuarios`),
+        fetch(
+          `${GATEWAY}/historial/vehiculos`
+        ),
+      ]);
 
-      const usuariosData = await resUsuarios.json();
-      const vehiculosData = await resVehiculos.json();
+      if (
+        !resUsuarios.ok ||
+        !resVehiculos.ok
+      ) {
+        throw new Error(
+          "Error cargando datos extra"
+        );
+      }
 
-      setUsuarios(usuariosData);
-      setVehiculos(vehiculosData);
+      const usuariosData =
+        await resUsuarios.json();
+
+      const vehiculosData =
+        await resVehiculos.json();
+
+      setUsuarios(
+        Array.isArray(usuariosData)
+          ? usuariosData
+          : []
+      );
+
+      setVehiculos(
+        Array.isArray(vehiculosData)
+          ? vehiculosData
+          : []
+      );
 
       setCitas(citasHoy);
 
       // =========================
-      // 🔥 CARGAR PERFILES
+      // CARGAR PERFILES
       // =========================
       const perfilesTemp = {};
 
       await Promise.all(
         citasHoy.map(async (c) => {
           try {
-            const resPerfil = await fetch(
-              `${GATEWAY}/perfil/${c.usuario_id}`
-            );
+
+            const resPerfil =
+              await fetch(
+                `${GATEWAY}/perfil/${c.usuario_id}`
+              );
 
             if (resPerfil.ok) {
-              perfilesTemp[c.usuario_id] =
+              perfilesTemp[
+                c.usuario_id
+              ] =
                 await resPerfil.json();
             }
+
           } catch (error) {
-            console.log("❌ Error perfil:", error);
+            console.log(
+              "❌ Error perfil:",
+              error
+            );
           }
         })
       );
@@ -134,7 +217,14 @@ function CitasHoyMecanico() {
       setPerfiles(perfilesTemp);
 
     } catch (error) {
-      console.error("❌ Error:", error);
+
+      console.error(
+        "❌ Error cargando citas:",
+        error
+      );
+
+      setCitas([]);
+
     } finally {
       setLoading(false);
     }
@@ -142,79 +232,127 @@ function CitasHoyMecanico() {
 
   return (
     <div style={styles.container}>
+
       <h2 style={styles.title}>
         📅 Citas de Hoy
       </h2>
 
       {loading ? (
+
         <p style={styles.empty}>
           Cargando...
         </p>
+
       ) : citas.length === 0 ? (
+
         <p style={styles.empty}>
-          No hay citas hoy
+          No hay citas recibidas hoy
         </p>
+
       ) : (
+
         citas.map((c) => {
+
           const cliente = usuarios.find(
             (u) =>
-              Number(u.id_usuarios) ===
+              Number(
+                u.id_usuarios
+              ) ===
               Number(c.usuario_id)
           );
 
-          const vehiculo = vehiculos.find(
-            (v) =>
-              Number(v.id) ===
-              Number(c.vehiculo_id)
-          );
+          const vehiculo =
+            vehiculos.find(
+              (v) =>
+                Number(v.id) ===
+                Number(c.vehiculo_id)
+            );
 
-          const perfil = perfiles[c.usuario_id];
+          const perfil =
+            perfiles[c.usuario_id];
 
           return (
             <button
               key={c.id}
               style={styles.card}
               onClick={() =>
-                navigate(`/detalle-cita/${c.id}`)
+                navigate(
+                  `/detalle-cita/${c.id}`
+                )
               }
             >
+
               <p>
-                <strong>👤 Cliente:</strong>{" "}
-                {cliente?.nombre || "N/A"}
+                <strong>
+                  👤 Cliente:
+                </strong>{" "}
+                {cliente?.nombre ||
+                  "N/A"}
               </p>
 
               <p>
-                <strong>📱 Teléfono:</strong>{" "}
-                {perfil?.telefono || "N/A"}
+                <strong>
+                  📱 Teléfono:
+                </strong>{" "}
+                {perfil?.telefono ||
+                  "N/A"}
               </p>
 
               <p>
-                <strong>🚗 Vehículo:</strong>{" "}
+                <strong>
+                  🚗 Vehículo:
+                </strong>{" "}
                 {vehiculo
                   ? `${vehiculo.marca} ${vehiculo.modelo}`
                   : "N/A"}
               </p>
 
               <p>
-                <strong>🔢 Placa:</strong>{" "}
-                {vehiculo?.placa || "N/A"}
+                <strong>
+                  🔢 Placa:
+                </strong>{" "}
+                {vehiculo?.placa ||
+                  "N/A"}
               </p>
 
               <p>
-                <strong>📌 Estado:</strong>{" "}
+                <strong>
+                  📌 Estado:
+                </strong>{" "}
                 {c.estado}
               </p>
 
               <p>
-                <strong>⏰ Hora:</strong>{" "}
+                <strong>
+                  🛣️ Kilometraje:
+                </strong>{" "}
+                {c.kilometraje}
+              </p>
+
+              <p>
+                <strong>
+                  📝 Observaciones:
+                </strong>{" "}
+                {c.observaciones}
+              </p>
+
+              <p>
+                <strong>
+                  ⏰ Hora:
+                </strong>{" "}
                 {new Date(
                   c.fecha_hora_inicio
-                ).toLocaleTimeString("es-CO", {
-                  timeZone: "America/Bogota",
-                  hour: "2-digit",
-                  minute: "2-digit",
-                })}
+                ).toLocaleTimeString(
+                  "es-CO",
+                  {
+                    timeZone:
+                      "America/Bogota",
+                    hour: "2-digit",
+                    minute: "2-digit",
+                  }
+                )}
               </p>
+
             </button>
           );
         })
@@ -224,6 +362,7 @@ function CitasHoyMecanico() {
 }
 
 const styles = {
+
   container: {
     maxWidth: "650px",
     margin: "auto",
