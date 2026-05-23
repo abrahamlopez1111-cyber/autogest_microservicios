@@ -4,7 +4,8 @@ import VerCitasMecanico from "./VerCitasMecanico";
 import VehiculosMecanico from "./VehiculosMecanico";
 import PerfilUsuario from "../../components/perfil/PerfilUsuario";
 import PerfilGuard from "../../components/perfil/PerfilGuard";
-import CitasHoyMecanico from "./CitasHoyMecanico"; // 🔥 AHORA ES COMPONENTE SEPARADO
+import CitasHoyMecanico from "./CitasHoyMecanico";
+import InventarioMecanico from "./InventarioMecanico"; // 🔥 AHORA ES COMPONENTE SEPARADO
 
 // ============================
 // 🚀 COMPONENTE PRINCIPAL
@@ -48,6 +49,12 @@ function MecanicoContenido() {
                 <p>Servicios del día</p>
               </div>
 
+              <div style={styles.card} onClick={() => setVista("inventario")}>
+                <span style={styles.icon}>📦</span>
+                <h3>Inventario</h3>
+                <p>Ver repuestos disponibles</p>
+              </div>
+
               <div style={styles.card} onClick={() => setVista("perfil")}>
                 <h3>👤 Mi Perfil</h3>
                 <p>Gestionar información personal</p>
@@ -70,6 +77,7 @@ function MecanicoContenido() {
               {vista === "citas" && <VerCitasMecanico />}
               {vista === "vehiculos" && <VehiculosMecanico />}
               {vista === "hoy" && <CitasHoyMecanico />}
+              {vista === "inventario" && <InventarioMecanico />}
               {vista === "perfil" && (
                 <PerfilUsuario volver={() => setVista(null)} />
               )}

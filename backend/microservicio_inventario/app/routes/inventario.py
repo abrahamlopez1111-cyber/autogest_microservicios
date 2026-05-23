@@ -165,3 +165,53 @@ def eliminar_repuesto(repuesto_id: int, db: Session = Depends(get_db)):
     db.commit()
 
     return {"mensaje": "Repuesto eliminado"}
+
+
+# =========================
+# ACTUALIZAR STOCK
+# =========================
+@router.put("/stock/{sucursal_id}/{repuesto_id}")
+def actualizar_stock(sucursal_id: int, repuesto_id: int, cantidad: int, db: Session = Depends(get_db)):
+    stock = db.query(models.StockSucursal).filter(
+        models.StockSucursal.sucursal_id == sucursal_id,
+        models.StockSucursal.catalogo_repuestos_id == repuesto_id
+    ).first()
+
+    if not stock:
+        raise HTTPException(status_code=404, detail="Stock no encontrado")
+
+    stock.cantidad_disponible = max(0, cantidad)
+    db.commit()
+    db.refresh(stock)
+
+    return {
+        "sucursal_id": stock.sucursal_id,
+        "repuesto_id": stock.catalogo_repuestos_id,
+        "cantidad_disponible": stock.cantidad_disponible
+    }
+
+
+# =========================
+# DESCONTAR STOCK
+# =========================
+@router.post("/stock/descontar")
+def descontar_stock(data: dict, db: Session = Depends(get_db)):
+    repuesto_id = data.get("repuesto_id")
+    sucursal_id = data.get("sucursal_id")
+    cantidad = data.get("cantidad", 0)
+
+    stock = db.query(models.StockSucursal).filter(
+        models.StockSucursal.sucursal_id == sucursal_id,
+        models.StockSucursal.catalogo_repuestos_id == repuesto_id
+    ).first()
+
+    if not stock:
+        raise HTTPException(status_code=404, detail="Stock no encontrado")
+
+    if stock.cantidad_disponible < cantidad:
+        raise HTTPException(status_code=400, detail="Stock insuficiente")
+
+    stock.cantidad_disponible -= cantidad
+    db.commit()
+
+    return {"ok": True, "cantidad_restante": stock.cantidad_disponible}

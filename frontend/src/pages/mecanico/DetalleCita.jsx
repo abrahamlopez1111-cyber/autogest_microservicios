@@ -242,6 +242,26 @@ const guardarDiagnostico = async () => {
       return;
     }
 
+    // Descontar stock por cada repuesto usado
+    for (const r of form.repuestos) {
+      try {
+        await fetch(
+          "https://autogest-gateway.onrender.com/inventario/repuestos/stock/descontar",
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              repuesto_id: r.repuesto_id,
+              sucursal_id: mecanico?.sucursal_id,
+              cantidad: r.cantidad,
+            }),
+          }
+        );
+      } catch (e) {
+        console.error("Error descontando stock:", e);
+      }
+    }
+
     // =========================
     // 2. CAMBIAR ESTADO CITA
     // =========================

@@ -155,3 +155,24 @@ async def eliminar_repuesto(repuesto_id: int):
         raise
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+
+# =========================
+# DESCONTAR STOCK
+# =========================
+@router.post("/inventario/repuestos/stock/descontar")
+async def descontar_stock(request: Request):
+    try:
+        body = await request.json()
+        async with httpx.AsyncClient(timeout=15.0) as client:
+            response = await client.post(
+                inv_url("/stock/descontar"),
+                json=body
+            )
+        if response.status_code >= 400:
+            raise HTTPException(status_code=response.status_code, detail=response.text)
+        return response.json()
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
