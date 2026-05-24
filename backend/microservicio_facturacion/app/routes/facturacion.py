@@ -369,24 +369,11 @@ def descargar_factura_pdf(
 
     preview = preview_res.json()
 
-    cliente = preview.get(
-        "cliente",
-        {}
-    )
+    cliente = preview.get("cliente", {})
+    vehiculo = preview.get("vehiculo", {})
+    repuestos = preview.get("repuestos", [])
 
-    vehiculo = preview.get(
-        "vehiculo",
-        {}
-    )
-
-    repuestos = preview.get(
-        "repuestos",
-        []
-    )
-
-    ruta_pdf = (
-        f"factura_{factura.id}.pdf"
-    )
+    ruta_pdf = f"factura_{factura.id}.pdf"
 
     # =========================
     # CREAR PDF
@@ -398,9 +385,12 @@ def descargar_factura_pdf(
 
     y = 800
 
+    # =========================
+    # TITULO
+    # =========================
     pdf.setFont(
         "Helvetica-Bold",
-        20
+        22
     )
 
     pdf.drawString(
@@ -409,11 +399,11 @@ def descargar_factura_pdf(
         "AUTOGEST"
     )
 
-    y -= 35
+    y -= 40
 
     pdf.setFont(
         "Helvetica",
-        11
+        12
     )
 
     pdf.drawString(
@@ -438,11 +428,14 @@ def descargar_factura_pdf(
         f"Fecha: {factura.fecha_emision}"
     )
 
-    y -= 35
+    y -= 40
 
+    # =========================
+    # VEHICULO
+    # =========================
     pdf.setFont(
         "Helvetica-Bold",
-        13
+        14
     )
 
     pdf.drawString(
@@ -455,7 +448,7 @@ def descargar_factura_pdf(
 
     pdf.setFont(
         "Helvetica",
-        11
+        12
     )
 
     pdf.drawString(
@@ -482,6 +475,150 @@ def descargar_factura_pdf(
 
     y -= 35
 
+    # =========================
+    # DIAGNOSTICO
+    # =========================
+    pdf.setFont(
+        "Helvetica-Bold",
+        14
+    )
+
+    pdf.drawString(
+        50,
+        y,
+        "DIAGNOSTICO"
+    )
+
+    y -= 25
+
+    pdf.setFont(
+        "Helvetica",
+        12
+    )
+
+    pdf.drawString(
+        70,
+        y,
+        f"Observación: {preview.get('observacion_cliente', 'N/A')}"
+    )
+
+    y -= 20
+
+    pdf.drawString(
+        70,
+        y,
+        f"Falla: {preview.get('descripcion_falla', 'N/A')}"
+    )
+
+    y -= 20
+
+    pdf.drawString(
+        70,
+        y,
+        f"Reparación: {preview.get('reparacion_realizada', 'N/A')}"
+    )
+
+    y -= 35
+
+    # =========================
+    # REPUESTOS
+    # =========================
+    pdf.setFont(
+        "Helvetica-Bold",
+        14
+    )
+
+    pdf.drawString(
+        50,
+        y,
+        "REPUESTOS"
+    )
+
+    y -= 25
+
+    pdf.setFont(
+        "Helvetica",
+        12
+    )
+
+    if len(repuestos) == 0:
+
+        pdf.drawString(
+            70,
+            y,
+            "No hay repuestos"
+        )
+
+        y -= 20
+
+    else:
+
+        for r in repuestos:
+
+            pdf.drawString(
+                70,
+                y,
+                f"{r['nombre']} | Cantidad: {r['cantidad']} | Unitario: ${r['precio_unitario']} | Subtotal: ${r['subtotal']}"
+            )
+
+            y -= 20
+
+    y -= 20
+
+    # =========================
+    # TOTALES
+    # =========================
+    pdf.setFont(
+        "Helvetica-Bold",
+        14
+    )
+
+    pdf.drawString(
+        50,
+        y,
+        "TOTALES"
+    )
+
+    y -= 25
+
+    pdf.setFont(
+        "Helvetica",
+        12
+    )
+
+    pdf.drawString(
+        70,
+        y,
+        f"Mano de obra: ${preview.get('mano_obra', 0)}"
+    )
+
+    y -= 20
+
+    pdf.drawString(
+        70,
+        y,
+        f"Subtotal: ${preview.get('subtotal', 0)}"
+    )
+
+    y -= 20
+
+    pdf.drawString(
+        70,
+        y,
+        f"IVA: ${preview.get('iva', 0)}"
+    )
+
+    y -= 20
+
+    pdf.drawString(
+        70,
+        y,
+        f"TOTAL: ${preview.get('total', 0)}"
+    )
+
+    # =========================
+    # FINALIZAR PDF
+    # =========================
     pdf.save()
 
     return FileResponse(
@@ -489,8 +626,6 @@ def descargar_factura_pdf(
         filename=f"{factura.numero_factura}.pdf",
         media_type="application/pdf"
     )
-
-
 # =========================
 # PREVIEW FACTURA
 # =========================
