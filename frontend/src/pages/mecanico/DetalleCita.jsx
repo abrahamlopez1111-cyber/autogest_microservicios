@@ -435,85 +435,65 @@ const guardarDiagnostico = async () => {
 
       {/* INVENTARIO */}
       <div style={styles.card}>
+        <h3 style={{ marginBottom: "16px" }}>🧰 Repuestos disponibles</h3>
 
-        <h3>
-          🧰 Inventario
-        </h3>
+        {/* Selector de repuesto */}
+        <div style={{ marginBottom: "12px" }}>
+          <label style={styles.label}>Repuesto</label>
+          <select
+            value={repuestoSeleccionado}
+            onChange={(e) => setRepuestoSeleccionado(e.target.value)}
+            style={styles.select}
+          >
+            <option value="">— Seleccione un repuesto —</option>
+            {inventario.map((item) => (
+              <option key={item.id} value={item.id} disabled={item.cantidad === 0}>
+                {item.nombre} — ${Number(item.precio).toLocaleString("es-CO")}
+                {item.cantidad === 0 ? " (Agotado)" : ` (${item.cantidad} disponibles)`}
+              </option>
+            ))}
+          </select>
+        </div>
 
-        <select
-          value={
-            repuestoSeleccionado
-          }
-          onChange={(e) =>
-            setRepuestoSeleccionado(
-              e.target.value
-            )
-          }
-          style={styles.select}
-        >
+        {/* Mostrar stock del repuesto seleccionado */}
+        {repuestoSeleccionado && (() => {
+          const rep = inventario.find(r => r.id === Number(repuestoSeleccionado));
+          return rep ? (
+            <div style={{
+              display: "flex", alignItems: "center", gap: "10px",
+              marginBottom: "12px", padding: "8px 12px",
+              background: rep.cantidad === 0 ? "#7f1d1d" : rep.cantidad <= 5 ? "#78350f" : "#14532d",
+              borderRadius: "8px", fontSize: "13px"
+            }}>
+              <span>{rep.cantidad === 0 ? "❌" : rep.cantidad <= 5 ? "⚠️" : "✅"}</span>
+              <span>
+                {rep.cantidad === 0
+                  ? "Producto agotado"
+                  : `Stock disponible: ${rep.cantidad} unidades`}
+              </span>
+            </div>
+          ) : null;
+        })()}
 
-          <option value="">
-            Seleccione repuesto
-          </option>
-
-          {
-            inventario.map(
-              item => (
-
-                <option
-                  key={
-                    item.id
-                  }
-                  value={
-                    item.id
-                  }
-                >
-
-                  {
-                    item.nombre
-                  } | Stock:
-                  {
-                    item.cantidad
-                  } | $
-                  {
-                    item.precio
-                  }
-
-                </option>
-
-              )
-            )
-          }
-
-        </select>
-
-        <input
-          type="number"
-          min="1"
-          value={
-            cantidadSeleccionada
-          }
-          onChange={(e) =>
-            setCantidadSeleccionada(
-              Number(
-                e.target.value
-              )
-            )
-          }
-          style={styles.input}
-        />
-
-        <button
-          style={
-            styles.addBtn
-          }
-          onClick={
-            agregarRepuesto
-          }
-        >
-          ➕ Agregar
-        </button>
-
+        {/* Cantidad y botón */}
+        <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+          <div>
+            <label style={styles.label}>Cantidad</label>
+            <input
+              type="number"
+              min="1"
+              value={cantidadSeleccionada}
+              onChange={(e) => setCantidadSeleccionada(Number(e.target.value))}
+              style={{ ...styles.input, width: "100%", boxSizing: "border-box" }}
+            />
+          </div>
+          <button
+            style={{ ...styles.addBtn, width: "100%", padding: "12px" }}
+            onClick={agregarRepuesto}
+          >
+            ➕ Agregar repuesto
+          </button>
+        </div>
       </div>
 
       {/* REPUESTOS USADOS */}
@@ -621,6 +601,13 @@ const styles = {
     padding: "12px",
     borderRadius: "8px",
     marginTop: "10px",
+  },
+
+  label: {
+    display: "block",
+    fontSize: "12px",
+    color: "#94a3b8",
+    marginBottom: "4px",
   },
 
   addBtn: {
