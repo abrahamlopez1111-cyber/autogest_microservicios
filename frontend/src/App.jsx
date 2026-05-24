@@ -21,8 +21,10 @@ import RecepcionistaDashboard from "./pages/recepcionista/recepcionista_dashboar
 import CitasHoyRecepcionista from "./pages/recepcionista/CitasHoyRecepcionista";
 import FacturacionRecepcionista from "./pages/recepcionista/FacturacionRecepcionista";
 
-// 🔥 CORREGIDO
 import MisFacturas from "./pages/cliente/MisFacturas";
+
+// 🔥 NUEVO
+import MisFacturasRecepcionista from "./pages/recepcionista/MisFacturasRecepcionista";
 
 import PerfilGuard from "./components/perfil/PerfilGuard";
 import ProtectedRoute from "./components/ProtectedRoute";
@@ -247,7 +249,9 @@ function AppContent() {
         }
       />
 
-      {/* 🔥 NUEVA RUTA FACTURAS CLIENTE */}
+
+
+      {/* 🔥 FACTURAS CLIENTE */}
       <Route
         path="/cliente/facturas"
         element={
@@ -335,6 +339,7 @@ function AppContent() {
 
 
 
+      {/* CITAS HOY */}
       <Route
         path="/recepcionista/citas-hoy"
         element={
@@ -356,6 +361,7 @@ function AppContent() {
 
 
 
+      {/* FACTURACION */}
       <Route
         path="/recepcionista/facturacion"
         element={
@@ -377,8 +383,9 @@ function AppContent() {
 
 
 
+      {/* 🔥 NUEVO MIS FACTURAS RECEPCIONISTA */}
       <Route
-        path="/recepcionista/facturas"
+        path="/recepcionista/misfacturasrecepcionista"
         element={
           <ProtectedRoute
             rolesPermitidos={[
@@ -388,7 +395,7 @@ function AppContent() {
 
             <PrivateLayout>
 
-              <FacturacionRecepcionista />
+              <MisFacturasRecepcionista />
 
             </PrivateLayout>
 

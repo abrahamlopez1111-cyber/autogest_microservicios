@@ -143,7 +143,7 @@ function RecepcionistaDashboard() {
         <button
           style={styles.card}
           onClick={() =>
-            navigate("/recepcionista/facturas")
+            navigate("/recepcionista/misfacturasrecepcionista")
           }
         >
 
@@ -151,17 +151,13 @@ function RecepcionistaDashboard() {
             📄
           </span>
 
-          <h3>Facturas</h3>
+          <h3>Mis Facturas</h3>
 
           <p>
-            Ver y descargar facturas
+            Ver y descargar facturas emitidas
           </p>
 
         </button>
-
-
-
-        
 
 
       </div>
@@ -210,6 +206,7 @@ const styles = {
     textAlign: "center",
     fontSize: "18px",
     color: "white",
+    transition: "0.3s",
   },
 
 
