@@ -542,7 +542,7 @@ def preview_factura(
     try:
 
         vehiculo_res = requests.get(
-            f"{SERVICIOS['historial']}/historial/vehiculos",
+            f"{SERVICIOS['historial']}/vehiculos",
             timeout=15
         )
 
