@@ -120,7 +120,59 @@ function FacturacionRecepcionista() {
         finalizadas
       );
 
-      setCitas(finalizadas);
+      // =========================
+      // CARGAR PREVIEW AUTOMÁTICO
+      // =========================
+      const citasConInfo =
+        await Promise.all(
+
+          finalizadas.map(
+            async (cita) => {
+
+              try {
+
+                const resPreview =
+                  await fetch(
+                    `${GATEWAY}/facturas/preview/${cita.id}`
+                  );
+
+                if (!resPreview.ok) {
+                  return cita;
+                }
+
+                const previewData =
+                  await resPreview.json();
+
+                return {
+
+                  ...cita,
+
+                  cliente:
+                    previewData.cliente,
+
+                  vehiculo:
+                    previewData.vehiculo
+                };
+
+              } catch (error) {
+
+                console.error(
+                  "❌ Error preview:",
+                  error
+                );
+
+                return cita;
+              }
+            }
+          )
+        );
+
+      console.log(
+        "🚗 Citas completas:",
+        citasConInfo
+      );
+
+      setCitas(citasConInfo);
 
     } catch (error) {
 
@@ -151,7 +203,6 @@ function FacturacionRecepcionista() {
         `${GATEWAY}/facturas/preview/${citaId}`
       );
 
-      // 🔥 VALIDAR JSON
       const contentType =
         res.headers.get(
           "content-type"
@@ -220,15 +271,14 @@ function FacturacionRecepcionista() {
     try {
 
       if (!preview) {
+
         alert(
           "No hay preview disponible"
         );
+
         return;
       }
 
-      // =========================
-      // CREAR FACTURA
-      // =========================
       const res = await fetch(
         `${GATEWAY}/facturas/${preview.cita_id}`,
         {
@@ -236,7 +286,6 @@ function FacturacionRecepcionista() {
         }
       );
 
-      // 🔥 VALIDAR JSON
       const contentType =
         res.headers.get(
           "content-type"
@@ -287,7 +336,7 @@ function FacturacionRecepcionista() {
       }
 
       // =========================
-      // YA EXISTÍA
+      // FACTURA EXISTENTE
       // =========================
       else if (
         data.detail ===
@@ -321,9 +370,6 @@ function FacturacionRecepcionista() {
           facturaExistente?.id;
       }
 
-      // =========================
-      // VALIDAR FACTURA
-      // =========================
       if (!facturaId) {
 
         alert(
@@ -334,7 +380,7 @@ function FacturacionRecepcionista() {
       }
 
       // =========================
-      // ABRIR PDF
+      // PDF
       // =========================
       const pdfUrl =
         `${GATEWAY}/facturas/${facturaId}/pdf`;
@@ -407,7 +453,6 @@ function FacturacionRecepcionista() {
         💰 Facturación
       </h2>
 
-      {/* LISTADO */}
       {!preview && (
 
         <>
@@ -513,8 +558,7 @@ function FacturacionRecepcionista() {
             🔧 Repuestos
           </h4>
 
-          {preview.repuestos?.length >
-          0 ? (
+          {preview.repuestos?.length > 0 ? (
 
             preview.repuestos.map(
               (r, i) => (
@@ -531,22 +575,16 @@ function FacturacionRecepcionista() {
                   </p>
 
                   <p>
-                    Cantidad:
-                    {" "}
-                    {r.cantidad}
+                    Cantidad: {r.cantidad}
                   </p>
 
                   <p>
-                    Unitario:
-                    {" "}
-                    $
+                    Unitario: $
                     {r.precio_unitario}
                   </p>
 
                   <p>
-                    Subtotal:
-                    {" "}
-                    $
+                    Subtotal: $
                     {r.subtotal}
                   </p>
 
