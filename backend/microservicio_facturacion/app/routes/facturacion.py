@@ -542,7 +542,7 @@ def preview_factura(
     try:
 
         vehiculo_res = requests.get(
-            f"{SERVICIOS['historial']}/vehiculos",
+            f"{SERVICIOS['historial']}/historial/vehiculos",
             timeout=15
         )
 
@@ -553,7 +553,7 @@ def preview_factura(
             vehiculo = next(
                 (
                     v for v in vehiculos
-                    if v["id"] == cita["vehiculo_id"]
+                    if int(v["id"]) == int(cita["vehiculo_id"])
                 ),
                 {}
             )
@@ -572,8 +572,10 @@ def preview_factura(
 
     try:
 
+        cliente_id = int(cita["usuario_id"])
+
         cliente_res = requests.get(
-            f"{SERVICIOS['usuarios']}/usuarios/{cita['usuario_id']}",
+            f"{SERVICIOS['usuarios']}/usuarios/{cliente_id}",
             timeout=15
         )
 
