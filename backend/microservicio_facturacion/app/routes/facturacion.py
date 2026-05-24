@@ -173,18 +173,15 @@ def generar_factura(
         )
     )
 
-    subtotal = mano_obra
+    subtotal_repuestos = 0
 
     for repuesto in diagnostico.get(
         "repuestos",
         []
     ):
 
-        precio = float(
-            repuesto.get(
-                "precio",
-                0
-            )
+        repuesto_id = repuesto.get(
+            "repuesto_id"
         )
 
         cantidad = int(
@@ -194,12 +191,48 @@ def generar_factura(
             )
         )
 
-        subtotal += (
+        precio = 0
+
+        # 🔥 CONSULTAR INVENTARIO
+        try:
+
+            repuesto_res = requests.get(
+                f"{SERVICIOS['inventario']}/inventario/repuestos/{repuesto_id}",
+                timeout=15
+            )
+
+            if repuesto_res.ok:
+
+                repuesto_data = repuesto_res.json()
+
+                precio = float(
+                    repuesto_data.get(
+                        "precio",
+                        0
+                    )
+                )
+
+        except Exception as e:
+
+            print(
+                "Error obteniendo repuesto:",
+                str(e)
+            )
+
+        subtotal_repuestos += (
             precio * cantidad
         )
 
+    # 🔥 SUMAR MANO DE OBRA
+    subtotal = (
+        subtotal_repuestos +
+        mano_obra
+    )
+
+    # 🔥 IVA
     impuestos = subtotal * 0.19
 
+    # 🔥 TOTAL FINAL
     total = subtotal + impuestos
 
     # =========================
