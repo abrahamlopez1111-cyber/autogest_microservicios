@@ -32,7 +32,7 @@ SERVICIOS = {
     "diagnostico":
         os.getenv(
             "DIAGNOSTICO_SERVICE_URL",
-            "https://autogest-diagnostico.onrender.com"
+            "https://autogest-microservicios-e85s.onrender.com"
         ),
 
     "historial":
