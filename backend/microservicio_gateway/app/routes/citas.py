@@ -1,7 +1,12 @@
 from fastapi import APIRouter, HTTPException, Request
 import httpx
 
+from fastapi.responses import JSONResponse
+
+
 from app.config import SERVICIOS
+
+
 
 router = APIRouter(
     tags=["Gateway Citas"]
@@ -433,3 +438,28 @@ async def citas_por_mecanico(mecanico_id: int):
         raise
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+    
+    
+    
+# =========================
+# ACTUALIZAR ESTADO CITA
+# =========================
+@router.put("/citas/{id}/estado")
+async def actualizar_estado_cita(
+    id: int,
+    request: Request
+):
+
+    body = await request.json()
+
+    async with httpx.AsyncClient() as client:
+
+        response = await client.put(
+            f"{SERVICIOS['citas']}/citas/{id}/estado",
+            json=body
+        )
+
+    return JSONResponse(
+        status_code=response.status_code,
+        content=response.json()
+    )

@@ -225,6 +225,26 @@ def generar_factura(
     db.commit()
 
     db.refresh(nueva_factura)
+    
+    # =========================
+    # ACTUALIZAR ESTADO CITA
+    # =========================
+    try:
+
+        requests.put(
+            f"{SERVICIOS['citas']}/citas/{cita_id}/estado",
+            json={
+                "estado": "facturada"
+            },
+            timeout=15
+        )
+
+    except Exception as e:
+
+        print(
+            "Error actualizando estado:",
+            str(e)
+        )
 
     return {
 

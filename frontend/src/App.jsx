@@ -11,13 +11,18 @@ import Login from "./pages/Login";
 import Register from "./pages/Register";
 
 import Admin from "./pages/admin/AdminDashboard";
+
 import ClienteDashboard from "./pages/cliente/ClienteDashboard";
+
 import DashboardMecanico from "./pages/mecanico/DashboardMecanico";
 import DetalleCita from "./pages/mecanico/DetalleCita";
+
 import RecepcionistaDashboard from "./pages/recepcionista/recepcionista_dashboard";
 import CitasHoyRecepcionista from "./pages/recepcionista/CitasHoyRecepcionista";
 import FacturacionRecepcionista from "./pages/recepcionista/FacturacionRecepcionista";
-import MisFacturas from "./pages/recepcionista/MisFacturas";
+
+// 🔥 CORREGIDO
+import MisFacturas from "./pages/cliente/MisFacturas";
 
 import PerfilGuard from "./components/perfil/PerfilGuard";
 import ProtectedRoute from "./components/ProtectedRoute";
@@ -131,7 +136,10 @@ function AppContent() {
 
     <Routes>
 
+      {/* ========================= */}
       {/* PÚBLICAS */}
+      {/* ========================= */}
+
       <Route
         path="/"
         element={
@@ -154,7 +162,10 @@ function AppContent() {
       />
 
 
-      {/* PERFIL INTERMEDIO */}
+      {/* ========================= */}
+      {/* PERFIL */}
+      {/* ========================= */}
+
       <Route
         path="/perfil"
         element={
@@ -177,7 +188,10 @@ function AppContent() {
       />
 
 
+      {/* ========================= */}
       {/* ADMIN */}
+      {/* ========================= */}
+
       <Route
         path="/admin"
         element={
@@ -204,7 +218,10 @@ function AppContent() {
       />
 
 
+      {/* ========================= */}
       {/* CLIENTE */}
+      {/* ========================= */}
+
       <Route
         path="/cliente"
         element={
@@ -230,8 +247,37 @@ function AppContent() {
         }
       />
 
+      {/* 🔥 NUEVA RUTA FACTURAS CLIENTE */}
+      <Route
+        path="/cliente/facturas"
+        element={
 
+          <ProtectedRoute
+            rolesPermitidos={[
+              "cliente",
+            ]}
+          >
+
+            <PrivateLayout>
+
+              <PerfilGuard>
+
+                <MisFacturas />
+
+              </PerfilGuard>
+
+            </PrivateLayout>
+
+          </ProtectedRoute>
+
+        }
+      />
+
+
+      {/* ========================= */}
       {/* MECÁNICO */}
+      {/* ========================= */}
+
       <Route
         path="/mecanico"
         element={
@@ -258,7 +304,10 @@ function AppContent() {
       />
 
 
+      {/* ========================= */}
       {/* RECEPCIONISTA */}
+      {/* ========================= */}
+
       <Route
         path="/recepcionista"
         element={
@@ -285,54 +334,99 @@ function AppContent() {
       />
 
 
-      {/* FALLBACK */}
+
       <Route
         path="/recepcionista/citas-hoy"
         element={
-          <ProtectedRoute rolesPermitidos={["recepcionista"]}>
+          <ProtectedRoute
+            rolesPermitidos={[
+              "recepcionista"
+            ]}
+          >
+
             <PrivateLayout>
+
               <CitasHoyRecepcionista />
+
             </PrivateLayout>
+
           </ProtectedRoute>
         }
       />
+
+
 
       <Route
         path="/recepcionista/facturacion"
         element={
-          <ProtectedRoute rolesPermitidos={["recepcionista"]}>
+          <ProtectedRoute
+            rolesPermitidos={[
+              "recepcionista"
+            ]}
+          >
+
             <PrivateLayout>
+
               <FacturacionRecepcionista />
+
             </PrivateLayout>
+
           </ProtectedRoute>
         }
       />
+
+
 
       <Route
         path="/recepcionista/facturas"
         element={
-          <ProtectedRoute rolesPermitidos={["recepcionista"]}>
+          <ProtectedRoute
+            rolesPermitidos={[
+              "recepcionista"
+            ]}
+          >
+
             <PrivateLayout>
-              <MisFacturas />
+
+              <FacturacionRecepcionista />
+
             </PrivateLayout>
+
           </ProtectedRoute>
         }
       />
 
 
+
+      {/* ========================= */}
+      {/* DETALLE MECÁNICO */}
+      {/* ========================= */}
 
       <Route
         path="/detalle-cita/:id"
         element={
-          <ProtectedRoute rolesPermitidos={["mecanico"]}>
+          <ProtectedRoute
+            rolesPermitidos={[
+              "mecanico"
+            ]}
+          >
+
             <PrivateLayout>
+
               <DetalleCita />
+
             </PrivateLayout>
+
           </ProtectedRoute>
         }
       />
 
+
+
+      {/* ========================= */}
       {/* FALLBACK */}
+      {/* ========================= */}
+
       <Route
         path="*"
         element={
@@ -374,10 +468,13 @@ const styles = {
   layout: {
     minHeight:
       "100vh",
+
     display:
       "flex",
+
     flexDirection:
       "column",
+
     background:
       "#0f172a",
   },
@@ -385,14 +482,19 @@ const styles = {
   nav: {
     display:
       "flex",
+
     justifyContent:
       "space-between",
+
     alignItems:
       "center",
+
     padding:
       "15px 25px",
+
     background:
       "#1e3a8a",
+
     color:
       "white",
   },
@@ -406,14 +508,19 @@ const styles = {
   logoutBtn: {
     padding:
       "8px 14px",
+
     background:
       "#ef4444",
+
     border:
       "none",
+
     color:
       "white",
+
     borderRadius:
       "8px",
+
     cursor:
       "pointer",
   },

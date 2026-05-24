@@ -266,3 +266,31 @@ def eliminar_recepcionista(id: int, db: Session = Depends(get_db)):
     db.delete(recep)
     db.commit()
     return {"mensaje": "Recepcionista eliminado"}
+
+
+
+@app.put("/citas/{id}/estado")
+def actualizar_estado(
+    id: int,
+    data: dict,
+    db: Session = Depends(get_db)
+):
+
+    cita = db.query(models.Cita).filter(
+        models.Cita.id == id
+    ).first()
+
+    if not cita:
+
+        raise HTTPException(
+            status_code=404,
+            detail="Cita no encontrada"
+        )
+
+    cita.estado = data["estado"]
+
+    db.commit()
+
+    db.refresh(cita)
+
+    return cita

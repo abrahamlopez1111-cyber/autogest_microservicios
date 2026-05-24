@@ -2,7 +2,8 @@ import { useState } from "react";
 import MisCitas from "./MisCitas";
 import CrearCita from "./CrearCita";
 import PerfilUsuario from "../../components/perfil/PerfilUsuario";
-import PerfilGuard from "../../components/perfil/PerfilGuard"; // 🔥 NUEVO
+import PerfilGuard from "../../components/perfil/PerfilGuard";
+import MisFacturas from "./MisFacturas"; // 🔥 NUEVO
 
 function ClienteDashboard() {
   return (
@@ -12,44 +13,88 @@ function ClienteDashboard() {
   );
 }
 
-// 🔥 COMPONENTE INTERNO (MEJOR PRÁCTICA)
+// 🔥 COMPONENTE INTERNO
 function ClienteContenido() {
-  const [vista, setVista] = useState(null);
+
+  const [vista, setVista] =
+    useState(null);
 
   return (
     <div style={styles.container}>
+
       <div style={styles.panel}>
 
         {/* 🟢 MENÚ */}
         {!vista && (
           <>
-            <h1 style={styles.title}>🚗 Panel Cliente</h1>
+            <h1 style={styles.title}>
+              🚗 Panel Cliente
+            </h1>
 
             <div style={styles.cards}>
 
+              {/* 📋 CITAS */}
               <div
                 style={styles.card}
-                onClick={() => setVista("citas")}
+                onClick={() =>
+                  setVista("citas")
+                }
               >
-                <h3>📋 Mis Citas</h3>
-                <p>Consulta tus citas programadas</p>
+                <h3>
+                  📋 Mis Citas
+                </h3>
+
+                <p>
+                  Consulta tus citas programadas
+                </p>
               </div>
 
+              {/* ➕ CREAR */}
               <div
                 style={styles.card}
-                onClick={() => setVista("crear")}
+                onClick={() =>
+                  setVista("crear")
+                }
               >
-                <h3>➕ Crear Cita</h3>
-                <p>Agenda un nuevo servicio</p>
+                <h3>
+                  ➕ Crear Cita
+                </h3>
+
+                <p>
+                  Agenda un nuevo servicio
+                </p>
               </div>
 
               {/* 👤 PERFIL */}
               <div
                 style={styles.card}
-                onClick={() => setVista("perfil")}
+                onClick={() =>
+                  setVista("perfil")
+                }
               >
-                <h3>👤 Mi Perfil</h3>
-                <p>Gestionar información personal</p>
+                <h3>
+                  👤 Mi Perfil
+                </h3>
+
+                <p>
+                  Gestionar información personal
+                </p>
+              </div>
+
+              {/* 💰 FACTURAS */}
+              <div
+                style={styles.card}
+                onClick={() =>
+                  setVista("facturas")
+                }
+              >
+                <h3>
+                  💰 Mis Facturas
+                </h3>
+
+                <p>
+                  Consulta y descarga tus facturas
+                </p>
               </div>
 
             </div>
@@ -61,17 +106,36 @@ function ClienteContenido() {
           <>
             <button
               style={styles.backBtn}
-              onClick={() => setVista(null)}
+              onClick={() =>
+                setVista(null)
+              }
             >
               ⬅ Volver
             </button>
 
             <div style={styles.content}>
-              {vista === "citas" && <MisCitas />}
-              {vista === "crear" && <CrearCita />}
-              {vista === "perfil" && (
-                <PerfilUsuario volver={() => setVista(null)} />
+
+              {vista === "citas" && (
+                <MisCitas />
               )}
+
+              {vista === "crear" && (
+                <CrearCita />
+              )}
+
+              {vista === "perfil" && (
+                <PerfilUsuario
+                  volver={() =>
+                    setVista(null)
+                  }
+                />
+              )}
+
+              {/* 💰 FACTURAS */}
+              {vista === "facturas" && (
+                <MisFacturas />
+              )}
+
             </div>
           </>
         )}
@@ -82,6 +146,7 @@ function ClienteContenido() {
 }
 
 const styles = {
+
   container: {
     padding: "40px",
     display: "flex",
