@@ -10,6 +10,7 @@ from app import models, schemas
 
 import requests
 import time
+import os
 
 
 router = APIRouter(
@@ -18,9 +19,53 @@ router = APIRouter(
 
 
 # =========================
+# MICROSERVICIOS RENDER
+# =========================
+SERVICIOS = {
+
+    "citas":
+        os.getenv(
+            "CITAS_SERVICE_URL",
+            "https://autogest-citas.onrender.com"
+        ),
+
+    "diagnostico":
+        os.getenv(
+            "DIAGNOSTICO_SERVICE_URL",
+            "https://autogest-diagnostico.onrender.com"
+        ),
+
+    "historial":
+        os.getenv(
+            "HISTORIAL_SERVICE_URL",
+            "https://autogest-historial.onrender.com"
+        ),
+
+    "usuarios":
+        os.getenv(
+            "USUARIOS_SERVICE_URL",
+            "https://autogest-usuarios.onrender.com"
+        ),
+
+    "inventario":
+        os.getenv(
+            "INVENTARIO_SERVICE_URL",
+            "https://autogest-inventario.onrender.com"
+        ),
+
+    "facturacion":
+        os.getenv(
+            "FACTURACION_SERVICE_URL",
+            "https://autogest-facturacion.onrender.com"
+        ),
+}
+
+
+# =========================
 # DB SESSION
 # =========================
 def get_db():
+
     db = SessionLocal()
 
     try:
@@ -39,7 +84,6 @@ def generar_factura(
     db: Session = Depends(get_db)
 ):
 
-    # validar si ya existe
     factura_existente = db.query(
         models.Factura
     ).filter(
@@ -47,17 +91,31 @@ def generar_factura(
     ).first()
 
     if factura_existente:
+
         raise HTTPException(
             status_code=400,
             detail="Esta cita ya tiene factura"
         )
 
-    # obtener cita
-    cita_res = requests.get(
-        f"http://citas_service:8000/citas/{cita_id}"
-    )
+    # =========================
+    # OBTENER CITA
+    # =========================
+    try:
+
+        cita_res = requests.get(
+            f"{SERVICIOS['citas']}/citas/{cita_id}",
+            timeout=15
+        )
+
+    except Exception as e:
+
+        raise HTTPException(
+            status_code=503,
+            detail=f"Error conectando citas: {str(e)}"
+        )
 
     if not cita_res.ok:
+
         raise HTTPException(
             status_code=404,
             detail="Cita no encontrada"
@@ -65,19 +123,39 @@ def generar_factura(
 
     cita = cita_res.json()
 
-    # validar estado
-    if cita["estado"] != "finalizada":
+    # =========================
+    # VALIDAR ESTADO
+    # =========================
+    estado = (
+        cita.get("estado", "")
+    ).lower().strip()
+
+    if estado != "finalizada":
+
         raise HTTPException(
             status_code=400,
             detail="La cita aún no ha sido finalizada"
         )
 
-    # obtener diagnóstico
-    diag_res = requests.get(
-        f"http://diagnostico_service:8000/diagnosticos/cita/{cita_id}"
-    )
+    # =========================
+    # OBTENER DIAGNOSTICO
+    # =========================
+    try:
+
+        diag_res = requests.get(
+            f"{SERVICIOS['diagnostico']}/diagnosticos/cita/{cita_id}",
+            timeout=15
+        )
+
+    except Exception as e:
+
+        raise HTTPException(
+            status_code=503,
+            detail=f"Error conectando diagnostico: {str(e)}"
+        )
 
     if not diag_res.ok:
+
         raise HTTPException(
             status_code=404,
             detail="Diagnóstico no encontrado"
@@ -85,31 +163,51 @@ def generar_factura(
 
     diagnostico = diag_res.json()
 
-    # calcular costos
+    # =========================
+    # CALCULAR COSTOS
+    # =========================
     mano_obra = float(
-        diagnostico["mano_obra"]
+        diagnostico.get(
+            "mano_obra",
+            0
+        )
     )
 
     subtotal = mano_obra
 
-    for repuesto in diagnostico.get("repuestos", []):
+    for repuesto in diagnostico.get(
+        "repuestos",
+        []
+    ):
 
         precio = float(
-            repuesto.get("precio", 0)
+            repuesto.get(
+                "precio",
+                0
+            )
         )
 
         cantidad = int(
-            repuesto.get("cantidad", 1)
+            repuesto.get(
+                "cantidad",
+                1
+            )
         )
 
-        subtotal += (precio * cantidad)
+        subtotal += (
+            precio * cantidad
+        )
 
     impuestos = subtotal * 0.19
 
     total = subtotal + impuestos
 
-    # crear factura
-    numero = f"FAC-{int(time.time())}"
+    # =========================
+    # CREAR FACTURA
+    # =========================
+    numero = (
+        f"FAC-{int(time.time())}"
+    )
 
     nueva_factura = models.Factura(
         cita_id=cita_id,
@@ -129,8 +227,12 @@ def generar_factura(
     db.refresh(nueva_factura)
 
     return {
-        "mensaje": "Factura generada correctamente",
-        "factura": nueva_factura
+
+        "mensaje":
+            "Factura generada correctamente",
+
+        "factura":
+            nueva_factura
     }
 
 
@@ -141,6 +243,7 @@ def generar_factura(
 def listar_facturas(
     db: Session = Depends(get_db)
 ):
+
     return db.query(
         models.Factura
     ).all()
@@ -154,6 +257,7 @@ def facturas_cliente(
     cliente_id: int,
     db: Session = Depends(get_db)
 ):
+
     return db.query(
         models.Factura
     ).filter(
@@ -177,6 +281,7 @@ def obtener_factura(
     ).first()
 
     if not factura:
+
         raise HTTPException(
             status_code=404,
             detail="Factura no encontrada"
@@ -201,6 +306,7 @@ def registrar_pago(
     ).first()
 
     if not factura:
+
         raise HTTPException(
             status_code=404,
             detail="Factura no encontrada"
@@ -219,7 +325,8 @@ def registrar_pago(
     db.commit()
 
     return {
-        "mensaje": "Pago registrado correctamente"
+        "mensaje":
+            "Pago registrado correctamente"
     }
 
 
@@ -239,20 +346,22 @@ def descargar_factura_pdf(
     ).first()
 
     if not factura:
+
         raise HTTPException(
             status_code=404,
             detail="Factura no encontrada"
         )
 
-
     # =========================
-    # USAR PREVIEW YA CALCULADA
+    # PREVIEW
     # =========================
     preview_res = requests.get(
-        f"http://facturacion_service:8000/facturas/preview/{factura.cita_id}"
+        f"{SERVICIOS['facturacion']}/facturas/preview/{factura.cita_id}",
+        timeout=15
     )
 
     if not preview_res.ok:
+
         raise HTTPException(
             status_code=404,
             detail="No se pudo obtener la vista previa"
@@ -260,14 +369,24 @@ def descargar_factura_pdf(
 
     preview = preview_res.json()
 
+    cliente = preview.get(
+        "cliente",
+        {}
+    )
 
-    cliente = preview.get("cliente", {})
-    vehiculo = preview.get("vehiculo", {})
-    repuestos = preview.get("repuestos", [])
+    vehiculo = preview.get(
+        "vehiculo",
+        {}
+    )
 
+    repuestos = preview.get(
+        "repuestos",
+        []
+    )
 
-    ruta_pdf = f"factura_{factura.id}.pdf"
-
+    ruta_pdf = (
+        f"factura_{factura.id}.pdf"
+    )
 
     # =========================
     # CREAR PDF
@@ -277,14 +396,8 @@ def descargar_factura_pdf(
         pagesize=A4
     )
 
-    width, height = A4
-
     y = 800
 
-
-    # =========================
-    # HEADER
-    # =========================
     pdf.setFont(
         "Helvetica-Bold",
         20
@@ -297,7 +410,6 @@ def descargar_factura_pdf(
     )
 
     y -= 35
-
 
     pdf.setFont(
         "Helvetica",
@@ -328,10 +440,6 @@ def descargar_factura_pdf(
 
     y -= 35
 
-
-    # =========================
-    # VEHICULO
-    # =========================
     pdf.setFont(
         "Helvetica-Bold",
         13
@@ -345,7 +453,6 @@ def descargar_factura_pdf(
 
     y -= 25
 
-
     pdf.setFont(
         "Helvetica",
         11
@@ -354,7 +461,7 @@ def descargar_factura_pdf(
     pdf.drawString(
         70,
         y,
-        f"Placa: {vehiculo.get('placa','N/A')}"
+        f"Placa: {vehiculo.get('placa', 'N/A')}"
     )
 
     y -= 20
@@ -362,7 +469,7 @@ def descargar_factura_pdf(
     pdf.drawString(
         70,
         y,
-        f"Marca: {vehiculo.get('marca','N/A')}"
+        f"Marca: {vehiculo.get('marca', 'N/A')}"
     )
 
     y -= 20
@@ -370,209 +477,23 @@ def descargar_factura_pdf(
     pdf.drawString(
         70,
         y,
-        f"Modelo: {vehiculo.get('modelo','N/A')}"
+        f"Modelo: {vehiculo.get('modelo', 'N/A')}"
     )
 
     y -= 35
-
-
-    # =========================
-    # OBSERVACION
-    # =========================
-    pdf.setFont(
-        "Helvetica-Bold",
-        13
-    )
-
-    pdf.drawString(
-        50,
-        y,
-        "OBSERVACION DEL CLIENTE"
-    )
-
-    y -= 25
-
-
-    pdf.setFont(
-        "Helvetica",
-        11
-    )
-
-    pdf.drawString(
-        70,
-        y,
-        preview["observacion_cliente"]
-    )
-
-    y -= 35
-
-
-    # =========================
-    # DIAGNOSTICO
-    # =========================
-    pdf.setFont(
-        "Helvetica-Bold",
-        13
-    )
-
-    pdf.drawString(
-        50,
-        y,
-        "REPORTE TECNICO"
-    )
-
-    y -= 25
-
-
-    pdf.setFont(
-        "Helvetica",
-        11
-    )
-
-    pdf.drawString(
-        70,
-        y,
-        f"Falla: {preview['descripcion_falla']}"
-    )
-
-    y -= 20
-
-
-    pdf.drawString(
-        70,
-        y,
-        f"Reparacion: {preview['reparacion_realizada']}"
-    )
-
-    y -= 35
-
-
-    # =========================
-    # REPUESTOS
-    # =========================
-    pdf.setFont(
-        "Helvetica-Bold",
-        13
-    )
-
-    pdf.drawString(
-        50,
-        y,
-        "REPUESTOS"
-    )
-
-    y -= 25
-
-
-    pdf.setFont(
-        "Helvetica",
-        10
-    )
-
-    for rep in repuestos:
-
-        texto = (
-            f"{rep['nombre']} | "
-            f"x{rep['cantidad']} | "
-            f"${rep['precio_unitario']} | "
-            f"${rep['subtotal']}"
-        )
-
-        pdf.drawString(
-            70,
-            y,
-            texto
-        )
-
-        y -= 18
-
-
-    y -= 20
-
-
-    # =========================
-    # TOTALES
-    # =========================
-    pdf.setFont(
-        "Helvetica-Bold",
-        13
-    )
-
-    pdf.drawString(
-        50,
-        y,
-        "TOTALES"
-    )
-
-    y -= 25
-
-
-    pdf.setFont(
-        "Helvetica",
-        11
-    )
-
-    pdf.drawString(
-        70,
-        y,
-        f"Repuestos: ${preview['subtotal_repuestos']}"
-    )
-
-    y -= 20
-
-    pdf.drawString(
-        70,
-        y,
-        f"Mano de obra: ${preview['mano_obra']}"
-    )
-
-    y -= 20
-
-    pdf.drawString(
-        70,
-        y,
-        f"IVA: ${preview['iva']}"
-    )
-
-    y -= 20
-
-    pdf.drawString(
-        70,
-        y,
-        f"TOTAL: ${preview['total']}"
-    )
-
-    y -= 20
-
-    pdf.drawString(
-        70,
-        y,
-        f"Estado: {factura.estado_pago}"
-    )
-
 
     pdf.save()
-
 
     return FileResponse(
         path=ruta_pdf,
         filename=f"{factura.numero_factura}.pdf",
         media_type="application/pdf"
     )
-    
-    
-    
-    
-    
-    
-    
-    
-    #########################
-    
-    # vista de factura previa
-    
-    #########################
-    
+
+
+# =========================
+# PREVIEW FACTURA
+# =========================
 @router.get("/facturas/preview/{cita_id}")
 def preview_factura(
     cita_id: int,
@@ -580,13 +501,15 @@ def preview_factura(
 ):
 
     # =========================
-    # OBTENER CITA
+    # CITA
     # =========================
     cita_res = requests.get(
-        f"http://citas_service:8000/citas/{cita_id}"
+        f"{SERVICIOS['citas']}/citas/{cita_id}",
+        timeout=15
     )
 
     if not cita_res.ok:
+
         raise HTTPException(
             status_code=404,
             detail="Cita no encontrada"
@@ -594,15 +517,16 @@ def preview_factura(
 
     cita = cita_res.json()
 
-
     # =========================
-    # OBTENER DIAGNOSTICO
+    # DIAGNOSTICO
     # =========================
     diag_res = requests.get(
-        f"http://diagnostico_service:8000/diagnosticos/cita/{cita_id}"
+        f"{SERVICIOS['diagnostico']}/diagnosticos/cita/{cita_id}",
+        timeout=15
     )
 
     if not diag_res.ok:
+
         raise HTTPException(
             status_code=404,
             detail="Diagnóstico no encontrado"
@@ -610,16 +534,16 @@ def preview_factura(
 
     diagnostico = diag_res.json()
 
-
     # =========================
-    # OBTENER VEHICULO
+    # VEHICULO
     # =========================
     vehiculo = {}
 
     try:
 
         vehiculo_res = requests.get(
-            "http://historial_service:8000/historial/vehiculos"
+            f"{SERVICIOS['historial']}/historial/vehiculos",
+            timeout=15
         )
 
         if vehiculo_res.ok:
@@ -627,51 +551,53 @@ def preview_factura(
             vehiculos = vehiculo_res.json()
 
             vehiculo = next(
-
                 (
                     v for v in vehiculos
                     if v["id"] == cita["vehiculo_id"]
                 ),
-
                 {}
-
             )
 
-    except:
-        pass
+    except Exception as e:
 
+        print(
+            "Error vehiculo:",
+            e
+        )
 
     # =========================
-    # OBTENER CLIENTE
+    # CLIENTE
     # =========================
     cliente = {}
 
     try:
 
         cliente_res = requests.get(
-            f"http://usuarios_service:8000/usuarios/{cita['usuario_id']}"
+            f"{SERVICIOS['usuarios']}/usuarios/{cita['usuario_id']}",
+            timeout=15
         )
 
         if cliente_res.ok:
             cliente = cliente_res.json()
 
-    except:
-        pass
+    except Exception as e:
 
+        print(
+            "Error cliente:",
+            e
+        )
 
     # =========================
-    # CALCULAR REPUESTOS
+    # REPUESTOS
     # =========================
     repuestos_detallados = []
 
     subtotal_repuestos = 0
 
-
     repuestos = diagnostico.get(
         "repuestos",
         []
     )
-
 
     for r in repuestos:
 
@@ -679,11 +605,11 @@ def preview_factura(
 
         precio_unitario = 0
 
-
         try:
 
             repuesto_res = requests.get(
-                f"http://inventario_service:8000/inventario/repuestos/{r['repuesto_id']}"
+                f"{SERVICIOS['inventario']}/inventario/repuestos/{r['repuesto_id']}",
+                timeout=15
             )
 
             if repuesto_res.ok:
@@ -702,9 +628,12 @@ def preview_factura(
                     )
                 )
 
-        except:
-            pass
+        except Exception as e:
 
+            print(
+                "Error repuesto:",
+                e
+            )
 
         cantidad = int(
             r.get(
@@ -713,17 +642,14 @@ def preview_factura(
             )
         )
 
-
         subtotal_producto = (
             precio_unitario *
             cantidad
         )
 
-
         subtotal_repuestos += (
             subtotal_producto
         )
-
 
         repuestos_detallados.append({
 
@@ -741,13 +667,8 @@ def preview_factura(
 
             "subtotal":
                 subtotal_producto
-
         })
 
-
-    # =========================
-    # CALCULOS GENERALES
-    # =========================
     mano_obra = float(
         diagnostico.get(
             "mano_obra",
@@ -755,22 +676,15 @@ def preview_factura(
         )
     )
 
-
     subtotal = (
         subtotal_repuestos +
         mano_obra
     )
 
-
     iva = subtotal * 0.19
-
 
     total = subtotal + iva
 
-
-    # =========================
-    # RESPUESTA FINAL
-    # =========================
     return {
 
         "cliente":
@@ -814,5 +728,4 @@ def preview_factura(
 
         "total":
             total
-
     }
