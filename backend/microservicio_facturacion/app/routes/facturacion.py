@@ -503,10 +503,22 @@ def preview_factura(
     # =========================
     # CITA
     # =========================
-    cita_res = requests.get(
-        f"{SERVICIOS['citas']}/citas/{cita_id}",
-        timeout=15
-    )
+    try:
+
+        cita_res = requests.get(
+            f"{SERVICIOS['citas']}/citas/{cita_id}",
+            timeout=15
+        )
+
+        print("CITA STATUS:", cita_res.status_code)
+        print("CITA TEXT:", cita_res.text)
+
+    except Exception as e:
+
+        raise HTTPException(
+            status_code=500,
+            detail=f"Error conectando citas: {str(e)}"
+        )
 
     if not cita_res.ok:
 
@@ -517,13 +529,27 @@ def preview_factura(
 
     cita = cita_res.json()
 
+    print("CITA JSON:", cita)
+
     # =========================
     # DIAGNOSTICO
     # =========================
-    diag_res = requests.get(
-        f"{SERVICIOS['diagnostico']}/diagnosticos/cita/{cita_id}",
-        timeout=15
-    )
+    try:
+
+        diag_res = requests.get(
+            f"{SERVICIOS['diagnostico']}/diagnosticos/cita/{cita_id}",
+            timeout=15
+        )
+
+        print("DIAGNOSTICO STATUS:", diag_res.status_code)
+        print("DIAGNOSTICO TEXT:", diag_res.text)
+
+    except Exception as e:
+
+        raise HTTPException(
+            status_code=500,
+            detail=f"Error conectando diagnostico: {str(e)}"
+        )
 
     if not diag_res.ok:
 
@@ -534,6 +560,8 @@ def preview_factura(
 
     diagnostico = diag_res.json()
 
+    print("DIAGNOSTICO JSON:", diagnostico)
+
     # =========================
     # VEHICULO
     # =========================
@@ -541,14 +569,25 @@ def preview_factura(
 
     try:
 
+        vehiculo_url = (
+            f"{SERVICIOS['historial']}/historial/vehiculos"
+        )
+
+        print("URL VEHICULOS:", vehiculo_url)
+
         vehiculo_res = requests.get(
-            f"{SERVICIOS['historial']}/historial/vehiculos",
+            vehiculo_url,
             timeout=15
         )
+
+        print("VEHICULO STATUS:", vehiculo_res.status_code)
+        print("VEHICULO TEXT:", vehiculo_res.text)
 
         if vehiculo_res.ok:
 
             vehiculos = vehiculo_res.json()
+
+            print("VEHICULOS JSON:", vehiculos)
 
             vehiculo = next(
                 (
@@ -558,11 +597,13 @@ def preview_factura(
                 {}
             )
 
+            print("VEHICULO ENCONTRADO:", vehiculo)
+
     except Exception as e:
 
         print(
-            "Error vehiculo:",
-            e
+            "ERROR VEHICULO:",
+            str(e)
         )
 
     # =========================
@@ -572,21 +613,35 @@ def preview_factura(
 
     try:
 
-        cliente_id = int(cita["usuario_id"])
+        cliente_id = int(
+            cita["usuario_id"]
+        )
+
+        cliente_url = (
+            f"{SERVICIOS['usuarios']}/usuarios/{cliente_id}"
+        )
+
+        print("URL CLIENTE:", cliente_url)
 
         cliente_res = requests.get(
-            f"{SERVICIOS['usuarios']}/usuarios/{cliente_id}",
+            cliente_url,
             timeout=15
         )
 
+        print("CLIENTE STATUS:", cliente_res.status_code)
+        print("CLIENTE TEXT:", cliente_res.text)
+
         if cliente_res.ok:
+
             cliente = cliente_res.json()
+
+            print("CLIENTE JSON:", cliente)
 
     except Exception as e:
 
         print(
-            "Error cliente:",
-            e
+            "ERROR CLIENTE:",
+            str(e)
         )
 
     # =========================
@@ -609,14 +664,25 @@ def preview_factura(
 
         try:
 
+            repuesto_url = (
+                f"{SERVICIOS['inventario']}/inventario/repuestos/{r['repuesto_id']}"
+            )
+
+            print("URL REPUESTO:", repuesto_url)
+
             repuesto_res = requests.get(
-                f"{SERVICIOS['inventario']}/inventario/repuestos/{r['repuesto_id']}",
+                repuesto_url,
                 timeout=15
             )
+
+            print("REPUESTO STATUS:", repuesto_res.status_code)
+            print("REPUESTO TEXT:", repuesto_res.text)
 
             if repuesto_res.ok:
 
                 repuesto = repuesto_res.json()
+
+                print("REPUESTO JSON:", repuesto)
 
                 nombre = repuesto.get(
                     "nombre",
@@ -633,8 +699,8 @@ def preview_factura(
         except Exception as e:
 
             print(
-                "Error repuesto:",
-                e
+                "ERROR REPUESTO:",
+                str(e)
             )
 
         cantidad = int(
@@ -686,6 +752,9 @@ def preview_factura(
     iva = subtotal * 0.19
 
     total = subtotal + iva
+
+    print("CLIENTE FINAL:", cliente)
+    print("VEHICULO FINAL:", vehiculo)
 
     return {
 
