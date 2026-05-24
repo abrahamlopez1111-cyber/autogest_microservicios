@@ -9,18 +9,22 @@ function FacturacionRecepcionista() {
   const navigate = useNavigate();
 
   const [citas, setCitas] = useState([]);
-  const [preview, setPreview] = useState(null);
+  const [preview, setPreview] =
+    useState(null);
 
   const [loading, setLoading] =
     useState(true);
 
   // =========================
-  // CARGAR CITAS
+  // INICIO
   // =========================
   useEffect(() => {
     cargarCitas();
   }, []);
 
+  // =========================
+  // CARGAR CITAS
+  // =========================
   const cargarCitas = async () => {
 
     try {
@@ -92,7 +96,7 @@ function FacturacionRecepcionista() {
       );
 
       // =========================
-      // SOLO FINALIZADAS
+      // FILTRAR FINALIZADAS
       // =========================
       const finalizadas = (
         Array.isArray(data)
@@ -146,6 +150,34 @@ function FacturacionRecepcionista() {
       const res = await fetch(
         `${GATEWAY}/facturas/preview/${citaId}`
       );
+
+      // 🔥 VALIDAR JSON
+      const contentType =
+        res.headers.get(
+          "content-type"
+        );
+
+      if (
+        !contentType ||
+        !contentType.includes(
+          "application/json"
+        )
+      ) {
+
+        const texto =
+          await res.text();
+
+        console.error(
+          "❌ Respuesta inválida:",
+          texto
+        );
+
+        alert(
+          "El servidor devolvió una respuesta inválida"
+        );
+
+        return;
+      }
 
       const data =
         await res.json();
@@ -203,6 +235,34 @@ function FacturacionRecepcionista() {
           method: "POST",
         }
       );
+
+      // 🔥 VALIDAR JSON
+      const contentType =
+        res.headers.get(
+          "content-type"
+        );
+
+      if (
+        !contentType ||
+        !contentType.includes(
+          "application/json"
+        )
+      ) {
+
+        const texto =
+          await res.text();
+
+        console.error(
+          "❌ Respuesta inválida:",
+          texto
+        );
+
+        alert(
+          "El servidor devolvió una respuesta inválida"
+        );
+
+        return;
+      }
 
       const data =
         await res.json();
@@ -368,8 +428,30 @@ function FacturacionRecepcionista() {
                   verPreview(cita.id)
                 }
               >
-                Ver pre-factura #
-                {cita.id}
+
+                <p>
+                  <strong>
+                    📄 Pre-factura:
+                  </strong>{" "}
+                  #{cita.id}
+                </p>
+
+                <p>
+                  <strong>
+                    👤 Cliente:
+                  </strong>{" "}
+                  {cita.cliente?.nombre ||
+                    "N/A"}
+                </p>
+
+                <p>
+                  <strong>
+                    🚗 Vehículo:
+                  </strong>{" "}
+                  {cita.vehiculo?.placa ||
+                    "N/A"}
+                </p>
+
               </button>
             ))
           )}
@@ -569,6 +651,7 @@ const styles = {
     background: "#1e293b",
     color: "white",
     fontSize: "16px",
+    textAlign: "left",
   },
 
   preview: {
